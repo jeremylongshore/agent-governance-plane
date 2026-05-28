@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.3] - 2026-05-28
+
+- chore(beads): refresh issues.jsonl after Epic 00/01 description updates (91b849c)
+
+
 ## [v0.1.2] - 2026-05-28
 
 - docs(000-docs): replace /repo-dress placeholders with Phase A council foundation (b569e6c)

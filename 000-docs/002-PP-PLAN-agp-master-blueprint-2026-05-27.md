@@ -1,7 +1,7 @@
 ---
 title: Agent Governance Plane (AGP) — Master Blueprint
 date: 2026-05-27
-author: Jeremy Longshore (Intent Solutions) · drafted by Claude as acting head of board
+author: Jeremy Longshore (Intent Solutions) — owner of all decisions; drafting facilitated by Claude in the session-level acting-head role for the 2026-05-27 ISEDC council per Jeremy's standing delegation
 status: pre-build / third-party review
 companion_docs:
   - 001-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md (council decision record + timing amendment)

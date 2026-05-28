@@ -242,7 +242,7 @@ Single-reviewer reasoning cannot weigh these adversarially. The ISEDC pattern su
 
 | Directive | Owner | Phase | Trigger |
 |---|---|---|---|
-| Create `agp` project skeleton at `~/000-projects/products-workspace/agp/` | Jeremy | v0 day 1 | Council ratification |
+| Create `agp` project skeleton at `~/000-projects/agent-governance-plane/` | Jeremy | v0 day 1 | Council ratification |
 | Scaffold `agp` CLI binary (Bun/TS); wire to CCSC primitives via direct import (monorepo refs, extract to lib later) | Jeremy | v0 day 1-2 | Skeleton complete |
 | Docker sandbox spawn + Slack thread UI + Block Kit relay (lifted from CCSC) | Jeremy | v0 day 3-5 | CLI scaffold complete |
 | Signed journal events with reserved schema slots (`tenant_id`, `signing_key_id`, `approval_binding_type`, `sprite_identity_uri` all null at v0) — **CISO non-negotiable** | Jeremy | v0 day 6-7 | Sandbox + Slack flow working |

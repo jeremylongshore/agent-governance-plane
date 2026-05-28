@@ -31,7 +31,7 @@ No build. The CI gates (`.github/workflows/ci.yml`) are doc/hygiene checks — r
 bash scripts/claim-scan.sh      # HARD GATE: fails on v0-banned security claims in public surfaces
 bash scripts/doc-drift.sh       # forbidden pre-monorepo paths + pre-renumbering doc IDs (informational until Epic 00 AAR closes)
 bash scripts/bead-validate.sh   # Epic 00 acceptance greps (informational)
-npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "#**/CHANGELOG.md"
+npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!**/CHANGELOG.md"
 ```
 
 Releases are automated by `.github/workflows/release.yml` (conventional-commit-driven bump → `version.txt` + `CHANGELOG.md` + tag + GitHub release). Don't hand-edit `version.txt` or release sections of `CHANGELOG.md`.

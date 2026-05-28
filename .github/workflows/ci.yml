@@ -1,5 +1,18 @@
 name: CI
 
+# AGP at Phase B v0 has NO Node.js source code — the repo is governance + planning
+# docs only until Epic 04 (CLI scaffold) ships. The original ci.yml from /repo-dress
+# assumed a Node project and failed every PR with `npm ci` errors.
+#
+# This workflow validates what we actually have today:
+#   - markdown structure (markdownlint)
+#   - banned-claim hygiene on public surfaces (Epic 11 seed)
+#   - doc-drift checks (no stale paths, no old doc numbers)
+#   - informational bead-validation greps (Epic 00 acceptance criteria)
+#
+# When Epic 04 lands and source code appears, a Bun/TypeScript jobset will be
+# added back. Until then, doc gates are the load-bearing checks.
+
 on:
   push:
     branches: [main]
@@ -10,42 +23,48 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: Lint
+  markdownlint:
+    name: Markdown lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v18
         with:
-          node-version: "22"
-          cache: "npm"
+          globs: |
+            **/*.md
+            !node_modules/**
+            !**/CHANGELOG.md
+          config: .markdownlint.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npx eslint .
-
-  test:
-    name: Test (Node ${{ matrix.node-version }})
+  banned-claims:
+    name: Banned-claim scan (public surfaces)
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
+      - name: Scan public surfaces for v0-banned security claims
+        run: bash scripts/claim-scan.sh
 
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
+  doc-drift:
+    # INFORMATIONAL during the Epic 00 transition window.
+    # When the Epic 00 AAR (agp-5l8.10) closes, the AAR flips this job to a
+    # hard gate by removing `continue-on-error: true` below.
+    name: Doc drift check (informational while Epic 00 is in flight)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for forbidden path / numbering drift
+        run: bash scripts/doc-drift.sh
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
+  bead-validation:
+    # INFORMATIONAL. Runs the per-bead acceptance greps so reviewers can see at a
+    # glance which Epic 00 child fixes have landed and which are still in PR. The
+    # Epic 00 AAR closes when all greps PASS; the workflow stays informational
+    # forever (these are bead-acceptance checks, not CI gates).
+    name: Bead validation commands (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Epic 00 contradiction-fix validation greps
+        run: bash scripts/bead-validate.sh

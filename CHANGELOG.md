@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.11] - 2026-05-28
+
+- chore(beads): close 8 Epic 00 child beads after PRs #29-#33 merged (f88e050)
+
+
 ## [v0.1.10] - 2026-05-28
 
 - fix(c3,c4): normalize Phase B version ladder + refresh live CCSC LoC (#33) (c2704ac)

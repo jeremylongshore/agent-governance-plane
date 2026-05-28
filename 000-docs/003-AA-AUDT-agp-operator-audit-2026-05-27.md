@@ -16,7 +16,7 @@ AGP at v0 is the **multi-harness composition layer** above the CCSC kernel: lift
 
 Current state, written honestly: CCSC is **production-ready, security-audited at the design-doc level, and feature-frozen for new primitives** through Q3 2026. AGP **does not yet exist as product code** — the repo skeleton at `~/000-projects/agent-governance-plane/` was scaffolded 2026-05-27 with governance dressing (README, LICENSE Apache 2.0, CONTRIBUTING, CI, beads init, 16-epic Phase B plan filed) and is the repo you are reading this doc inside; the implementation work begins after the Epic 00 planning-cleanup beads close. The artifact you are reading is one of four documents (this audit, the master blueprint `002-PP-PLAN-...`, the council decision record `001-AT-DECR-...` with its 2026-05-27 timing amendment, and the cannon adversarial review `004-AR-CANN-...`) constituting a third-party-reviewable pre-build package. The package exists because Jeremy wants outside review before committing the next 6 weeks to AGP.
 
-The biggest risk is **competitive timing**, not technical execution. Forrester announced the "Agent Control Plane" category in December 2025 with a formal Landscape report dropping April 2026. Credal, Speakeasy, OpenHands, E2B, Browser Use, Signet, and Anthropic AgentCore each hold 3-of-4 AGP-defining properties (sandbox + multi-harness + Slack HITL + signed audit); none currently hold all four. A well-funded incumbent shipping the missing fourth property in a sprint (~2–4 weeks) collapses AGP's wedge. The 6-week-to-demo cadence in the timing amendment is calibrated to land a working hosted demo at `agp.intentsolutions.io` before that window closes — calibrated, but tight given that Jeremy is also running a 6-truck flatbed authority, working the Anthropic Enterprise Program cohort, and operating 24 production containers on the Contabo VPS.
+The biggest risk is **competitive product capture**, not technical execution. Credal, Speakeasy, OpenHands, E2B, Browser Use, Signet, and Anthropic AgentCore each hold 3-of-4 AGP-defining properties (sandbox + multi-harness + Slack HITL + signed audit); none currently hold all four. A well-funded incumbent shipping the missing fourth property in a sprint (~2–4 weeks) collapses AGP's wedge. Phase B's response is to ship defensible primitives in the 16-epic plan — NOT to chase an analyst-relations deadline. (An earlier version of this paragraph cited a 6-week-to-demo cadence calibrated against the Forrester April 2026 Landscape submission window; that framing is rejected by the Phase B controlling change. There is no analyst-driven calendar pacing the build.)
 
 The second-biggest risk is **threat-model overclaim**. AGP's audit chain is signed by the operator's own Ed25519 key against a control plane the operator also runs. That signature is "the signer asserted this," not nonrepudiation, not forensic-grade, not tamper-evident in any compliance-vendor sense. The CISO non-negotiable (MARKETING_CLAIMS.md as code with pre-commit hook + version-gated allowlist) is what holds the line; the allowed v0 claim is exactly "signed audit log of every tool call" — nothing stronger. Any marketing creep is a one-way door because FTC deceptive-practices review takes the same view as a security researcher's HN thread: load-bearing claims are evaluated against load-bearing primitives.
 
@@ -28,7 +28,7 @@ The second-biggest risk is **threat-model overclaim**. AGP's audit chain is sign
 
 The CCSC governance kernel (the substrate) bridges a Slack workspace and a Claude Code session over MCP-stdio. Operators talk to Claude in Slack threads; Claude's tool calls are gated by a policy engine that consults a per-channel rule set; permission-required operations surface as Block Kit prompts in the same thread; every decision is journaled to a hash-chained, redacted, optionally signed audit log. The kernel has five defense-in-depth layers (inbound gate, outbound gate, file exfiltration guard, system-prompt hardening, token security) and four runtime dependencies (`@modelcontextprotocol/sdk`, `@slack/web-api`, `@slack/socket-mode`, `zod`) with no framework dependencies.
 
-AGP (the composition above the kernel) generalizes this from "one operator + one Claude Code session in their own Slack" to "one operator running any harness (Claude, Codex, future sprites) in a sandboxed runtime with the same Slack-thread + signed-journal surface." v0 ships single-tenant, Docker-sandboxed, Claude-only. v0.1 adds the Codex sprite (multi-harness validates the abstraction). v0.2 stands up a hosted demo on `agp.intentsolutions.io` for Forrester-grade evaluation. v0.3+ unlocks per-tenant KMS, WebAuthn approval-binding, Firecracker microVMs, Sigstore-signed sprite releases, and (after a 4-phase community-temperature sequencing) public protocol RFCs.
+AGP (the composition above the kernel) generalizes this from "one operator + one Claude Code session in their own Slack" to "one operator running any harness (Claude, Codex, future sprites) in a sandboxed runtime with the same Slack-thread + signed-journal surface." v0 ships single-tenant, Docker-sandboxed, Claude-only. v0.1 adds a second harness through the SpriteAdapter contract (multi-harness validates the abstraction). v0.2 is at most an optional internal-readiness milestone — **not a hosted demo** (the Phase B controlling change drops the demo-first framing). v0.3+ unlocks per-tenant KMS, WebAuthn approval-binding, Firecracker microVMs, Sigstore-signed sprite releases, and (after a 4-phase community-temperature sequencing) public protocol RFCs. No public/demo surface is shipped until the core contracts, audit chain, policy engine, claim-control gate, and runtime (Epics 03, 05, 09, 10, 11) are defensible.
 
 ### Operational Status
 
@@ -400,9 +400,18 @@ claude-code-slack-channel/
 | Tail Slack-projection log | `agp logs slack-projection -f` | Local-only; useful when Slack 5xx flapping |
 | Tail journal | `agp logs journal -f` | The authoritative log; redacted per fixed rules |
 
-### 7.2 Deployment (v0.2 hosted demo)
+### 7.2 Deployment (DEFERRED — no public surface in Phase B v0)
 
-**Pre-flight checklist**:
+> **Phase B controlling change**: this section was originally a deployment playbook for a v0.2 hosted demo at `agp.intentsolutions.io`. **The hosted-demo goal is dropped.** There is no public deployment in the 16-epic Phase B plan; AGP is operator-only on the operator's own machine through Epic 11. The `agp.intentsolutions.io` namespace remains reserved (Epic 11 / claim-control gates it) but is not standing up any deployment at Phase B v0.
+>
+> The pre-flight checklist, execution steps, and rollback protocol below are PRESERVED AS HISTORICAL REFERENCE for when a future epic (post-Epic 11, post-Epic 15 release discipline) re-opens the question of a public surface. Treat them as a starting point for that future ADR, not as a current playbook.
+>
+> Operational reality at Phase B v0: AGP runs on the operator's machine via `agp run`. No VPS deployment. No Caddy block. No basicauth gate. No SLO commitment to anyone.
+
+<details>
+<summary>Original v0.2 hosted demo deployment playbook (historical reference; do NOT execute at Phase B v0)</summary>
+
+**Pre-flight checklist** *(original — superseded)*:
 
 - All v0 directives green (per AT-DECR Implementation Directives table)
 - `MARKETING_CLAIMS.md` v0.2 entries CISO-approved
@@ -411,7 +420,7 @@ claude-code-slack-channel/
 - `/healthz` endpoint anonymous; `/` and `/demo/*` basicauth-gated
 - Sandbox image pinned to a specific SHA (not `latest`)
 
-**Execution steps** (lifted from `intentsolutions-vps-runbook/docs/onboard-new-repo-deploy.md`):
+**Execution steps** *(original — superseded; lifted from `intentsolutions-vps-runbook/docs/onboard-new-repo-deploy.md`)*:
 
 ```bash
 # On the VPS, as the intentsolutions user
@@ -423,36 +432,28 @@ git checkout v0.2.0
 curl -fsS https://agp.intentsolutions.io/healthz   # must return 200 with "ok"
 ```
 
-**Verification**:
+**Verification** *(original — superseded)*: healthz / basicauth / demo flow / signed-journal link.
 
-- `curl https://agp.intentsolutions.io/healthz` → 200 "ok"
-- `curl -u demo:$(pass partners/agp/basicauth-demo) https://agp.intentsolutions.io/demo/` → 200 with demo landing page
-- Click through the demo flow; confirm signed-journal-link at end works
+**Rollback protocol** *(original — superseded)*: git checkout v0.1.0 + `./scripts/deploy.sh`.
 
-**Rollback protocol**:
+</details>
 
-```bash
-cd ~/agp
-git checkout v0.1.0    # last known good
-./scripts/deploy.sh
-curl -fsS https://agp.intentsolutions.io/healthz   # confirm rollback successful
-```
+### 7.3 Monitoring & alerting (operator-only at Phase B v0)
 
-### 7.3 Monitoring & alerting
+- **Dashboards**: at Phase B v0, monitoring is whatever the operator runs locally. No shared dashboard. No tailnet endpoint advertised to others. Netdata at `http://intentsolutions:19999` and ntfy at `http://intentsolutions:8080` remain available on the operator's tailnet (per CCSC posture) but are not part of an AGP-specific monitoring story.
+- **SLIs at Phase B v0**: tool-call gate latency, journal-write latency, sandbox spawn time — measured locally per session, not aggregated for external visibility.
+- **SLOs at Phase B v0**: NONE published. AGP is not a hosted service; it is a CLI/daemon on the operator's machine.
+- **On-call**: the operator who ran `agp run` is on-call for that session. No external on-call rotation. No paging anyone else.
 
-- **Dashboards**: Netdata at `http://intentsolutions:19999` (tailnet-only); ntfy at `http://intentsolutions:8080`
-- **SLIs**: `/healthz` response time < 500ms p95; tool-call gate latency < 100ms p95; Slack `chat.postMessage` success rate > 99%
-- **SLOs at v0.2** (hosted demo only): 99% availability over 30 days; ≤ 5 min recovery time for restart
-- **On-call**: Jeremy. ntfy push notification to phone on `prod-alerts` topic. No rotation at v0.2; v1+ may add a second maintainer per CMO's bus-factor mitigation.
-
-### 7.4 Incident response
+### 7.4 Incident response (Phase B v0 — operator-only)
 
 | Severity | Definition | Response time | Playbook |
 |---|---|---|---|
-| P0 | Production hosted demo returns 5xx for > 5 min | Immediate | Rollback to last-known-good per § 7.2 |
-| P1 | Sandbox escape suspected; signed journal divergence reported | 15 min | Quarantine session; `agp verify` chain; file `bd` for forensic; consider key rotation |
-| P2 | Slack projection delayed > 1 min; operator complaints | 1 hour | Check Slack API status; fall back to local log; do not promise uptime |
-| P3 | Linting / CI / docs drift | Next business day | Standard `/sweep` workflow |
+| P0 | Sandbox escape suspected; signed journal divergence reported | 15 min (the operator's own time — there is no rotation) | Quarantine session; `agp verify` chain; file `bd` for forensic; consider key rotation |
+| P1 | Slack projection delayed > 1 min; operator UX degraded | 1 hour | Check Slack API status; fall back to local log; the local journal is authoritative |
+| P2 | Linting / CI / docs drift | Next business day | Standard `/sweep` workflow |
+
+The original §7.4 included a P0 entry for "Production hosted demo returns 5xx" — that scenario is impossible at Phase B v0 because there is no production hosted demo.
 
 ---
 
@@ -497,7 +498,7 @@ Ordered by likelihood × impact.
 
 ### 8.6 Sandbox image drift between v0 and v0.1
 
-- **Symptom**: Codex sprite works locally but fails on the hosted demo
+- **Symptom**: Codex sprite works on the operator's machine but fails on another operator's machine (or in CI)
 - **Cause**: Sandbox image pinned to `:latest` instead of a SHA-pinned tag; Docker registry rebuilt the image
 - **Fix**: Pin to SHA in `agp config`; rebuild and republish if needed
 - **Prevention**: `agp init` writes SHA-pinned image references by default; CI gate verifies no `:latest` references in production config
@@ -534,20 +535,20 @@ Ordered by likelihood × impact.
 
 ## 9. Security & Access
 
-### 9.1 Access control (v0 / v0.2 hosted demo)
+### 9.1 Access control (Phase B v0 — operator-only)
 
 | Role | Purpose | Permissions | MFA |
 |---|---|---|---|
-| Operator (v0 self-hosted) | Run `agp run`, view local logs | Full local FS access; owns signing key | Slack workspace SSO/MFA inherits |
-| Hosted-demo visitor (v0.2) | Click through demo flow | Read-only; basicauth-gated; no real signing key | Single basicauth credential rotated per quarter |
-| Forrester analyst (v0.2) | Evaluate the demo | Same as hosted-demo visitor; given dedicated basicauth credential | Per-analyst credential for audit |
-| AGP maintainer (Jeremy) | Deploy, rotate keys, view all logs | SSH to VPS; `sudo -u intentsolutions`; pass-encrypted creds | SSH key + Tailscale + pass-GPG |
+| Operator (Phase B v0, self-hosted on their own machine) | Run `agp run`, view local logs | Full local FS access on the operator's own machine; owns signing key | Slack workspace SSO/MFA inherits |
+| AGP maintainer (Jeremy) | Maintain the OSS repo, cut releases, respond to security reports | GitHub repo admin; signing-key management for releases (when Epic 13 lands) | GitHub MFA + Tailscale for any infra access |
+
+> **Phase B controlling change**: this table originally included a "Hosted-demo visitor (v0.2)" row + a "Forrester analyst (v0.2)" row. Both are removed. There is no hosted demo at Phase B v0 and no analyst-specific access mode. If a future epic opens a public surface, the access-control table is revisited at that epic's ADR.
 
 ### 9.2 Secrets
 
 - **Where**: SOPS-encrypted in repo (`secrets.sops.yaml`); decrypted at process start via `scripts/sops-env` wrapper to `/dev/shm` tmpfs
 - **Rotation**: Slack bot token quarterly; Ed25519 signing key annually OR on suspected compromise (writes KEY_ROTATION event); no Anthropic API key to rotate at v0 — the Claude sprite reuses the operator's `claude.ai` login session, whose lifecycle is governed by Anthropic's own session-expiry policy and re-auth is handled by `claude` (not by AGP)
-- **Emergency access**: Break-glass path is `~/000-projects/intentsolutions-vps-runbook/docs/break-glass.md`; AGP inherits this for v0.2 hosted demo
+- **Emergency access**: at Phase B v0, AGP runs on the operator's own machine and inherits whatever break-glass posture the operator already has. The Intent Solutions VPS break-glass path at `~/000-projects/intentsolutions-vps-runbook/docs/break-glass.md` is the model for any future AGP infra (e.g., a hosted-plan or signing-server epic), but AGP is NOT currently hosting any such surface.
 - **Antipattern fence**: NEVER `eval "$(sops -d ... | sed 's/^/export /')"`. Always anchored-regex variant.
 
 ### 9.3 Honest security assessment
@@ -589,31 +590,34 @@ Ordered by likelihood × impact.
 
 ### 10.1 Engineer time
 
-| Phase | Calendar weeks | Engineer-hours (Jeremy spare-cycle) |
+| Phase | Notes | Engineer-hours estimate (Jeremy spare-cycle) |
 |---|---|---|
-| v0 (1 wk core + 1 wk onboarding) | 2 | ~50 hrs |
-| v0.1 (multi-harness sprite) | 2 | ~50 hrs |
-| v0.2 (hosted demo + Forrester brief) | 2 | ~50 hrs |
-| **6-week-to-demo total** | **6** | **~150 hrs** |
-| v0.3+ (Q3 2026 backlog) | 12+ | Variable; gated on inbound demand |
+| v0 (1 wk core + 1 wk onboarding equivalent of effort) | Locked at 2-week effort budget; calendar will be longer because epics ship as defensible primitives, not against a deadline | ~50 hrs |
+| v0.1 (multi-harness sprite via Epic 12) | Gated on SpriteAdapter contract validation, not a calendar slot | ~50 hrs |
+| v0.2 (optional internal-readiness milestone — NOT a hosted demo) | May be skipped; if used, internal-only | ~0–20 hrs |
+| v0.3+ (Q3 2026 backlog) | Variable; gated on inbound demand | Variable |
 
-### 10.2 Runtime cost (v0.2 hosted demo on Contabo VPS)
+> **Phase B controlling change**: an earlier version of this table included a "6-week-to-demo total: ~150 hrs" row tied to the Forrester April 2026 Landscape submission window. **That row is removed.** Hours are still estimates — the budget discipline is preserved — but the calendar is no longer paced by an external analyst-relations deadline.
 
-- VPS already paid (intentsolutions VPS, 24 GiB RAM, $0 marginal cost)
-- Storage for hosted demo: negligible (Bun binary + audit logs + Slack manifest export)
-- Bandwidth: negligible (demo flow is text-only)
-- Anthropic API: pay-per-token at demo time; one Forrester-analyst walkthrough ≈ $1-2 of API calls
-- TLS cert: free (Let's Encrypt via Caddy)
+### 10.2 Runtime cost (Phase B v0 — operator-only)
+
+- VPS: NONE at Phase B v0. AGP runs on the operator's machine. The shared VPS continues to host CCSC + other production services as before, but AGP itself is not deployed there.
+- Storage: Bun binary + per-session audit logs live on the operator's disk.
+- Bandwidth: NONE — no network exposure beyond what the operator's existing Slack workspace already requires for CCSC.
+- LLM auth: the operator's existing Claude Code login session (per CCSC posture). No API-key cost held by AGP.
+- TLS cert: NONE — there is no public surface.
+
+> **Phase B controlling change**: an earlier version of this section costed a "v0.2 hosted demo on Contabo VPS" including basicauth, Caddy TLS, demo-walkthrough API spend, etc. **That section is removed.** There is no hosted demo to cost.
 
 ### 10.3 External commitments
 
 - Apache 2.0 license: no fee, perpetual; cost is loss of license-rent extraction (deliberate)
-- Domain: `agp.intentsolutions.io` is a subdomain of an already-owned domain; $0 marginal
+- Domain: `agp.intentsolutions.io` reservation is a subdomain of an already-owned domain; $0 marginal; not currently serving traffic
 - GitHub repo: free (public repo); $0 marginal
 
 ### 10.4 Risk-weighted opportunity cost
 
-Per CFO council seat: every day on AGP is 8 hours not on searchcarriers / hustle / DiagnosticPro. The 6-week-to-demo commitment is ~$8k of opportunity cost at Jeremy's blended rate. ROI threshold: AGP must generate ≥$8k of validated demand (Forrester naming + 5 self-hoster asks + 1 advisor / partner inquiry) by week 6 or the v0.3+ backlog is paused.
+Per CFO council seat: every day on AGP is 8 hours not on searchcarriers / hustle / DiagnosticPro. The full 16-epic Phase B plan is a multi-month opportunity-cost commitment. Without an external deadline forcing the pace, the discipline shifts to: **each epic must produce a defensible primitive whose acceptance criteria are met before the next epic starts.** ROI threshold for continued investment: at minimum, dogfooded value (Jeremy uses AGP for real work on his own repos) by the time Epic 06 closes, and one external validator (advisor, partner, or co-maintainer) engaged before Epic 12 closes. Without those signals, the v0.3+ backlog is paused.
 
 ---
 
@@ -663,68 +667,65 @@ Per CFO council seat: every day on AGP is 8 hours not on searchcarriers / hustle
 
 **Prevention at v0.3+**: Per-tenant KMS makes the blast radius per-tenant rather than per-operator.
 
-### 11.5 Forrester evaluation deadline missed
+### 11.5 (REMOVED — Forrester evaluation deadline missed)
 
-**Mode**: v0.2 hosted demo slips past mid-March 2026; AGP not named in April 2026 Forrester Landscape.
-
-**Blast radius**: 12-18 month delay before next reporting cycle. Enterprise procurement gravity goes to competitors.
-
-**Recovery**: Position for the next Forrester cycle. Use the slip to deepen CISO non-negotiables (Sigstore, KMS) and arrive in cycle 2 with stronger primitives.
-
-**Prevention**: The 6-week-to-demo cadence is calibrated for this deadline. Weekly check-ins against the schedule. If week 4 slips, revisit the v0.2 scope (consider static landing page + Loom video as fallback).
+> **Phase B controlling change**: this failure mode was originally "v0.2 hosted demo slips past mid-March 2026; AGP not named in April 2026 Forrester Landscape." The hosted-demo goal is dropped and analyst-relations deadlines are not build drivers, so this failure mode no longer applies. **The original §11.5 is removed entirely** to avoid implying that "missing Forrester" is a tracked risk for AGP.
 
 ### 11.6 Bus factor (Jeremy)
 
 **Mode**: Jeremy out of action (DOT audit, ELD outage, personal/health). AGP unmaintained.
 
-**Blast radius at v0**: Limited — single self-hosted instance, signed log remains verifiable from any machine with the public key. No external customers depending on uptime.
+**Blast radius at Phase B v0**: Limited — single self-hosted instance on Jeremy's own machine, signed log remains verifiable from any machine with the public key. No external customers depending on uptime. No hosted demo to go down. The OSS repo continues to exist; community contributors (if any) can keep PRs flowing against it.
 
-**Blast radius at v0.2+**: Hosted demo goes down; Forrester analyst evaluation fails; future-customer trust eroded.
+**Blast radius later (post-Epic 11, once a public surface eventually exists)**: TBD by the future epic that opens that surface. Whatever that epic is, its acceptance criteria must include a bus-factor mitigation step before any external promise of uptime.
 
 **Recovery**: Document break-glass operations (already exists for VPS in runbook). Bring on a second maintainer before any enterprise pitch per cannon-4's mitigation.
 
-**Prevention**: CMO bus-factor critique stays open. v0.5+ is when second-maintainer recruitment becomes a tracked initiative.
+**Prevention**: CMO bus-factor critique stays open. Second-maintainer recruitment is now sequenced by milestone (not by calendar) — the trigger is "when an external user asks for a guaranteed-response-time SLA."
 
 ---
 
 ## 12. Recommendations & Roadmap
 
-### 12.1 Immediate (week 1)
+### 12.1 Immediate (Phase B Epic 00 — planning cleanup)
 
-1. Get advisor / partner / co-maintainer feedback on this review package (the document set is now self-contained for that purpose)
-2. Decide whether to scaffold `~/000-projects/agent-governance-plane/` now or wait for feedback (recommendation: scaffold a stub repo now to reserve the GitHub namespace `jeremylongshore/agp`; full code work waits for feedback)
-3. Pin the CCSC kernel reference to commit `08b5f2f` so AGP scaffolding can reference a stable upstream
+1. **(DONE)** Scaffold `~/000-projects/agent-governance-plane/` as the canonical AGP repo with governance dressing (this repo). Path-drift cleanup from the pre-monorepo path lands as part of Epic 00's C9 child.
+2. **(DONE)** File the 16-epic Phase B plan as parent beads + GitHub issues with full mirror discipline.
+3. **(IN FLIGHT — this section is the artifact of)** Close out Epic 00's 10 child contradiction-fix beads (C1–C10 + AAR) so the planning package is internally consistent before any implementation epic starts.
+4. Pin the CCSC kernel reference to commit `08b5f2f` so AGP substrate work (Epic 02) can reference a stable upstream — captured in the Epic 02 ADR when that lands.
 
-### 12.2 Short term (weeks 2–6)
+### 12.2 Short term (Phase B Epic 01 → Epic 05 — defensible primitives)
 
-1. Execute the v0 epic (per blueprint § 5.1) — 12 child beads, 2 calendar weeks
-2. Execute the v0.1 epic (multi-harness Codex sprite) — 5 child beads, 2 calendar weeks
-3. Execute the v0.2 epic (hosted demo + Forrester brief) — 5 child beads, 2 calendar weeks
-4. Submit Forrester analyst-relations brief by mid-March 2026
-5. CISO non-negotiables shipped: schema-slot reservation (v0), MARKETING_CLAIMS.md hash-pinned (v0), `agp.intentsolutions.io` scoped subdomain (v0.2)
+The 16-epic Phase B plan replaces the original "v0 → v0.1 → v0.2 demo" sketch. Short-term work is now sequenced through:
 
-### 12.3 Medium term (Q3 2026)
+1. Epic 01 — repo + governance + tracking mirror (mostly done by pre-flight; remaining gaps tracked).
+2. Epic 02 — CCSC substrate extraction ADR (vendor / submodule / path dependency / shared package).
+3. Epic 03 — core contracts (Gateway, SpriteAdapter, SandboxProvider, ChannelAdapter, PolicyVerdict, JournalEvent) with schema-slot reservation as a CISO non-negotiable.
+4. Epic 04 — CLI + daemon (`agp init` / `agp doctor` / `agp run` / `agp verify`).
+5. Epic 05 — Unix-socket Gateway protocol (HTTP Gateway forbidden until sender-constrained auth).
 
-1. v0.3: per-tenant KMS + multi-tenant `gate()` rewrite (trigger: second self-hoster asks)
-2. v0.4: WebAuthn / passkey approval-binding (trigger: first security audit conversation)
-3. v0.5: Co-pilot mode (turn-taking baton in Slack) — gated on dogfooding pull
-4. v0.6: Sigstore-signed sprite releases + sprite identity registry (CISO non-negotiable by v0.6)
-5. CSO 4-phase RFC sequencing begins (informal-temperature with named maintainers)
+### 12.3 Medium term (Phase B Epic 06 → Epic 11 — the security boundaries)
 
-### 12.4 Long term (Q4 2026 – Q1 2027)
+1. Epic 06 — Claude Code sprite (first harness, real not slide).
+2. Epic 07 — Docker sandbox with honest isolation limits.
+3. Epic 08 — Slack channel adapter + HITL approvals (local journal authoritative, Slack as projection).
+4. Epic 09 — Policy engine integration (fail-closed, dangerous-ops default-deny).
+5. Epic 10 — Signed audit journal + offline verifier (Ed25519 + hash chain, schema slots day-one).
+6. Epic 11 — MARKETING_CLAIMS.md + docs linting CI gate.
 
-1. v0.7: First public RFC draft (Gateway protocol) — IF and only IF 2+ maintainers in temperature phase say "share a draft"
-2. v0.8: Hosted plan for self-hosters who don't want to operate
-3. v0.9: Coordinated-pair collaboration mode
-4. v1: Compliance-data export (Drata / Vanta / Secureframe webhooks)
-5. Second maintainer onboarded (bus-factor mitigation)
+### 12.4 Long term (Phase B Epic 12 → Epic 15 — multi-harness, identity, release discipline)
+
+1. Epic 12 — second harness through SpriteAdapter contract; multi-harness claim unlocked only after contract tests pass.
+2. Epic 13 — sprite identity + supply-chain verification; Sigstore evaluation for sprite release signing.
+3. Epic 14 — multi-tenant readiness without enabling hosted multi-tenant too early; `tenant_id` reserved null at v0.
+4. Epic 15 — release discipline: AAR template, evidence-bundle format, claim-scan + threat-model review on every release.
 
 ### 12.5 Honest recommendations to Jeremy
 
-- **Do this work IF and only if the council decisions and the timing amendment still feel right after 48 hours of distance.** The AT-DECR is binding; the timing amendment is also binding; but the entire AGP project is still pre-build. Reversing course now is cheap. Reversing course at week 4 is not.
-- **Use the third-party review package.** Specifically: send to (1) Mudit Gupta at Polygon for the cryptographic-claim review, (2) Nixtla CEO for the OSS-commercialization frame, (3) one neutral non-Intent-Solutions advisor for the "is this real" check. Three reviewers, one week, then decide.
-- **If feedback is mixed**: shrink to single-harness v0, ship as `claude-code-slack-channel-cli` (a thin wrapper) without the AGP branding, and harvest the multi-harness ambition for a later, better-timed move.
-- **If feedback is positive**: scaffold the repo, file the beads, and execute the 6-week plan with weekly check-ins against the Forrester deadline.
+- **Each Phase B epic ships when its acceptance criteria are met, not on a calendar.** The Phase B controlling change rejects analyst-relations deadlines as build drivers. The discipline is: defensible primitive → close the epic with AAR + evidence → next epic.
+- **Use the inbound credibility surface.** Mudit Gupta (Polygon), Nixtla CEO, Lit Protocol, Elm — the people who found AGP-adjacent thinking and reached out. Send any one of them the AGP repo link when Epic 05 (Gateway) is real, not before. The first external review is more useful against shipped primitives than against planning docs.
+- **Dogfood is the gate.** AGP must work for Jeremy fixing a real CCSC or `claude-code-plugins` bug before anyone else is invited. If Epic 06 closes and Jeremy doesn't end up using AGP for real work, that is the signal to pause and rescope — not to push forward into Epics 07-15.
+- **Reversing course remains cheap as long as it's done early.** Epic 00 (planning cleanup) is the cheapest off-ramp. Epic 02 (substrate extraction ADR) is the next-cheapest. After Epic 04 (CLI), the sunk-cost gradient gets steeper.
 
 ---
 
@@ -743,8 +744,8 @@ Per CFO council seat: every day on AGP is 8 hours not on searchcarriers / hustle
 - **Channel layer**: Where the operator sees what's happening. Slack-only at v0–v0.2; multi-channel possible at v0.5+.
 - **MARKETING_CLAIMS.md**: The CISO-locked file listing which marketing claims are allowed at which version. Hash-pinned, pre-commit-enforced, version-gated allowlist.
 - **THREAT-MODEL.md**: The file listing what v0 defends, what v0 explicitly does NOT defend, and what each later vN unlocks.
-- **Forrester Landscape**: Forrester Research's quarterly market-category evaluation report. The "Agent Control Plane" Landscape lands April 2026; submissions for inclusion are due ~mid-March.
-- **6-week competitive window**: Time between AGP project start (early June 2026) and the latest Forrester submission window (mid-March 2026 effectively means 6 weeks from now to land a demo).
+- **Forrester Landscape**: Forrester Research's market-category evaluation reports. Cited in §1 and §7.3 as a market-context reference only — analyst-relations deadlines are NOT build drivers per the Phase B controlling change. The "Agent Control Plane" Landscape was announced December 2025 with a first report due April 2026; that calendar is not pacing the AGP build.
+- **6-week competitive window** *(historical framing, superseded)*: An earlier version of this glossary defined this as "AGP project start (early June 2026) to Forrester submission window (mid-March 2026)" — driving a 6-week-to-demo cadence. The Phase B controlling change rejects that framing entirely. There is no demo deadline.
 
 ### 13.2 FAQ
 
@@ -760,11 +761,11 @@ A: Q5 council decision (5-1-1, CMO lone dissent). Cannon-2's SESSION_TOKEN beare
 **Q: Why is `journal.ts` the load-bearing file?**
 A: The hash chain is the entire signed-audit story. Any bug in `journal.ts` breaks the v0 marketing claim. 986 tests, 87.76% mutation score, pre-commit JCS canonicalization check — and the single-writer assumption is the structural property that makes the chain provably linear.
 
-**Q: What happens if Forrester doesn't name AGP in April 2026?**
-A: 12–18 month delay before next reporting cycle. Position for cycle 2 with stronger primitives (Sigstore, KMS, WebAuthn already shipped by then).
+**Q: What happens if Forrester doesn't name AGP?**
+A: Not a tracked risk for AGP. The Phase B controlling change rejects analyst-relations deadlines as build drivers. AGP's category-authorship story is earned through shipped primitives (the 16-epic Phase B plan) and the OSS-repo surface. Forrester (or any other analyst) is welcome to read the repo whenever they like; the build does not pace itself to their reporting cycle.
 
 **Q: What's the worst plausible outcome of shipping v0?**
-A: A security researcher demonstrates the SESSION_TOKEN bearer-credential attack on day 1 of public availability. AGP retracts the hosted demo, updates THREAT-MODEL.md, and accepts the reputational hit. The MARKETING_CLAIMS.md discipline limits the FTC exposure because the v0 claim is exactly "signed audit log of every tool call" — not "tamper-evident" or "nonrepudiable."
+A: A security researcher demonstrates the SESSION_TOKEN bearer-credential attack on day 1 of public-repo visibility. AGP updates THREAT-MODEL.md, files a security-advisory bead, and accepts the reputational hit. The MARKETING_CLAIMS.md discipline (Epic 11) limits the FTC exposure because the v0 claim is exactly "signed audit log of every tool call" — not "tamper-evident" or "nonrepudiable." There is no hosted demo to retract because the Phase B controlling change does not deploy one.
 
 **Q: Why is Jeremy the only buyer at v0?**
 A: Q3 council decision (6-1 strong majority). Single buyer = single liability surface. Cannon-4's "buyer confusion is fatal" verdict. Small dev teams are the natural adoption population at v0.1+; platform-eng deferred to v0.8; compliance shops deferred to v1+.

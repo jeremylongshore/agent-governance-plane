@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.1.1] - 2026-05-28
+
+- bd init: initialize beads issue tracking (18fad0c)
+- bd init: initialize beads issue tracking (f3ff2cf)
+
+
 ## [v0.1.0] - 2026-05-28
 
 - feat: initial governance dressing for agent-governance-plane (f59bd9c)

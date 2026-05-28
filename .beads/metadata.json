@@ -2,6 +2,6 @@
   "database": "dolt",
   "backend": "dolt",
   "dolt_mode": "embedded",
-  "dolt_database": "agent_governance_plane",
-  "project_id": "98d719ed-1bfc-4cbc-97c0-3fac1fd1a9a4"
+  "dolt_database": "agp",
+  "project_id": "233094f9-3406-48c8-8921-d97c68bf2df9"
 }

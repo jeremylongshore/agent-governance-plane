@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.9] - 2026-05-28
+
+- fix(c1,c2): drop demo-first framing and Forrester deadline as build drivers (#32) (a69cb74)
+
+
 ## [v0.1.8] - 2026-05-28
 
 - fix(c10a,c10b): clarify decision authority hierarchy and ISEDC scope (#31) (5a8f61f)

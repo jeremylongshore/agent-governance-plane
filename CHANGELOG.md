@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.5] - 2026-05-28
+
+- chore(ci,docs): replace broken Node CI with docs-actually-validate workflow + tighten PR template + commit audit reports (#34) (f790dc4)
+
+
 ## [v0.1.4] - 2026-05-28
 
 - chore(beads): file Epic 00 child beads (C1-C10) + mirror to GH issues #19-#28 (f5b0511)

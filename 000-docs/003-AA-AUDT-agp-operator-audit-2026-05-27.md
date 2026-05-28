@@ -81,7 +81,10 @@ AGP (the composition above the kernel) generalizes this from "one operator + one
 │   ┌─────────────────────────────────────────────┐               │
 │   │ AGP DAEMON (single Bun binary)              │               │
 │   │  - Slack client (Socket Mode)               │               │
-│   │  - Holds creds (LLM API key, GH token)      │               │
+│   │  - Holds operator creds (Slack bot token,   │               │
+│   │    GH token); the Claude sprite reuses the  │               │
+│   │    operator's existing Claude Code session  │               │
+│   │    (claude.ai login) — NOT an API key       │               │
 │   │  - Holds Ed25519 signing key (SOPS+age)     │               │
 │   │  - Runs gate() against every tool call      │               │
 │   │  - Writes signed events to ~/.agp/audit.log │               │
@@ -358,13 +361,13 @@ claude-code-slack-channel/
 | Docker | 24.x+ | https://docs.docker.com/get-docker/ | `docker run hello-world` |
 | Slack app | (provisioned via `agp init`) | `agp init` walks through it | Slack app installed in operator's workspace |
 | SOPS + age | latest | `~/bin/sops-init` (Jeremy's global bootstrap) | `sops --version && age --version` |
-| Anthropic API key | n/a | https://console.anthropic.com | `agp doctor` validates |
+| Claude Code | v2.1.80+ | https://claude.com/code (install per Anthropic's installer) | `claude --version` reports v2.1.80 or newer, AND `claude` is logged in via `claude.ai` (NOT an API key — interactive session auth required, matching CCSC's posture) |
 
 ### 6.2 Zero to running
 
 1. `git clone git@github.com:jeremylongshore/agp.git && cd agp` *(repo doesn't exist yet — post-scaffold)*
 2. `bun install` — expect "X packages installed" (no warnings on Bun's own dep tree)
-3. `agp init` — interactive: walks through Slack app manifest export, signing-key generation (Ed25519 via `audit-key-cli`), Anthropic API key sourcing, SOPS dotenv setup, sandbox image pull
+3. `agp init` — interactive: walks through Slack app manifest export, signing-key generation (Ed25519 via `audit-key-cli`), Claude Code session verification (confirms `claude --version` ≥ v2.1.80 and that `claude.ai` login is active — NOT an API key check), SOPS dotenv setup, sandbox image pull
 4. `agp doctor` — verifies all of the above; outputs PASS / WARN / FAIL per check
 5. `agp run "fix the typo in README.md"` — spawns the sandbox, opens the Slack thread, waits for operator approvals
 
@@ -499,12 +502,12 @@ Ordered by likelihood × impact.
 - **Fix**: Pin to SHA in `agp config`; rebuild and republish if needed
 - **Prevention**: `agp init` writes SHA-pinned image references by default; CI gate verifies no `:latest` references in production config
 
-### 8.7 Anthropic API rate limit during a long session
+### 8.7 Claude Code session rate limit / quota exhaustion during a long session
 
-- **Symptom**: Agent stops mid-task with "rate limit exceeded"; session quarantines
-- **Cause**: Free tier or low-throughput Anthropic API key on a long-running session
-- **Fix**: Upgrade to paid Anthropic tier; or resume with `agp sessions resume <id>` after limit clears
-- **Prevention**: `agp doctor` reports the current Anthropic tier; warn operators in README
+- **Symptom**: Agent stops mid-task with a rate-limit or quota message from the Claude Code client; session quarantines
+- **Cause**: The operator's `claude.ai` subscription tier ran into its 5-hour / weekly window or hit a usage limit on the active login session (AGP does NOT hold an Anthropic API key — the Claude sprite reuses the operator's Claude Code login session per CCSC's posture, so quotas inherit from the operator's plan)
+- **Fix**: Wait for the session window to reset, or upgrade the operator's `claude.ai` plan; resume with `agp sessions resume <id>` once Claude Code is usable again
+- **Prevention**: `agp doctor` reports whether `claude` is logged in and (best-effort) whether a recent usage warning was emitted; warn operators in README that AGP sessions consume their interactive Claude Code quota
 
 ### 8.8 Slack workspace owner revokes the AGP app's OAuth grant
 
@@ -543,7 +546,7 @@ Ordered by likelihood × impact.
 ### 9.2 Secrets
 
 - **Where**: SOPS-encrypted in repo (`secrets.sops.yaml`); decrypted at process start via `scripts/sops-env` wrapper to `/dev/shm` tmpfs
-- **Rotation**: Slack bot token quarterly; Ed25519 signing key annually OR on suspected compromise (writes KEY_ROTATION event); Anthropic API key per-operator decision
+- **Rotation**: Slack bot token quarterly; Ed25519 signing key annually OR on suspected compromise (writes KEY_ROTATION event); no Anthropic API key to rotate at v0 — the Claude sprite reuses the operator's `claude.ai` login session, whose lifecycle is governed by Anthropic's own session-expiry policy and re-auth is handled by `claude` (not by AGP)
 - **Emergency access**: Break-glass path is `~/000-projects/intentsolutions-vps-runbook/docs/break-glass.md`; AGP inherits this for v0.2 hosted demo
 - **Antipattern fence**: NEVER `eval "$(sops -d ... | sed 's/^/export /')"`. Always anchored-regex variant.
 

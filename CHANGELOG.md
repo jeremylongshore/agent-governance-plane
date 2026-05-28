@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.4] - 2026-05-28
+
+- chore(beads): file Epic 00 child beads (C1-C10) + mirror to GH issues #19-#28 (f5b0511)
+
+
 ## [v0.1.3] - 2026-05-28
 
 - chore(beads): refresh issues.jsonl after Epic 00/01 description updates (91b849c)

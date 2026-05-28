@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.6] - 2026-05-28
+
+- fix(c7): correct AGP auth language to match Claude Code session model (#29) (154a000)
+
+
 ## [v0.1.5] - 2026-05-28
 
 - chore(ci,docs): replace broken Node CI with docs-actually-validate workflow + tighten PR template + commit audit reports (#34) (f790dc4)

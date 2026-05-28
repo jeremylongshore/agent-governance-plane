@@ -201,41 +201,110 @@ jobs:
         run: |
           NEXT="${{ steps.version.outputs.next }}"
           PREV_TAG="${{ steps.prev.outputs.tag }}"
+          VERSION_NUM="${NEXT#v}"
           DATE=$(date +%Y-%m-%d)
+          REPO_URL="https://github.com/${{ github.repository }}"
 
-          # Build changelog entry
-          {
-            echo "## [$NEXT] - $DATE"
-            echo ""
-            if [ "$PREV_TAG" = "v0.0.0" ]; then
-              git log --pretty=format:"- %s (%h)" | head -50
-            else
-              git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)"
+          # Build the new version section in Keep a Changelog form: a dated,
+          # v-less header (link refs below map the bare version to the v-tag)
+          # plus conventional-commit-categorised ### subsections. This shape
+          # satisfies the /release Phase 2.6 conformance gate; a flat commit
+          # dump would not.
+          if [ "$PREV_TAG" = "v0.0.0" ]; then RANGE="HEAD"; else RANGE="${PREV_TAG}..HEAD"; fi
+
+          ADDED=""; FIXED=""; CHANGED=""; SECURITY=""; DEPRECATED=""; REMOVED=""; RAW=""
+          # `|| [ -n "$subj" ]` processes the final line — git log emits no trailing newline.
+          while IFS=$'\t' read -r subj hash || [ -n "$subj" ]; do
+            [ -z "$subj" ] && continue
+            # Skip the automation's own version-bump commits — pure changelog noise.
+            printf '%s' "$subj" | grep -qE '^chore\(release\):' && continue
+            entry="- ${subj} (${hash})"
+            RAW="${RAW}${entry}"$'\n'
+            if printf '%s' "$subj" | grep -qE '^[a-zA-Z]+(\([^)]*\))?!:' || printf '%s' "$subj" | grep -q 'BREAKING CHANGE'; then
+              CHANGED="${CHANGED}- **BREAKING:** ${subj} (${hash})"$'\n'; continue
             fi
-            echo ""
-            echo ""
-          } > /tmp/changelog_entry.md
+            ctype=$(printf '%s' "$subj" | sed -nE 's/^([a-zA-Z]+)(\([^)]*\))?:.*/\1/p' | tr '[:upper:]' '[:lower:]')
+            case "$ctype" in
+              feat)          ADDED="${ADDED}${entry}"$'\n' ;;
+              fix)           FIXED="${FIXED}${entry}"$'\n' ;;
+              security|sec)  SECURITY="${SECURITY}${entry}"$'\n' ;;
+              deprecate)     DEPRECATED="${DEPRECATED}${entry}"$'\n' ;;
+              remove)        REMOVED="${REMOVED}${entry}"$'\n' ;;
+              *)             CHANGED="${CHANGED}${entry}"$'\n' ;;
+            esac
+          done < <(git log $RANGE --pretty=format:'%s%x09%h')
 
-          # Prepend to CHANGELOG.md
-          if [ -f "CHANGELOG.md" ]; then
-            # Insert after the first heading line
-            {
-              head -1 CHANGELOG.md
-              echo ""
-              cat /tmp/changelog_entry.md
-              tail -n +2 CHANGELOG.md
-            } > /tmp/changelog_merged.md
-            mv /tmp/changelog_merged.md CHANGELOG.md
-          else
+          # Fallback: never emit an empty section set (Phase 2.6 requires a
+          # populated subsection). If the range held only filtered chores,
+          # list every commit under Changed.
+          if [ -z "${ADDED}${FIXED}${CHANGED}${SECURITY}${DEPRECATED}${REMOVED}" ]; then
+            CHANGED="$RAW"
+          fi
+
+          # if-form (not `&&`) so an empty section returns 0 — under `set -e`
+          # a bare `[ -n "$2" ] && ...` would abort the run on the first empty section.
+          emit() { if [ -n "$2" ]; then printf '### %s\n\n%s\n' "$1" "$2"; fi; }
+          {
+            printf '## [%s] - %s\n\n' "$VERSION_NUM" "$DATE"
+            emit "Added" "$ADDED"
+            emit "Changed" "$CHANGED"
+            emit "Deprecated" "$DEPRECATED"
+            emit "Removed" "$REMOVED"
+            emit "Fixed" "$FIXED"
+            emit "Security" "$SECURITY"
+          } | awk 'NF{blank=0} !NF{blank++} blank<2' > /tmp/changelog_entry.md
+          # Trim trailing blank lines so the merge keeps single-blank spacing.
+          printf '%s\n' "$(cat /tmp/changelog_entry.md)" > /tmp/changelog_entry.md
+
+          # Bootstrap a Keep a Changelog file if one doesn't exist.
+          if [ ! -f CHANGELOG.md ]; then
             {
               echo "# Changelog"
               echo ""
-              cat /tmp/changelog_entry.md
+              echo "All notable changes to this project will be documented in this file."
+              echo ""
+              echo "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),"
+              echo "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."
+              echo ""
+              echo "## [Unreleased]"
+              echo ""
             } > CHANGELOG.md
           fi
 
+          # Guarantee an "## [Unreleased]" anchor exists (older files may lack it).
+          if ! grep -q '^## \[Unreleased\]' CHANGELOG.md; then
+            awk 'NR==1{print; print ""; print "## [Unreleased]"; next} {print}' \
+              CHANGELOG.md > /tmp/cl && mv /tmp/cl CHANGELOG.md
+          fi
+
+          # Insert the new section immediately AFTER "## [Unreleased]" so the
+          # preamble and Unreleased marker stay at the top where KAC expects them.
+          awk -v ef="/tmp/changelog_entry.md" '
+            {print}
+            /^## \[Unreleased\]/ && !done {
+              print ""
+              while ((getline line < ef) > 0) print line
+              done=1
+            }
+          ' CHANGELOG.md > /tmp/changelog_merged.md
+          mv /tmp/changelog_merged.md CHANGELOG.md
+
+          # Maintain the link-reference block at the bottom (best-effort).
+          if grep -q '^\[Unreleased\]:' CHANGELOG.md; then
+            sed -i "s|^\[Unreleased\]:.*|[Unreleased]: ${REPO_URL}/compare/${NEXT}...HEAD|" CHANGELOG.md
+            if [ "$PREV_TAG" = "v0.0.0" ]; then
+              NEWREF="[$VERSION_NUM]: ${REPO_URL}/releases/tag/${NEXT}"
+            else
+              NEWREF="[$VERSION_NUM]: ${REPO_URL}/compare/${PREV_TAG}...${NEXT}"
+            fi
+            awk -v ref="$NEWREF" '
+              {print}
+              /^\[Unreleased\]:/ && !done {print ref; done=1}
+            ' CHANGELOG.md > /tmp/cl && mv /tmp/cl CHANGELOG.md
+          fi
+
           git add CHANGELOG.md
-          echo "Changelog updated for $NEXT"
+          echo "Changelog updated for $VERSION_NUM"
 
       - name: Sync README version references
         if: steps.check.outputs.needed == 'true'

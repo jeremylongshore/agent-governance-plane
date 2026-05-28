@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.7] - 2026-05-28
+
+- fix(c9): normalize canonical AGP repo path + renumber doc cross-refs (#30) (1400892)
+
+
 ## [v0.1.6] - 2026-05-28
 
 - fix(c7): correct AGP auth language to match Claude Code session model (#29) (154a000)

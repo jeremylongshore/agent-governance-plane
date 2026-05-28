@@ -27,7 +27,7 @@ jobs:
     name: Markdown lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: DavidAnson/markdownlint-cli2-action@v18
         with:
           globs: |
@@ -40,7 +40,7 @@ jobs:
     name: Banned-claim scan (public surfaces)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Scan public surfaces for v0-banned security claims
         run: bash scripts/claim-scan.sh
 
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check for forbidden path / numbering drift
         run: bash scripts/doc-drift.sh
 
@@ -65,6 +65,6 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Epic 00 contradiction-fix validation greps
         run: bash scripts/bead-validate.sh

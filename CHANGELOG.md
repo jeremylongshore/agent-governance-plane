@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.2] - 2026-05-28
+
+- docs(000-docs): replace /repo-dress placeholders with Phase A council foundation (b569e6c)
+
+
 ## [v0.1.1] - 2026-05-28
 
 - bd init: initialize beads issue tracking (18fad0c)

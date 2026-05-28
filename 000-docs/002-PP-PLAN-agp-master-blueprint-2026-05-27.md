@@ -4,17 +4,17 @@ date: 2026-05-27
 author: Jeremy Longshore (Intent Solutions) · drafted by Claude as acting head of board
 status: pre-build / third-party review
 companion_docs:
-  - 006-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md (council decision record + timing amendment)
-  - 008-AA-AUDT-agp-operator-audit-2026-05-27.md (operator-grade audit of governance kernel + AGP composition)
-  - 009-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md (pre-council adversarial input)
+  - 001-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md (council decision record + timing amendment)
+  - 003-AA-AUDT-agp-operator-audit-2026-05-27.md (operator-grade audit of governance kernel + AGP composition)
+  - 004-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md (pre-council adversarial input)
 substrate_repo: ~/000-projects/claude-code-slack-channel/ (CCSC v0.10.0 — the governance kernel AGP composes)
-target_repo: ~/000-projects/products/agp/ (NOT YET SCAFFOLDED — created post-review)
+target_repo: ~/000-projects/agent-governance-plane/ (scaffolded 2026-05-27; this monorepo IS the AGP product)
 review_audience: Jeremy himself, advisors, potential partners, potential co-maintainers, potential investors
 ---
 
 # Agent Governance Plane (AGP) — Master Blueprint
 
-> **What you're reading.** This document is the single entry point for a third-party reviewer evaluating the AGP project before v0 build begins. It folds together the council decisions (`006-AT-DECR-...`), the cannon adversarial critique (`009-AR-CANN-...`), the operator-grade audit (`008-AA-AUDT-...`), and post-deliberation market-landscape research into one self-contained narrative. You do NOT need to read the four companion docs to follow this blueprint; you may want to read them to verify provenance.
+> **What you're reading.** This document is the single entry point for a third-party reviewer evaluating the AGP project before v0 build begins. It folds together the council decisions (`001-AT-DECR-...`), the cannon adversarial critique (`004-AR-CANN-...`), the operator-grade audit (`003-AA-AUDT-...`), and post-deliberation market-landscape research into one self-contained narrative. You do NOT need to read the four companion docs to follow this blueprint; you may want to read them to verify provenance.
 
 ---
 
@@ -233,7 +233,7 @@ agp run "fix the bug in repo X"
 
 | Proposed bead | Title | Dependency | CCSC primitive reused |
 |---|---|---|---|
-| agp-001 | Scaffold the `agp` project skeleton at `~/000-projects/products/agp/`. | none | (none — fresh scaffold) |
+| agp-001 | Scaffold the `agp` project skeleton at `~/000-projects/agent-governance-plane/`. | none | (none — fresh scaffold) |
 | agp-002 | Wire the `agp` CLI binary (Bun/TS) to CCSC primitives via direct import. | agp-001 | All — monorepo refs |
 | agp-003 | Lift CCSC Docker sandbox spawn into `agp` daemon. | agp-002 | server.ts container-spawn pattern |
 | agp-004 | Lift CCSC Slack thread UI + Block Kit relay into `agp` daemon. | agp-002 | server.ts Slack-client bootstrap + lib.ts |
@@ -469,7 +469,7 @@ Per `~/.claude/CLAUDE.md` § "Bead naming — plain English only" (in force sinc
 
 Example AGP bead titles:
 
-- ✅ "Scaffold the agp project skeleton at ~/000-projects/products/agp/."
+- ✅ "Scaffold the agp project skeleton at ~/000-projects/agent-governance-plane/."
 - ✅ "Lift CCSC journal.ts into agp/journal.ts with reserved schema slots."
 - ❌ "agp-001: scaffold" (system ID quoted in chat = anti-pattern)
 - ❌ "v0.E1.B3 — scaffold" (code-style numbered execution plan = anti-pattern)
@@ -500,9 +500,9 @@ Children beads listed in § 5 inherit from their epic. The exact bead IDs (`agp-
 
 ## 10. References
 
-- AT-DECR (council decision record + timing amendment): `~/000-projects/products/000-docs/006-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md`
-- Operator audit (hybrid CCSC + AGP): `~/000-projects/products/000-docs/008-AA-AUDT-agp-operator-audit-2026-05-27.md`
-- Cannon adversarial review (4-agent pre-council input): `~/000-projects/products/000-docs/009-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md`
+- AT-DECR (council decision record + timing amendment): `000-docs/001-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md`
+- Operator audit (hybrid CCSC + AGP): `000-docs/003-AA-AUDT-agp-operator-audit-2026-05-27.md`
+- Cannon adversarial review (4-agent pre-council input): `000-docs/004-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md`
 - ISEDC session JSONL (verbatim per-seat): `~/.claude/skills/exec-decision-council/sessions/2026-05-27-agp-strategic-direction/session.jsonl`
 - ISEDC reusable pattern: `~/.claude/skills/exec-decision-council/SKILL.md`
 - CCSC governance kernel substrate (v0.10.0): `~/000-projects/claude-code-slack-channel/`

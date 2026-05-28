@@ -14,7 +14,7 @@ The system AGP composes is not theoretical. The **governance kernel** lives in t
 
 AGP at v0 is the **multi-harness composition layer** above the CCSC kernel: lift ~5–6k of CCSC's 12k LoC (`crypto.ts`, `journal.ts`, `policy.ts`, `audit-key-*`, `nonce-hitl.ts`, `lib.ts`'s `gate()` core, `peer-bot-rate-limit.ts`, `mute-store.ts`, `stream-reply.ts`), wrap them in a SpriteAdapter interface, replace CCSC's MCP-stdio transport with a Unix-socket Gateway protocol, scaffold a CLI (`agp init` / `agp run` / `agp doctor`), and ship under Apache 2.0 with a hash-pinned MARKETING_CLAIMS.md that gates what we are allowed to promise at each version. The v0 deliverable is a 2-week sprint (1 week core + 1 week onboarding) targeted at Jeremy himself as buyer #1, with small dev teams as the natural adoption population at v0.1+.
 
-Current state, written honestly: CCSC is **production-ready, security-audited at the design-doc level, and feature-frozen for new primitives** through Q3 2026. AGP **does not yet exist as code** — the project skeleton at `~/000-projects/products/agp/` is not scaffolded. The artifact you are reading is one of four documents (this audit, the master blueprint `007-PP-PLAN-...`, the council decision record `006-AT-DECR-...` with its 2026-05-27 timing amendment, and the cannon adversarial review `009-AR-CANN-...`) constituting a third-party-reviewable pre-build package. The package exists because Jeremy wants outside review before committing the next 6 weeks to AGP.
+Current state, written honestly: CCSC is **production-ready, security-audited at the design-doc level, and feature-frozen for new primitives** through Q3 2026. AGP **does not yet exist as product code** — the repo skeleton at `~/000-projects/agent-governance-plane/` was scaffolded 2026-05-27 with governance dressing (README, LICENSE Apache 2.0, CONTRIBUTING, CI, beads init, 16-epic Phase B plan filed) and is the repo you are reading this doc inside; the implementation work begins after the Epic 00 planning-cleanup beads close. The artifact you are reading is one of four documents (this audit, the master blueprint `002-PP-PLAN-...`, the council decision record `001-AT-DECR-...` with its 2026-05-27 timing amendment, and the cannon adversarial review `004-AR-CANN-...`) constituting a third-party-reviewable pre-build package. The package exists because Jeremy wants outside review before committing the next 6 weeks to AGP.
 
 The biggest risk is **competitive timing**, not technical execution. Forrester announced the "Agent Control Plane" category in December 2025 with a formal Landscape report dropping April 2026. Credal, Speakeasy, OpenHands, E2B, Browser Use, Signet, and Anthropic AgentCore each hold 3-of-4 AGP-defining properties (sandbox + multi-harness + Slack HITL + signed audit); none currently hold all four. A well-funded incumbent shipping the missing fourth property in a sprint (~2–4 weeks) collapses AGP's wedge. The 6-week-to-demo cadence in the timing amendment is calibrated to land a working hosted demo at `agp.intentsolutions.io` before that window closes — calibrated, but tight given that Jeremy is also running a 6-truck flatbed authority, working the Anthropic Enterprise Program cohort, and operating 24 production containers on the Contabo VPS.
 
@@ -247,7 +247,7 @@ agp daemon
 | Docker is installed and the user has rights to `docker run` | True for ~99% of dev environments; explicit precondition in `agp doctor` |
 | Slack Socket Mode is reachable from the operator's network | True for residential, mobile-tethered, and most corporate networks; documented in README |
 | Operator owns the Ed25519 signing key and accepts that the signature does NOT prove nonrepudiation against themselves | True for self-hosted v0; explicitly stated in `THREAT-MODEL.md` |
-| CCSC kernel modules lift to AGP namespace without forking the upstream repo (we'll keep them in sync via cherry-pick or monorepo refs) | True if AGP scaffolds as a sibling project under `products-workspace/`; less true if AGP becomes its own org |
+| CCSC kernel modules lift to AGP namespace without forking the upstream repo (we'll keep them in sync via cherry-pick or monorepo refs) | Extraction strategy is TBD — Epic 02 (`agp-7ii`) will ADR-pick between vendor / git submodule / path dependency / shared kernel package. AGP scaffolded as its own dedicated repo (`jeremylongshore/agent-governance-plane`), not as a sibling project under a shared workspace. |
 | The hash chain's "single writer = provably linear" property is preserved through any future refactoring | True only if `journal.ts` remains a single-process module; splitting it breaks the property |
 
 ---
@@ -293,7 +293,7 @@ claude-code-slack-channel/
 ### 5.2 AGP layout (planned, post-scaffold)
 
 ```
-~/000-projects/products/agp/
+~/000-projects/agent-governance-plane/
 ├── src/
 │   ├── cli/
 │   │   ├── init.ts                 # agp init (interactive setup)
@@ -692,7 +692,7 @@ Per CFO council seat: every day on AGP is 8 hours not on searchcarriers / hustle
 ### 12.1 Immediate (week 1)
 
 1. Get advisor / partner / co-maintainer feedback on this review package (the document set is now self-contained for that purpose)
-2. Decide whether to scaffold `~/000-projects/products/agp/` now or wait for feedback (recommendation: scaffold a stub repo now to reserve the GitHub namespace `jeremylongshore/agp`; full code work waits for feedback)
+2. Decide whether to scaffold `~/000-projects/agent-governance-plane/` now or wait for feedback (recommendation: scaffold a stub repo now to reserve the GitHub namespace `jeremylongshore/agp`; full code work waits for feedback)
 3. Pin the CCSC kernel reference to commit `08b5f2f` so AGP scaffolding can reference a stable upstream
 
 ### 12.2 Short term (weeks 2–6)
@@ -773,10 +773,10 @@ A: Q3 council decision (6-1 strong majority). Single buyer = single liability su
 
 | Doc | Path | Role |
 |---|---|---|
-| Master blueprint | `~/000-projects/products/000-docs/007-PP-PLAN-agp-master-blueprint-2026-05-27.md` | Third-party reviewer's single entry point |
-| ISEDC decision record | `~/000-projects/products/000-docs/006-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md` | Binding strategic decisions + 2026-05-27 timing amendment |
-| Operator audit (this doc) | `~/000-projects/products/000-docs/008-AA-AUDT-agp-operator-audit-2026-05-27.md` | Hybrid CCSC-substrate + AGP-composition operational analysis |
-| Cannon adversarial review | `~/000-projects/products/000-docs/009-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md` | Pre-council 4-agent adversarial input |
+| Master blueprint | `000-docs/002-PP-PLAN-agp-master-blueprint-2026-05-27.md` | Third-party reviewer's single entry point |
+| ISEDC decision record | `000-docs/001-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md` | Binding strategic decisions + 2026-05-27 timing amendment |
+| Operator audit (this doc) | `000-docs/003-AA-AUDT-agp-operator-audit-2026-05-27.md` | Hybrid CCSC-substrate + AGP-composition operational analysis |
+| Cannon adversarial review | `000-docs/004-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md` | Pre-council 4-agent adversarial input |
 | CCSC substrate | `~/000-projects/claude-code-slack-channel/` | The shipped governance kernel AGP composes |
 
 ### 13.4 Substrate facts (verifiable from `~/000-projects/claude-code-slack-channel/`)
@@ -811,4 +811,4 @@ A: Q3 council decision (6-1 strong majority). Single buyer = single liability su
 
 ---
 
-*End of operator audit. Companion to `006-AT-DECR-...` (decisions), `007-PP-PLAN-...` (blueprint), `009-AR-CANN-...` (adversarial input).*
+*End of operator audit. Companion to `001-AT-DECR-...` (decisions), `002-PP-PLAN-...` (blueprint), `004-AR-CANN-...` (adversarial input).*

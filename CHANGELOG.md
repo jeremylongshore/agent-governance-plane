@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.12] - 2026-05-28
+
+- chore(deps): bump actions/checkout from 4 to 6 (#2) (e02c3fb)
+
+
 ## [v0.1.11] - 2026-05-28
 
 - chore(beads): close 8 Epic 00 child beads after PRs #29-#33 merged (f88e050)

@@ -24,7 +24,7 @@ review_audience: Jeremy himself, advisors, potential partners, potential co-main
 
 **Who it's for.** v0: Jeremy himself, in his truck, supervising a Claude Code session that's fixing a bug in one of his own repos. v0.1+: small dev teams (1–5 engineers) who self-host on their own VPS. NOT compliance shops, NOT platform engineering at mid-size companies, NOT enterprise CISOs — those audiences are deferred behind explicit shipped-primitive gates (WebAuthn, per-tenant KMS, Sigstore signing) per the locked CISO non-negotiables.
 
-**Why now.** A **6-week competitive window** opened in late May 2026. Forrester announced the "Agent Control Plane" category in December 2025 with a formal Landscape report dropping April 2026. Slack shipped Block Kit for AI Agents in May 2026. Salesforce reports 300% growth in Slack-resident AI agents Jan–Apr 2026. The four AGP-defining properties (sandbox + multi-harness + Slack HITL + signed audit) are held in 3-of-4 combinations by Credal, Speakeasy, OpenHands, and E2B — but **no competitor holds all four**. The window closes when a well-funded incumbent notices.
+**Why now.** Slack shipped Block Kit for AI Agents in May 2026. Salesforce reports 300% growth in Slack-resident AI agents Jan–Apr 2026. The four AGP-defining properties (sandbox + multi-harness + Slack HITL + signed audit) are held in 3-of-4 combinations by Credal, Speakeasy, OpenHands, and E2B — but **no competitor holds all four**. The category is being defined right now; AGP's wedge is being the credible OSS reference implementation of the full four-property combination. AGP is not chasing an analyst-relations deadline — the Phase B build cadence is paced to ship defensible primitives, not to hit a Landscape submission window.
 
 **What's been decided** (council session 2026-05-27, AT-DECR `45d65b7`):
 
@@ -34,11 +34,11 @@ review_audience: Jeremy himself, advisors, potential partners, potential co-main
 4. **Threat model**: honest framing in SLSA-pattern tier visibility · MARKETING_CLAIMS.md as code with CISO veto · allowed v0 claim "signed audit log of every tool call" (5-2 vote with strong CISO non-negotiable).
 5. **Protocol publication**: no public RFCs at v0; CSO 4-phase community-temperature sequencing through v0.7+ (5-1-1, CMO lone strong dissent for 3 RFCs logged verbatim).
 
-**What's been amended (post-deliberation, no re-deliberation)**: deferred-backlog timing accelerated to a 6-week-to-credible-demo cadence aligned with the Forrester April 2026 reporting window. v0.1 (multi-harness sprite) pulled forward to week 4. v0.2 (hosted demo on `agp.intentsolutions.io`) pulled forward to week 6. RFC sequencing and CISO security-primitive gates UNCHANGED.
+**What's been superseded by the Phase B controlling change (2026-05-27 → present)**: the original "v0 → v0.1 multi-harness → v0.2 hosted demo" framing — and the post-deliberation 6-week-to-demo timing amendment that pulled v0.2 forward — is **rejected** in favor of a contract-first, bead-tracked, no-public-surface-until-defensible build. v0.2 is no longer a hosted demo; it is at most an optional internal-readiness milestone. There is no public/demo surface until the core contracts, audit chain, policy engine, and runtime (Epics 03, 05, 09, 10, 11 in the 16-epic Phase B plan) are defensible. Forrester analyst-relations deadlines are NOT build drivers. RFC sequencing and CISO security-primitive gates from the original council session remain UNCHANGED.
 
 **What's open** (this blueprint asks third-party reviewers to weigh in on these):
 
-- Is the 6-week-to-demo realistic given Jeremy's truck-driver bandwidth?
+- Is the bead-tracked, contract-first, 16-epic Phase B build cadence realistic given Jeremy's truck-driver bandwidth (no analyst-relations deadline forcing speed)?
 - Is OSS-first the right commercial frame, or should we open-core / closed-source / Anthropic-partner-track instead?
 - Is the multi-harness ambition real, or do we ship single-harness v0 and chase multi-harness later?
 - Is Slack-only-channel a wedge or a ceiling? Discord / Teams / Matrix port priority?
@@ -155,14 +155,14 @@ This is the binding commitment from Q5 of the AT-DECR. No re-deliberation; this 
 
 CMO argued that ceded category authorship is permanent: the cost of a regretted protocol is a breaking change; the cost of a ceded category is the company. The council vote was 5-1-1 against publishing at v0; CMO requested the dissent be logged verbatim, and it was. The Q5 implementation directive included a CMO compromise: a "design notes" doc in our own repo at v0 (clearly labeled as internal-design-thinking, NOT a spec, NOT versioned, NOT inviting adoption) gives the authorship signal without violating CSO's sequencing.
 
-The **timing amendment** (post-deliberation market intelligence) does NOT shorten this sequencing. The Forrester April 2026 window pulls v0.1 / v0.2 forward but does not pull v0.7 (informal RFC) forward. The reason: cannon-2's SESSION_TOKEN-as-bearer-credential finding is dispositive — we can't publish a Gateway protocol with a known unfixed confused-deputy attack. That fix lands at v0.3+ along with per-tenant KMS.
+Cannon-2's SESSION_TOKEN-as-bearer-credential finding is dispositive on the protocol-publication question: we cannot publish a Gateway protocol with a known unfixed confused-deputy attack. That fix lands at v0.3+ along with per-tenant KMS. The Phase B controlling change reinforces this by also rejecting analyst-relations deadlines as build drivers — there is no external clock that would justify shipping a broken auth surface for the sake of visibility.
 
-### 3.4 Why this is the right call (revisited under the 6-week window)
+### 3.4 Why this is the right call
 
-The 6-week-to-demo cadence creates pressure to publish protocols earlier. The blueprint resists this for three reasons:
+The blueprint resists the "publish protocols earlier to claim authorship" impulse for three reasons:
 
 1. **Cannon-2's security finding has not changed.** The Gateway-protocol confused-deputy attack is real and unfixed at v0. Publishing a wire format committed to a broken auth model would do permanent reputational damage with the OpenSSF / in-toto / SLSA crowd.
-2. **Forrester evaluates products, not protocols.** Being named in the April 2026 Forrester Landscape requires a working hosted demo (the v0.2 acceleration is the response), not a published RFC. The two are decoupled.
+2. **Visibility deadlines are not build drivers.** The Phase B controlling change rejects the "ship public surfaces to be named by analysts in time for their reporting window" framing entirely. Anyone who needs to evaluate AGP can read the repo. The category-authorship narrative is earned through shipped primitives, not press cycles.
 3. **CSO's "first impression with maintainer is permanent" remains true.** A maintainer who reads a sloppy RFC will not re-read a polished one a year later. Sequencing is one-way.
 
 ---
@@ -199,15 +199,17 @@ This is the framing locked in Q4 of the AT-DECR. The substance is honest; the pr
 
 A `MARKETING_CLAIMS.md` file lives in the AGP repo, hash-pinned in the harness manifest. It lists allowed-at-version-N claims explicitly. A pre-commit hook fails on any release-notes / README / landing-page diff that adds a claim not in the registry for the current version tag. **Allowed at v0**: "signed audit log of every tool call." **Disallowed at v0**: "tamper-evident," "nonrepudiable," "compliance-grade," "tamper-proof," "forensic," "audit-grade." CISO has veto power over any marketing claim. The CMO-approved single bold headline claim is "signed audit log of every tool call your agent makes" — confirmed on-allowlist by CISO.
 
-### 4.4 The `agp.intentsolutions.io` scoped subdomain (CISO non-negotiable)
+### 4.4 The `agp.intentsolutions.io` scoped subdomain reservation (CISO non-negotiable)
 
-The hosted demo at v0.2 lives at `agp.intentsolutions.io` — NOT at `intentsolutions.io/agp` or `agp.com` or any other surface. Per CISO: a scoped subdomain limits cookie / OAuth-scope blast radius if the AGP demo is compromised. Caddy on the production VPS handles the DNS + reverse proxy.
+`agp.intentsolutions.io` is **reserved** as the future public surface for AGP — NOT `intentsolutions.io/agp`, NOT `agp.com`, NOT any other host. Per CISO: a scoped subdomain limits cookie / OAuth-scope blast radius. **At Phase B v0, this subdomain is not standing up any public/demo surface.** No public surface is shipped until the core contracts, audit chain, policy engine, claim-control gate, and runtime (Epics 03, 05, 09, 10, 11 in the 16-epic Phase B plan) are defensible. The reservation exists so the namespace is unambiguously ours when a public surface is ready; the build does not.
 
 ---
 
-## 5. Epic roadmap (v0 → v1, with the 6-week-to-demo amendment folded in)
+## 5. Epic roadmap (v0 → v1)
 
-This is the operational expression of the locked council decisions + the timing amendment. Each epic gets a parent bead-id placeholder (`agp-NNN`); actual beads are NOT filed yet (per AT-DECR: build phase begins post-review).
+> **Note on supersession.** This section was originally written as "v0 → v0.1 multi-harness → v0.2 hosted demo" with a 6-week-to-demo timing amendment. The Phase B controlling change (2026-05-27 → present) rejects the demo-first framing. The 16-epic Phase B plan in the AGP repo (Epics 00–15) is the live execution plan and is the source of truth for what work is actually scheduled. The version-ladder table in §5.4 below is the surviving, accurate roadmap. The §5.1, §5.2, §5.3 narratives below are preserved as historical record only — bead IDs `agp-NNN` are placeholders never filed; do NOT treat them as canonical.
+
+This is the operational expression of the locked council decisions. The 16-epic Phase B plan supersedes the original "v0 → v0.1 → v0.2 demo" sketch.
 
 ### 5.1 v0 — "Jeremy in his truck" (weeks 1–2; LOCKED)
 
@@ -248,11 +250,11 @@ agp run "fix the bug in repo X"
 
 **v0 blocker / out-of-scope**: NO multi-harness, NO multi-tenant, NO public landing page, NO HN post until ALL of the above land.
 
-### 5.2 v0.1 — Multi-harness sprite (week 4; pulled forward from "user #2")
+### 5.2 v0.1 — Multi-harness sprite (when the second harness contract is real)
 
 **Council reference**: Q5 implementation directive ("Multi-harness in v0.1 / when 2nd harness asked for").
 
-**Amendment trigger**: Forrester April 2026 reporting window — being named requires a working hosted demo, which requires the multi-harness story to be real, not a slide.
+**Trigger**: the SpriteAdapter contract (Phase B Epic 03) is validated against a real second sprite, not a slide. Cannon-3's adversarial review warned: "multi-harness without a second sprite is just a slide." The v0.1 unlock requires actual code, not a deadline.
 
 **Epic title**: *Add the Codex sprite alongside the Claude sprite in the same Slack channel.*
 
@@ -268,27 +270,15 @@ agp run "fix the bug in repo X"
 
 **Out of scope at v0.1**: NO multi-tenant, NO per-tenant KMS, NO Sigstore signing, NO RFC publication, NO third-party sprites.
 
-### 5.3 v0.2 — Hosted demo on `agp.intentsolutions.io` (week 6; pulled forward from v0.8)
+### 5.3 v0.2 — Optional internal-readiness milestone (NOT a hosted demo)
 
-**Council reference**: Q4 CISO scoped-subdomain requirement + Q3 buyer-focus (small dev teams as natural adoption population).
+**Supersession note**: this section originally framed v0.2 as a "hosted demo on `agp.intentsolutions.io` for Forrester-grade evaluation," pulled forward to a 6-week deadline tied to the April 2026 Landscape submission window. **Phase B controlling change rejects this entirely.** Demo is not a goal. There is no public surface at v0.2.
 
-**Amendment trigger**: Forrester April 2026 Landscape report submission window. To be named in the Landscape, AGP must have a public demo URL that a Forrester analyst can poke at without scheduling a call.
+**What v0.2 is now**: an optional internal-readiness checkpoint (if still needed after v0.1 lands) — strictly behind operator-only access on a tailnet IP, used to dogfood the multi-harness flow against a real long-running session before any wider testing. No public URL. No analyst-relations brief. No inbound CTA. No marketing.
 
-**Epic title**: *Stand up the hosted demo at `agp.intentsolutions.io` for Forrester-grade evaluation.*
+**What unlocks an eventual public surface** (not at v0.2): Epic 11 (claim-control), Epic 10 (audit verifier shippable), Epic 03/05 (contracts defensible), Epic 09 (policy gate fail-closed). Until then, `agp.intentsolutions.io` is a reserved namespace, not a deployment target.
 
-**Proposed child beads**:
-
-| Proposed bead | Title | Dependency | CCSC primitive reused |
-|---|---|---|---|
-| agp-201 | Provision the `agp.intentsolutions.io` Caddy block + TLS cert on the production VPS. | agp-012 | (existing Caddy pattern from CCSC partner-portals) |
-| agp-202 | Write the demo persona: a self-contained sandbox that lets a visitor click through a simulated "Claude Code fixes a bug" flow with a real signed journal at the end. | agp-201 | All v0 primitives |
-| agp-203 | Wire visitor basicauth gate (per CCSC partner-portal pattern) for the live demo while keeping `/healthz` anonymous. | agp-201 | partner-portal Caddy pattern |
-| agp-204 | Write the landing page at `agp.intentsolutions.io/` — single-page, OSS-first framing, GitHub repo link, hosted-demo CTA. | agp-203 | (new — Hugo or static) |
-| agp-205 | Compose Forrester analyst-relations brief — submission to `forrester-landscape-evaluation@forrester.com` per the Dec 2025 category-announcement instructions. | agp-204 | (new — outbound) |
-
-**Out of scope at v0.2**: NO compliance-grade marketing claims, NO claims of nonrepudiation, NO enterprise sales motion, NO inbound contact form that promises a sales call.
-
-### 5.4 v0.3+ — Q3 2026 (unchanged from AT-DECR; UNCHANGED by timing amendment)
+### 5.4 v0.3+ — Q3 2026 (unchanged from AT-DECR; UNCHANGED by Phase B controlling change)
 
 | Version | Scope | Blocker | CISO gate |
 |---|---|---|---|
@@ -297,7 +287,7 @@ agp run "fix the bug in repo X"
 | v0.5 | Co-pilot mode (turn-taking baton in Slack) | Dogfooding hits its ceiling | (no new gate) |
 | v0.6 | Sigstore-signed sprite releases + sprite identity registry | 10+ users exist | **CISO non-negotiable** — supply-chain spoof prevention |
 | v0.7 | Public protocol RFCs (v0.1 — explicitly versioned, breaking allowed) | 3 sprite implementations exist + 2+ maintainers in temperature-phase say "share a draft" | CSO 4-phase sequencing precondition met |
-| v0.8 | Hosted plan for self-hosters who don't want to operate | 5 self-hosters ask | (timing amendment pulled v0.2 demo forward; v0.8 hosted PLAN remains gated on 5 self-hosters) |
+| v0.8 | Hosted plan for self-hosters who don't want to operate | 5 self-hosters ask | The Phase B controlling change kills the v0.2 demo; the v0.8 hosted PLAN remains the canonical first public-surface checkpoint and stays gated on 5 self-hosters asking. |
 | v0.9 | Coordinated-pair collaboration mode (two sandboxes, channel + git) | Dogfooding multi-agent in the same Slack | (no new gate) |
 | v1 | Compliance-data export (Drata / Vanta / Secureframe webhooks) | First compliance-buyer conversation happens | MARKETING_CLAIMS.md unlocks "compliance-grade data source" claim |
 
@@ -321,11 +311,10 @@ agp-001 (scaffold) ──┬─→ agp-002 (CLI) ──┬─→ agp-003 (sandbo
                      │                                                       │     ├─→ agp-104 (coexistence)
                      │                                                       │     └─→ agp-105 (docs update)
                      │                                                       │
-                     └─→ agp-012 (Caddy subdomain) ──→ agp-201 (TLS) ──┬─→ agp-202 (demo persona)
-                                                                       ├─→ agp-203 (basicauth)
-                                                                       ├─→ agp-204 (landing page)
-                                                                       └─→ agp-205 (Forrester brief)
+                     └─→ agp-012 (Caddy subdomain RESERVATION ONLY at Phase B v0; no demo deployment)
 ```
+
+> **Phase B controlling change**: the agp-201/202/203/204/205 subgraph (hosted demo + Forrester brief) is REMOVED. The original DAG node `agp-205` ("Forrester analyst-relations brief") is dropped entirely. `agp-201`-`agp-204` (TLS, demo persona, basicauth, landing page) are deferred behind the Epic 03/05/09/10/11 defensibility gate; there is no public deployment scheduled in the 16-epic Phase B plan.
 
 Edge types: all edges are **hard blocks** unless annotated. agp-002 → agp-003/004/005/006 is a 4-way fanout that can land in parallel (no shared file). agp-007/008/009 are sequential because they share the CLI surface. agp-101 → agp-103 must be done after the SpriteAdapter interface is stable (avoid second-system effect on the interface).
 
@@ -386,15 +375,14 @@ The post-deliberation market-landscape research surfaced the following competiti
 - **Signet** (Anthropic) is the closest on signed audit but ships no runtime. It's a **complement**, not a competitor — AGP could emit Signet attestations as a downstream consumer.
 - **Anthropic AgentCore** is closed and Claude-only. Its existence is evidence the category is real; it is not a substitute for AGP's open-source posture.
 
-### 7.3 The 6-week competitive window — what it actually is
+### 7.3 The competitive window — what it actually is
 
 The window is NOT "before someone else ships AGP." It is "**before the well-funded Slack-native players (Credal, Speakeasy) ship the missing 4th property**." Concretely:
 
-- **Credal** could add multi-harness in a sprint (~2–4 weeks). If they do this in June 2026, they hold all 4 and AGP's differentiation collapses.
+- **Credal** could add multi-harness in a sprint (~2–4 weeks). If they do this, they hold all 4 and AGP's differentiation collapses.
 - **Speakeasy** could add a Slack adapter in a sprint (~2–4 weeks). Same risk.
-- **Forrester April 2026 Landscape** is published April 15, 2026. Submissions to be considered should land by mid-March. AGP needs to be a working hosted demo by week 6 (mid-July from v0 start) to make the next reporting cycle.
 
-The 6-week-to-demo cadence in the timing amendment is calibrated against these two competitive timers.
+> **Phase B controlling change**: an earlier version of this section also cited the Forrester April 2026 Landscape submission window as a competitive timer driving a 6-week-to-demo cadence. That framing is rejected. Analyst-relations deadlines are not build drivers. AGP's response to competitive risk is to ship defensible primitives faster, not to ship a hosted demo for visibility.
 
 ### 7.4 Cited URLs
 
@@ -409,19 +397,19 @@ The 6-week-to-demo cadence in the timing amendment is calibrated against these t
 
 These are the questions the third-party-reviewer review pass is meant to answer. Each question lists the side(s) of the argument and the data we have.
 
-### 8.1 Is the 6-week-to-demo realistic given Jeremy's truck-driver bandwidth?
+### 8.1 Is the 16-epic Phase B build cadence realistic given Jeremy's truck-driver bandwidth?
 
-**The case for yes**: 5–6k LoC lifts as-is from CCSC. The hard work is the Gateway protocol, the SpriteAdapter interface, and the hosted demo. Each is a week of focused work. Jeremy has shipped CCSC v0.10.0 (17 PRs, 986 tests) in a 4-week stretch in May 2026 — the cadence is proven.
+**The case for yes**: 5–6k LoC lifts as-is from CCSC. The hard work is the Gateway protocol, the SpriteAdapter interface, and the signed audit verifier — each tracked in its own Phase B epic with explicit acceptance criteria. Jeremy has shipped CCSC v0.10.0 (17 PRs, 986 tests) in a 4-week stretch in May 2026 — the contract-first, bead-tracked cadence is proven. The Phase B controlling change removes the analyst-relations deadline pressure, freeing the schedule to ship defensible primitives at a sustainable pace.
 
-**The case for no**: Jeremy is also operating a 6-truck flatbed authority, working through the Anthropic Enterprise Program / 35-subcontractor cohort, and managing 24 production containers on the VPS. The 6-week cadence assumes ~25 hours/week on AGP, which is the upper bound of Jeremy's spare-cycle availability. A single ELD outage / DOT audit / production incident can blow the cadence by a week.
+**The case for no**: Jeremy is also operating a 6-truck flatbed authority, working through the Anthropic Enterprise Program / 35-subcontractor cohort, and managing 24 production containers on the VPS. Even without an external deadline, 16 epics is a lot of work for spare-cycle availability. A single ELD outage / DOT audit / production incident can slip an epic by weeks.
 
-**What we want feedback on**: Should the timing amendment be revised to 8 weeks or 10 weeks? Or should v0.2 (hosted demo) be downscoped to "static landing page + Loom video walkthrough" instead of a working interactive demo?
+**What we want feedback on**: Is the 16-epic Phase B structure the right granularity, or should epics be merged / split? Should any of Epics 03-15 be deferred beyond what the dependency DAG already implies?
 
 ### 8.2 Is OSS-first the right commercial frame?
 
 **The locked decision** (Q1, 7/7 unanimous): OSS-first + consulting/hosted layer · Apache 2.0.
 
-**The case for revisiting**: The Forrester analyst-relations dynamic favors named products with funded vendors. OSS-first means AGP enters Forrester evaluation without a sales motion or funded support. An open-core or BSL frame (Sentry / Sourcegraph model) could capture more enterprise value.
+**The case for revisiting**: Open-core or BSL frames (Sentry / Sourcegraph model) could capture more enterprise value while still landing the OSS community signal. The trade-off is community-trust risk on day one.
 
 **What we want feedback on**: Would BSL (Business Source License, 4-year time-bomb to Apache) protect against cloud-vendor strip-mining without losing the OSS community? Is there a partner-track-only-license model that aligns with the Anthropic Enterprise Program?
 
@@ -431,7 +419,7 @@ These are the questions the third-party-reviewer review pass is meant to answer.
 
 **Cannon-3's critique** (still valid): "Multi-harness support" without a second sprite is a slide.
 
-**What we want feedback on**: Should AGP commit to multi-harness at v0.1, or should it stay Claude-only through v0.5 and chase multi-harness only when a non-Claude user asks? The amendment pulled v0.1 forward to week 4; that's an aggressive bet on multi-harness being a real differentiator vs. a marketing claim.
+**What we want feedback on**: Should AGP commit to multi-harness at v0.1, or should it stay Claude-only through v0.5 and chase multi-harness only when a non-Claude user asks? The Phase B Epic 12 ("Add the second harness through the SpriteAdapter contract without weakening v0 security") makes the multi-harness commitment real, gated on contract tests passing — not on an analyst-relations deadline.
 
 ### 8.4 Is Slack-only-channel a wedge or a ceiling?
 
@@ -492,7 +480,7 @@ The roadmap epics in § 5 each map to a parent epic-type bead. Per the bead-nami
 
 - "Ship the 2-week 'Jeremy in his truck' v0 release."
 - "Add the Codex sprite alongside the Claude sprite in the same Slack channel."
-- "Stand up the hosted demo at agp.intentsolutions.io for Forrester-grade evaluation."
+- *(formerly "Stand up the hosted demo at agp.intentsolutions.io for Forrester-grade evaluation" — REJECTED by Phase B controlling change; the 16-epic Phase B plan in the AGP repo supersedes this list)*
 
 Children beads listed in § 5 inherit from their epic. The exact bead IDs (`agp-001` etc.) are placeholders — actual 3-char IDs are auto-generated by `bd create`.
 

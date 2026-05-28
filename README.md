@@ -30,16 +30,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## Documentation
 
-Project documentation lives in [`000-docs/`](000-docs/):
+Foundation docs in [`000-docs/`](000-docs/) (Phase A — ISEDC council, 2026-05-27):
 
 | Doc | Purpose |
 |-----|---------|
-| [Business Case](000-docs/001-PP-BCASE-business-case.md) | Problem, market, ROI |
-| [PRD](000-docs/002-PP-PRD-product-requirements.md) | Requirements & user stories |
-| [Architecture](000-docs/003-AT-ARCH-architecture.md) | System design & data flow |
-| [User Journey](000-docs/004-PP-UJRN-user-journey.md) | Walkthrough & personas |
-| [Technical Spec](000-docs/005-AT-SPEC-technical-spec.md) | Stack, APIs, deployment |
-| [Status](000-docs/006-OD-STAT-status.md) | Current state & roadmap |
+| [001 — AT-DECR](000-docs/001-AT-DECR-isedc-agp-strategic-direction-2026-05-27.md) | ISEDC council decision record — 10 locked P0 decisions (Apache 2.0, honest threat model, MARKETING_CLAIMS.md as code, single-tenant v0, no public RFCs at v0, schema-slot reservation, Sigstore by v0.6, 4-phase CSO sequencing) |
+| [002 — PP-PLAN](000-docs/002-PP-PLAN-agp-master-blueprint-2026-05-27.md) | Master blueprint — single entry point for third-party reviewers |
+| [003 — AA-AUDT](000-docs/003-AA-AUDT-agp-operator-audit-2026-05-27.md) | Operator-grade system analysis (CCSC substrate + AGP composition) |
+| [004 — AR-CANN](000-docs/004-AR-CANN-agp-cannon-adversarial-review-2026-05-27.md) | Cannon adversarial review — 4-agent pre-council input |
+
+Design ADRs and contract specs land here as the 16-epic Phase B plan executes. See open [epic issues](https://github.com/jeremylongshore/agent-governance-plane/issues?q=is%3Aissue+label%3Aepic+OR+%22%5BAGP+Epic%22) for in-flight work.
 
 ## Security
 

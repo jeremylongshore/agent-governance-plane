@@ -306,16 +306,33 @@ Approximately two hours after the council session adjourned, a market-landscape 
 
 ### Amendment (single decision modification, no re-deliberation)
 
-The **deferred backlog timing** in the Implementation Directives table is revised. The substance of all five decisions (Q1–Q5) is unchanged. Only the cadence of the v0.1 → v0.2 backlog ladder shifts from "leisurely, gated on user #2 / 3+ implementations" to a **6-week-to-credible-demo** cadence aligned with the Forrester April 2026 reporting window.
+> **Phase B controlling change (supersedes this amendment).** The Phase A timing amendment below proposed a 6-week-to-credible-demo cadence calibrated against the Forrester April 2026 reporting window, with v0.2 = hosted demo. **Phase B (2026-05-27 → present) rejects the amendment's calendar entirely.** The substance of the five locked Q1–Q5 decisions remains in force; the cadence is no longer paced by analyst-relations deadlines. The version-ladder semantics are normalized to the table below the dividing line. The original revised-cadence table is preserved as historical record only.
 
-Revised cadence:
+**Phase B normalized version ladder** (this is the authoritative ladder; supersedes the Phase A revised-cadence table):
 
-| Version | Scope | Original timing | Revised timing |
+| Version | Scope | Trigger |
+|---|---|---|
+| v0 | 1-week core + 1-week onboarding equivalent of effort (per Q2) — Claude-only, single-tenant, Docker sandbox, Slack channel, signed local journal | 16-epic Phase B plan completes Epic 04 (CLI) → Epic 06 (Claude sprite) → Epic 10 (signed journal) |
+| v0.1 | Add second harness through the SpriteAdapter contract (Phase B Epic 12) | Second-sprite contract tests pass — NOT a calendar slot |
+| v0.2 | Optional internal-readiness milestone (NOT a hosted demo) | May be skipped; if used, operator-only on tailnet, no public surface |
+| v0.3 | Multi-tenant + per-tenant KMS + HTTP Gateway with sender-constrained auth | Second self-hoster asks |
+| v0.4 | WebAuthn / passkey approval-binding | First security audit conversation |
+| v0.6 | Sigstore-signed sprite releases + sprite identity registry | 10+ users exist — **CISO non-negotiable by v0.6** |
+| v0.8 | Hosted plan for self-hosters who don't want to operate (canonical first public-surface checkpoint) | 5 self-hosters ask |
+
+<details>
+<summary>Original Phase A "revised cadence" table (HISTORICAL — superseded by Phase B; do NOT treat as canonical)</summary>
+
+The Phase A amendment originally said: *"The **deferred backlog timing** in the Implementation Directives table is revised. Only the cadence of the v0.1 → v0.2 backlog ladder shifts from 'leisurely, gated on user #2 / 3+ implementations' to a **6-week-to-credible-demo** cadence aligned with the Forrester April 2026 reporting window."*
+
+| Version | Scope (Phase A framing) | Original timing | Revised timing (Phase A — REJECTED by Phase B) |
 |---|---|---|---|
 | v0 | 1-week core + 1-week onboarding (per Q2) | weeks 1–2 | weeks 1–2 (UNCHANGED) |
 | v0.1 | Multi-harness: Codex sprite + Claude sprite in same Slack channel | "when user #2 asks" | **week 4** (pulled forward) |
 | v0.2 | Hosted demo on `agp.intentsolutions.io` (per CISO scoped-subdomain) | "when 5 self-hosters ask" (was v0.8) | **week 6** (pulled forward) |
 | v0.3+ | Sigstore signing, per-tenant KMS, WebAuthn, Co-pilot mode, RFC sequencing | Q3 2026 | Q3 2026 (UNCHANGED) |
+
+</details>
 
 ### What is NOT being amended
 

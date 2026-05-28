@@ -340,7 +340,7 @@ Cannon-2's critique was that "lift-and-shift CCSC" overstates the reuse — ~40%
 | `server.ts` (MCP-stdio) | 2,810 | ❌ Rewrite | (deleted) | AGP is HTTP+Bearer Gateway, not MCP-stdio. The MCP server pattern is reference only. The Slack-client bootstrap + event handlers from `server.ts` get extracted into `agp/channel/slack.ts`. |
 | `manifest.ts` | 573 | ❌ Out of scope | (deleted) | Bot-manifest is Slack-specific. AGP at v0 ships with a fixed Slack app manifest exported by `agp init`, not a dynamic manifest protocol. |
 
-**Net reuse**: ~5–6k of CCSC's ~12k LoC lifts. The cannon was right.
+**Net reuse**: ~5–6k of CCSC's ~11.9k LoC lifts (live count 11,872 production TS LoC, measured 2026-05-28 via `find . -maxdepth 2 -name '*.ts' ! -name '*.test.ts' ! -path './features/*' ! -path './node_modules/*' ! -path './scripts/*' \| xargs wc -l`). The cannon was right.
 
 **Tests reuse**: ~604 of CCSC's 986 tests apply directly (the lifted modules carry their tests). ~382 tests are tied to MCP-stdio / manifest behavior and don't lift. **AGP must write its own integration tests for the Gateway protocol and the SpriteAdapter interface.**
 

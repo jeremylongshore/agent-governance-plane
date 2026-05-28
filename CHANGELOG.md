@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.10] - 2026-05-28
+
+- fix(c3,c4): normalize Phase B version ladder + refresh live CCSC LoC (#33) (c2704ac)
+
+
 ## [v0.1.9] - 2026-05-28
 
 - fix(c1,c2): drop demo-first framing and Forrester deadline as build drivers (#32) (a69cb74)

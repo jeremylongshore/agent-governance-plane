@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.8] - 2026-05-28
+
+- fix(c10a,c10b): clarify decision authority hierarchy and ISEDC scope (#31) (5a8f61f)
+
+
 ## [v0.1.7] - 2026-05-28
 
 - fix(c9): normalize canonical AGP repo path + renumber doc cross-refs (#30) (1400892)

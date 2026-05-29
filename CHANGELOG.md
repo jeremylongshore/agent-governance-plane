@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-05-28
+
+### Changed
+
+- chore(deps): bump actions/checkout from 4 to 6 (#2) (e02c3fb)
+
 ## [0.1.11] - 2026-05-28
 
 - chore(beads): close 8 Epic 00 child beads after PRs #29-#33 merged (f88e050)
@@ -63,7 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.11...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.12...HEAD
+[0.1.12]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.8...v0.1.9

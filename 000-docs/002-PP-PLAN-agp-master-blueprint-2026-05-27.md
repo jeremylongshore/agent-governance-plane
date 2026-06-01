@@ -236,7 +236,7 @@ agp run "fix the bug in repo X"
 | Proposed bead | Title | Dependency | CCSC primitive reused |
 |---|---|---|---|
 | agp-001 | Scaffold the `agp` project skeleton at `~/000-projects/agent-governance-plane/`. | none | (none — fresh scaffold) |
-| agp-002 | Wire the `agp` CLI binary (Bun/TS) to CCSC primitives via direct import. | agp-001 | All — monorepo refs |
+| agp-002 | Wire the `agp` CLI binary (Bun/TS) to CCSC primitives via the substrate mechanism chosen in the Epic 02 ADR (`agp-7ii`). | agp-001 | All — substrate-extraction TBD per Epic 02 ADR (`agp-7ii`): vendor / submodule / path dep / shared package |
 | agp-003 | Lift CCSC Docker sandbox spawn into `agp` daemon. | agp-002 | server.ts container-spawn pattern |
 | agp-004 | Lift CCSC Slack thread UI + Block Kit relay into `agp` daemon. | agp-002 | server.ts Slack-client bootstrap + lib.ts |
 | agp-005 | Lift CCSC `policy.ts` gate() into `agp` daemon. | agp-002 | policy.ts (as-is) |

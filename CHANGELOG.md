@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-06-01
+
+### Changed
+
+- docs(epic01): reusable AAR template for epic/release closeouts (#42) (8664618)
+- chore(beads): close agp-ps3 (v0.2.0 rollback + pre-1.0 clamp shipped in #41) (c45bb59)
+
 ## [0.1.19] - 2026-06-01
 
 ### Added
@@ -122,7 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...HEAD
+[0.1.20]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...v0.1.20
 [0.1.19]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...v0.1.18
 [0.1.17]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.16...v0.1.17

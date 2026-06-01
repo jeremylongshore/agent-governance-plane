@@ -1,0 +1,24 @@
+agent-governance-plane
+Copyright 2026 Jeremy Longshore / Intent Solutions
+
+This product is licensed under the Apache License, Version 2.0 (the "License");
+you may not use this product except in compliance with the License. A copy of
+the License is provided in the LICENSE file and is also available at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+----------------------------------------------------------------------
+
+This product is built on, and vendors a pinned subset of, the CCSC governance
+kernel:
+
+    claude-code-slack-channel
+    Copyright 2026 Jeremy Longshore / Intent Solutions
+    https://github.com/jeremylongshore/claude-code-slack-channel
+    Licensed under the Apache License, Version 2.0.
+
+The vendored kernel modules (when present under substrate/ccsc/) retain CCSC's
+copyright and Apache-2.0 license. The exact upstream commit pin and the module
+subset are recorded in substrate/UPSTREAM.md. Per ADR
+000-docs/009-AT-ADR-ccsc-substrate-extraction-strategy.md, AGP consumes CCSC by
+vendoring a pinned subset (Option A) at v0.

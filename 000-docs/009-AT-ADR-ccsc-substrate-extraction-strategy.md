@@ -3,18 +3,20 @@ title: ADR — CCSC Substrate-Extraction Strategy
 date: 2026-05-31
 author: Jeremy Longshore
 type: Architecture Decision Record (ADR)
-status: Proposed — awaiting operator decision
+status: Accepted
 epic: Epic 02 — Extract the CCSC governance kernel into an AGP-compatible substrate boundary (bead agp-7ii)
 supersedes_assumption: C8 (Epic 00) deferred the direct-import assumption to this ADR
-decision: PENDING (operator sign-off required; see "Decision" section)
+decision: Option A — vendor a pinned kernel subset for v0 (operator-accepted 2026-06-01)
 ---
 
 # ADR — CCSC Substrate-Extraction Strategy
 
-> **Status: Proposed.** This ADR lays out the options and a recommendation. It
-> does **not** enact a choice. The operator (Jeremy) records the decision in the
-> "Decision" section; only then do the boundary scaffold and substrate-compat
-> tests (the rest of Epic 02) proceed.
+> **Status: Accepted (2026-06-01).** Decision: **Option A — vendor a pinned
+> kernel subset for v0**, with Option D (shared kernel package) as the
+> trigger-gated end-state. See the "Decision" section. The boundary contract is
+> established now (pin record + attribution); the physical vendor copy and the
+> substrate-compat tests pair with Epic 04, when AGP code first imports the
+> kernel.
 
 ## Context
 
@@ -110,16 +112,30 @@ Rejected for v0: **B** (submodule fragility + imports-an-app-not-a-kernel),
 
 ## Decision
 
-**PENDING — operator sign-off required.**
+**Accepted 2026-06-01 — Option A (vendor a pinned kernel subset for v0), with
+Option D (shared kernel package) as the end-state, trigger-gated on a second
+consumer.** Decided by the operator (Jeremy) per the C10 authority model.
 
-Record one of: `A (vendor subset)` · `A→D path as recommended` · `B (submodule)`
-· `C (path dep)` · `D (shared package now)` · `other`. On decision, this ADR flips
-to `Accepted`, the choice is annotated here with date + rationale, and the
-remaining Epic 02 children proceed:
+Rationale (as argued in the recommendation): license friction is gone
+(Apache↔Apache), CCSC exposes no kernel boundary to point at today, reproducibility
+from a bare clone is a hard v0 requirement, and AGP is pre-code so this is the
+cheapest reversible moment to choose. Options B and C are rejected for v0.
 
-- Scaffold the chosen boundary (`substrate/` layout or package consumption).
-- Write the CCSC→AGP substrate-compatibility tests.
-- Link this ADR in all Epic 02 child beads + GH issues.
+### What this enacts now (boundary contract)
+
+- **`substrate/UPSTREAM.md`** records the CCSC pin (`v0.10.0` / `023cab3`), the
+  exact kernel-module subset to vendor, and the re-sync procedure.
+- **`NOTICE`** attributes the vendored CCSC code (Apache-2.0).
+
+### What pairs with Epic 04 (deliberately deferred)
+
+- The physical copy of the kernel subset into `substrate/ccsc/` — done when the
+  Epic 04 CLI first imports it (copying ~5k LoC with no consumer now would just
+  drift). `substrate/UPSTREAM.md` is the binding record until then.
+- The CCSC→AGP substrate-compatibility tests (need the Bun/TS test harness that
+  Epic 04 introduces).
+
+This ADR is linked from the Epic 02 epic (`agp-7ii`) and its child beads.
 
 ## Consequences
 

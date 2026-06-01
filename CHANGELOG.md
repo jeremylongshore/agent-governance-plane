@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-06-01
+
+### Added
+
+- feat(epic11): MARKETING_CLAIMS registry + claims-as-code scanner (#40) (79afc92)
+
+### Changed
+
+- chore(beads): close agp-um4 (claim registry shipped in #40); note epic remainder (1f0572f)
+- chore(beads): close agp-1lf (substrate-extraction ADR drafted in #39) (8c0e247)
+
+### Fixed
+
+- fix(release): roll back accidental v0.2.0 + clamp pre-1.0 auto-bumps to patch (#41) (a0d8641)
+
 ## [0.1.18] - 2026-06-01
 
 ### Changed
@@ -107,7 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...HEAD
+[0.1.19]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...v0.1.18
 [0.1.17]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.16...v0.1.17
 [0.1.16]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.15...v0.1.16

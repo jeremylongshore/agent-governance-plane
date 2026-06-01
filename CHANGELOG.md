@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.15] - 2026-06-01
+
+### Changed
+
+- chore(beads): reconcile agp-4lb closed state in Dolt after branch-switch divergence (935f803)
+
 ## [0.1.14] - 2026-06-01
 
 ### Changed
@@ -81,7 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.14...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.15...HEAD
+[0.1.15]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.14...v0.1.15
 [0.1.14]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.13...v0.1.14
 [0.1.13]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.11...v0.1.12

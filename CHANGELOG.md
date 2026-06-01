@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-06-01
+
+### Changed
+
+- docs(epic02): CCSC substrate-extraction strategy ADR (Proposed) (#39) (14a14a8)
+- chore(beads): close Epic 00 (agp-5l8) and children .9/.10 after #38 merge (aefbb31)
+
 ## [0.1.17] - 2026-06-01
 
 ### Changed
@@ -100,7 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...HEAD
+[0.1.18]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...v0.1.18
 [0.1.17]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.16...v0.1.17
 [0.1.16]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.15...v0.1.16
 [0.1.15]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.14...v0.1.15

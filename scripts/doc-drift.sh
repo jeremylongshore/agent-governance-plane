@@ -28,12 +28,21 @@ set -euo pipefail
 EXCEPTIONS=(
   scripts/doc-drift.sh
   scripts/bead-validate.sh
+  # Audit doc 007 is the line-level INVENTORY of the pre-monorepo paths it
+  # found — it documents the drift, like the detection scripts above. The C9
+  # fix normalized the live docs; 007 retains the old paths as the historical
+  # record of what was corrected (see AAR 008-RA-AAR-agp-planning-cleanup).
+  000-docs/007-OD-AUDT-foundation-doc-contradictions-2026-05-27.md
 )
 
-# Build a sed expression to filter exception paths out of grep matches.
+# Build the regex that filters exception paths out of grep matches.
+# `grep -rn .` prefixes every hit with `./<path>:<line>:`, so each exception is
+# anchored as `^\./<path>:`. (The earlier `^./(^<path>:)` form never matched —
+# the inner `^` can't anchor mid-string — so .md exceptions were silently
+# un-exempted.)
 exception_filter=""
 for ex in "${EXCEPTIONS[@]}"; do
-  exception_filter+="|^$ex:"
+  exception_filter+="|^\\./${ex}:"
 done
 exception_filter="${exception_filter#|}"
 
@@ -46,7 +55,7 @@ echo
 
 if matches=$(grep -rEn --include='*.md' \
     'products-workspace/agp|~/000-projects/products/agp|/products/000-docs' \
-    . 2>/dev/null | grep -vE "^./($exception_filter)" || true); then
+    . 2>/dev/null | grep -vE "$exception_filter" || true); then
   if [[ -n "$matches" ]]; then
     echo "FAIL: forbidden path patterns found"
     echo "$matches" | sed 's/^/  /'

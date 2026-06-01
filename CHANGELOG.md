@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-06-01
+
+### Fixed
+
+- fix(release): Keep a Changelog conformance + conformant auto-entries; rewrite CLAUDE.md (#35) (b314e70)
+
 ## [0.1.12] - 2026-05-28
 
 ### Changed
@@ -69,7 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.12...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.13...HEAD
+[0.1.13]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.10...v0.1.11
 [0.1.10]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.9...v0.1.10

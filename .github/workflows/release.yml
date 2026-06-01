@@ -130,6 +130,17 @@ jobs:
             BUMP="patch"
           fi
 
+          # Pre-1.0 guard: while the major version is 0, the version ladder
+          # (v0.1 / v0.2 / …) carries planning-milestone meaning, so an AUTO
+          # release must never mint a 0.x.0 (or 1.0.0) off a conventional-commit
+          # type. Clamp auto bumps to patch; a deliberate minor/major is taken
+          # only via workflow_dispatch (the `bump` input, handled above).
+          PREV_MAJOR=$(echo "${PREV_TAG#v}" | cut -d. -f1)
+          if [ "${PREV_MAJOR:-0}" = "0" ] && [ "$BUMP" != "patch" ]; then
+            echo "Pre-1.0: clamping auto '$BUMP' to 'patch' (use workflow_dispatch for a deliberate $BUMP)."
+            BUMP="patch"
+          fi
+
           echo "type=$BUMP" >> "$GITHUB_OUTPUT"
           echo "Auto-detected bump: $BUMP"
 

@@ -45,12 +45,12 @@ jobs:
         run: bash scripts/claim-scan.sh
 
   doc-drift:
-    # INFORMATIONAL during the Epic 00 transition window.
-    # When the Epic 00 AAR (agp-5l8.10) closes, the AAR flips this job to a
-    # hard gate by removing `continue-on-error: true` below.
-    name: Doc drift check (informational while Epic 00 is in flight)
+    # HARD GATE as of the Epic 00 closeout (AAR 008-RA-AAR-agp-planning-cleanup,
+    # bead agp-5l8.10). Fails the build on any reintroduced pre-monorepo path or
+    # pre-renumbering foundation-doc ID. The audit doc 007 is exempted in the
+    # script (it inventories the old paths it found).
+    name: Doc drift check
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - name: Check for forbidden path / numbering drift

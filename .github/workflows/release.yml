@@ -87,10 +87,20 @@ jobs:
             exit 0
           fi
 
-          COMMIT_COUNT=$(git rev-list "${PREV_TAG}..HEAD" --count)
-          echo "Commits since $PREV_TAG: $COMMIT_COUNT"
-          if [ "$COMMIT_COUNT" -eq 0 ]; then
-            echo "No new commits since last tag. Skipping release."
+          # Only release for substantive work. Exclude merge commits and
+          # bookkeeping commits that carry no shippable change: the workflow's
+          # own `chore(release):` bumps and `chore(beads):` state syncs. Without
+          # this, every push to main — including routine beads bookkeeping —
+          # cuts an empty version bump.
+          TOTAL=$(git rev-list "${PREV_TAG}..HEAD" --count --no-merges)
+          # `--format=` (tformat) newline-terminates every line, including the
+          # last — `--pretty=format:` omits the final newline and grep -c then
+          # undercounts the last commit.
+          SUBSTANTIVE=$(git log "${PREV_TAG}..HEAD" --no-merges --format='%s' \
+            | grep -cvE '^chore\(release\)|^chore\(beads\)' || true)
+          echo "Commits since $PREV_TAG: ${TOTAL} (no-merges), ${SUBSTANTIVE} substantive"
+          if [ "${SUBSTANTIVE:-0}" -eq 0 ]; then
+            echo "Only merge/bookkeeping commits since last tag. Skipping release."
             echo "needed=false" >> "$GITHUB_OUTPUT"
           else
             echo "needed=true" >> "$GITHUB_OUTPUT"

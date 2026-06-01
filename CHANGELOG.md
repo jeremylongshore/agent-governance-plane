@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-06-01
+
+### Changed
+
+- docs(epic00): planning-cleanup AAR + promote doc-drift to a hard gate (#38) (86f722f)
+- chore(beads): close agp-q4v (release gate shipped in #36) (2719614)
+
 ## [0.1.16] - 2026-06-01
 
 ### Changed
@@ -93,7 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.16...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.16...v0.1.17
 [0.1.16]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.15...v0.1.16
 [0.1.15]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.14...v0.1.15
 [0.1.14]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.13...v0.1.14

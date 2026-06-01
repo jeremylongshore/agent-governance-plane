@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.21] - 2026-06-01
+
+### Changed
+
+- docs(epic02): accept vendor-subset ADR + establish substrate boundary contract (#43) (477b13f)
+- chore(beads): re-close agp-1lf/um4/dz2 after rapid-write-race revert (5b92f88)
+- chore(beads): close agp-dz2 (AAR template shipped in #42); note Epic 01/15 state (e19a5e3)
+
 ## [0.1.20] - 2026-06-01
 
 ### Changed
@@ -129,7 +137,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...HEAD
+[0.1.21]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...v0.1.21
 [0.1.20]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...v0.1.20
 [0.1.19]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.17...v0.1.18

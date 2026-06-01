@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # scripts/claim-scan.sh — banned-claim hygiene check for AGP public surfaces.
 #
-# Seeds Epic 11 ("AGP claim-control enforcement"). The full MARKETING_CLAIMS.md +
-# version-gated registry lands when Epic 11 closes; this script is the start.
+# Part of Epic 11 ("AGP claim-control enforcement"). The banned-term regex is NOT
+# defined here — it is sourced from the MARKETING_CLAIMS.md registry (council Q4:
+# claims-as-code, single source of truth). This script is the enforcement; the
+# registry is the policy.
 #
 # What it does:
 #   Greps the AGP-public surfaces (README, AGENTS, CLAUDE, CONTRIBUTING, SECURITY,
-#   SUPPORT, CHANGELOG, .github/) for security claims that are NOT allowed at v0.
+#   SUPPORT, .github/) for security claims that are NOT allowed at the current
+#   version, using the banned-term regex read from MARKETING_CLAIMS.md.
 #
 # What it deliberately DOES NOT scan:
 #   - 000-docs/ — these are internal planning + audit + review docs. They legitimately
@@ -26,7 +29,20 @@
 
 set -euo pipefail
 
-BANNED_PATTERNS='tamper.?evident|tamper.?proof|nonrepudiat|forensic.?grade|audit.?grade|compliance.?grade'
+# Source the banned-term regex from the registry — the single source of truth.
+# Fail closed: a missing/malformed registry must NOT let banned claims through.
+REGISTRY="MARKETING_CLAIMS.md"
+if [[ ! -f "$REGISTRY" ]]; then
+  echo "[claim-scan] BLOCKED: $REGISTRY not found — the banned-claim registry is the source of truth."
+  exit 1
+fi
+BANNED_PATTERNS=$(sed -n '/CLAIM-SCAN:BANNED-REGEX:V0:START/,/CLAIM-SCAN:BANNED-REGEX:V0:END/p' "$REGISTRY" \
+  | sed -nE 's/^<!-- regex: (.*) -->$/\1/p')
+if [[ -z "$BANNED_PATTERNS" ]]; then
+  echo "[claim-scan] BLOCKED: could not read the banned-claim regex from $REGISTRY"
+  echo "[claim-scan] Expected a '<!-- regex: ... -->' line between the CLAIM-SCAN:BANNED-REGEX:V0 markers."
+  exit 1
+fi
 
 SURFACES=(
   README.md

@@ -1,0 +1,57 @@
+import { test, expect } from "bun:test";
+import { JournalEvent, RESERVED_FIELD_NAMES } from "./journal-event.ts";
+import { validJournalEvent } from "./fixtures.ts";
+
+test("a valid v0 signed journal event parses unchanged", () => {
+  expect(JournalEvent.parse(validJournalEvent)).toEqual(validJournalEvent);
+});
+
+test("reserves all four future fields, present and null at v0 (council lock)", () => {
+  const parsed = JournalEvent.parse(validJournalEvent) as Record<string, unknown>;
+  for (const field of RESERVED_FIELD_NAMES) {
+    expect(Object.prototype.hasOwnProperty.call(parsed, field)).toBe(true);
+    expect(parsed[field]).toBeNull();
+  }
+  expect(RESERVED_FIELD_NAMES).toEqual([
+    "tenant_id",
+    "signing_key_id",
+    "approval_binding_type",
+    "sprite_identity_uri",
+  ]);
+});
+
+test("reserved fields default to null when omitted (forward-compatible slot)", () => {
+  const { tenant_id, signing_key_id, approval_binding_type, sprite_identity_uri, ...withoutReserved } =
+    validJournalEvent;
+  void tenant_id;
+  void signing_key_id;
+  void approval_binding_type;
+  void sprite_identity_uri;
+  const parsed = JournalEvent.parse(withoutReserved) as Record<string, unknown>;
+  for (const field of RESERVED_FIELD_NAMES) {
+    expect(parsed[field]).toBeNull();
+  }
+});
+
+test("rejects a malformed hash", () => {
+  expect(JournalEvent.safeParse({ ...validJournalEvent, hash: "not-a-hash" }).success).toBe(false);
+});
+
+test("rejects a v1 (unsigned) event — v0 requires signed v2", () => {
+  expect(JournalEvent.safeParse({ ...validJournalEvent, v: 1 }).success).toBe(false);
+});
+
+test("rejects an event without a signature", () => {
+  const { signature, ...unsigned } = validJournalEvent;
+  void signature;
+  expect(JournalEvent.safeParse(unsigned).success).toBe(false);
+});
+
+test("rejects unknown fields (strict schema)", () => {
+  expect(JournalEvent.safeParse({ ...validJournalEvent, rogue: 1 }).success).toBe(false);
+});
+
+test("genesis event may have a null prevHash; non-genesis must be a hash", () => {
+  expect(JournalEvent.safeParse({ ...validJournalEvent, prevHash: null }).success).toBe(true);
+  expect(JournalEvent.safeParse({ ...validJournalEvent, prevHash: "short" }).success).toBe(false);
+});

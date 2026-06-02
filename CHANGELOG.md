@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.22] - 2026-06-02
+
+### Added
+
+- feat(epic04): AGP CLI foundation — project, CI code-gates, fail-closed init/doctor (#44) (c2b6d2e)
+
+### Changed
+
+- chore(beads): close agp-7vh (Epic 02 decision shipped in #43); note epic remainder (1b62869)
+
 ## [0.1.21] - 2026-06-01
 
 ### Changed
@@ -137,7 +147,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.22...HEAD
+[0.1.22]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...v0.1.22
 [0.1.21]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...v0.1.21
 [0.1.20]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...v0.1.20
 [0.1.19]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.18...v0.1.19

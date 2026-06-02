@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.25] - 2026-06-02
+
+### Added
+
+- feat(epic07): Docker sandbox provider — honest isolation, pinning, mount denial (#47) (13b14d5)
+
+### Changed
+
+- chore(beads): close agp-1hp (Epic 04 daemon runtime shipped in #46); note epic remainder (5347816)
+
 ## [0.1.24] - 2026-06-02
 
 ### Added
@@ -169,7 +179,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.24...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.25...HEAD
+[0.1.25]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.24...v0.1.25
 [0.1.24]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.23...v0.1.24
 [0.1.23]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.22...v0.1.23
 [0.1.22]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...v0.1.22

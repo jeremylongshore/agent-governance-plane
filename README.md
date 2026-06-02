@@ -10,23 +10,54 @@
 
 Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals
 
+> **Status:** Phase B, pre-1.0. The operator CLI foundation (`agp init` / `agp doctor`)
+> is live; the runtime (`agp run` and the daemon) is in progress — see the
+> [16-epic plan](000-docs/002-PP-PLAN-agp-master-blueprint-2026-05-27.md).
+
 ## Getting Started
 
 ### Prerequisites
 
-<!-- Add prerequisites here -->
+- [Bun](https://bun.sh) ≥ 1.2 (the CLI runs TypeScript directly)
+- Docker (for the sandboxed runtime; `agp doctor` checks it)
+- A Slack workspace + app (bot token, app token, channel) for HITL approvals
 
 ### Installation
 
-<!-- Add installation instructions here -->
+```bash
+git clone https://github.com/jeremylongshore/agent-governance-plane.git
+cd agent-governance-plane
+bun install
+```
 
 ## Usage
 
-<!-- Add usage examples here -->
+```bash
+# Scaffold the operator config home (~/.agp): config + policy skeletons + signing dir
+bun run agp -- init
+
+# Then: fill Slack creds in ~/.agp/config.json (or AGP_SLACK_* env),
+# generate the Ed25519 journal-signing key, and define rules in ~/.agp/policy.json.
+
+# Validate every prerequisite, fail-closed (Docker, Slack, signing key, policy):
+bun run agp -- doctor
+```
+
+`agp run` / `verify` / `sessions` are registered but pending the Epic 03 contracts
+and the Epic 04 daemon. Full command reference:
+[`000-docs/012-AT-SPEC-cli-surface.md`](000-docs/012-AT-SPEC-cli-surface.md).
+
+The Claude sprite reuses your existing **Claude Code login session** — AGP holds
+no Anthropic API key.
 
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+
+```bash
+bun run typecheck   # tsc --noEmit
+bun test            # CLI unit tests
+```
 
 ## Documentation
 

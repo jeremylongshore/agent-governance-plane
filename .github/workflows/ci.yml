@@ -1,17 +1,14 @@
 name: CI
 
-# AGP at Phase B v0 has NO Node.js source code — the repo is governance + planning
-# docs only until Epic 04 (CLI scaffold) ships. The original ci.yml from /repo-dress
-# assumed a Node project and failed every PR with `npm ci` errors.
-#
-# This workflow validates what we actually have today:
+# AGP CI gates, run on every PR:
 #   - markdown structure (markdownlint)
-#   - banned-claim hygiene on public surfaces (Epic 11 seed)
-#   - doc-drift checks (no stale paths, no old doc numbers)
+#   - banned-claim hygiene on public surfaces (sourced from MARKETING_CLAIMS.md)
+#   - doc-drift checks (no stale paths, no old doc numbers) — hard gate
 #   - informational bead-validation greps (Epic 00 acceptance criteria)
+#   - code gates: TypeScript typecheck + Bun tests (Epic 04 CLI onward)
 #
-# When Epic 04 lands and source code appears, a Bun/TypeScript jobset will be
-# added back. Until then, doc gates are the load-bearing checks.
+# The code job came online with the Epic 04 CLI scaffold. As more runtime lands
+# (Epic 03 contracts, the daemon), add dep-audit / architecture steps here.
 
 on:
   push:
@@ -68,3 +65,18 @@ jobs:
       - uses: actions/checkout@v6
       - name: Run Epic 00 contradiction-fix validation greps
         run: bash scripts/bead-validate.sh
+
+  code:
+    name: Code (typecheck + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.23"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Tests
+        run: bun test

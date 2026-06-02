@@ -1,5 +1,22 @@
 # AGENTS.md — AI Agent Operations for agent-governance-plane
 
+## AGP CLI (operator surface)
+
+`agp` is the operator's command surface (runs on Bun; `bun run agp -- <command>`).
+Implemented today: `agp init` (scaffold `~/.agp`) and `agp doctor` (fail-closed
+validation of Docker, Slack, signing key, and policy). `run` / `verify` /
+`sessions` are registered but pending the Epic 03 contracts + Epic 04 daemon.
+
+Key posture for agents operating AGP:
+
+- **Fail-closed:** `agp doctor` exits non-zero if any prerequisite is missing or
+  unsafe. Never proceed past a non-zero `doctor`.
+- **No Anthropic API key:** the Claude sprite reuses the operator's Claude Code
+  login session.
+
+Full reference: [`000-docs/012-AT-SPEC-cli-surface.md`](000-docs/012-AT-SPEC-cli-surface.md).
+Dev gates: `bun run typecheck` and `bun test`.
+
 ## Beads (bd) Issue Tracking
 
 This project uses [beads](https://github.com/steveyegge/beads) for AI-friendly task tracking.

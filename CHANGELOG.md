@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.27] - 2026-06-02
+
+### Added
+
+- feat(epic08): Slack channel adapter with nonce-bound HITL approvals (#48) (d74fa0c)
+
 ## [0.1.26] - 2026-06-02
 
 ### Changed
@@ -186,7 +192,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.26...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...HEAD
+[0.1.27]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.24...v0.1.25
 [0.1.24]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.23...v0.1.24

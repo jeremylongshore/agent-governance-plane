@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.24] - 2026-06-02
+
+### Added
+
+- feat(epic04): daemon orchestration + agp run/verify/sessions (reference subsystems) (#46) (6e9577f)
+
+### Changed
+
+- chore(beads): reconcile Epic 03 closed state in Dolt after rapid-write-race revert (fe46d1e)
+- chore(beads): close Epic 03 (agp-nsd) + contract bead agp-6yj after #45 (e479e30)
+
 ## [0.1.23] - 2026-06-02
 
 ### Added
@@ -158,7 +169,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.23...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.24...HEAD
+[0.1.24]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.23...v0.1.24
 [0.1.23]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.22...v0.1.23
 [0.1.22]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...v0.1.22
 [0.1.21]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...v0.1.21

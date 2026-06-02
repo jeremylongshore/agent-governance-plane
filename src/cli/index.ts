@@ -9,7 +9,10 @@
 
 import { doctorCommand } from "./commands/doctor.ts";
 import { initCommand } from "./commands/init.ts";
-import { pendingCommand } from "./commands/pending.ts";
+import { keygenCommand } from "./commands/keygen.ts";
+import { runCommand } from "./commands/run.ts";
+import { verifyCommand } from "./commands/verify.ts";
+import { sessionsCommand } from "./commands/sessions.ts";
 
 const USAGE = `agp — agent governance plane
 
@@ -18,17 +21,18 @@ Usage: agp <command> [options]
 Commands:
   init        Scaffold the operator config home (~/.agp): config + policy skeletons + signing dir
               --force   overwrite existing config/policy files
+  keygen      Generate the Ed25519 journal-signing key (--force to replace)
   doctor      Validate prerequisites (Docker, Slack, signing key, policy) — fail-closed
-  run         [pending: Epic 03 contracts + Epic 04 daemon]
-  verify      [pending: Epic 03 contracts + Epic 04 daemon]
-  sessions    [pending: Epic 03 contracts + Epic 04 daemon]
+  run         Drive a session through the governance loop (v0: reference mode) — fail-closed
+  verify      Verify the audit journal (hash chain + signatures), offline
+  sessions    List the sessions recorded in the audit journal
   help        Show this help
 
 Claude auth: the Claude Code sprite reuses your existing Claude Code login
 session — AGP holds no Anthropic API key.
 `;
 
-export function main(argv: string[]): number {
+export async function main(argv: string[]): Promise<number> {
   const cmd = argv[0];
   switch (cmd) {
     case "init": {
@@ -38,12 +42,19 @@ export function main(argv: string[]): number {
       console.log(res.message);
       return res.code;
     }
+    case "keygen": {
+      const res = keygenCommand(process.env, { force: argv.includes("--force") });
+      console.log(res.message);
+      return res.code;
+    }
     case "doctor":
       return doctorCommand();
     case "run":
+      return runCommand();
     case "verify":
+      return verifyCommand();
     case "sessions":
-      return pendingCommand(cmd);
+      return sessionsCommand();
     case "help":
     case "--help":
     case "-h":
@@ -60,5 +71,5 @@ export function main(argv: string[]): number {
 }
 
 if (import.meta.main) {
-  process.exit(main(process.argv.slice(2)));
+  process.exit(await main(process.argv.slice(2)));
 }

@@ -27,10 +27,11 @@ inherit from the operator's plan; re-auth is handled by `claude`, not by AGP.
 | Command | Status | Exit codes |
 |---------|--------|-----------|
 | `agp init [--force]` | **implemented** | `0` always (idempotent; `--force` overwrites) |
+| `agp keygen [--force]` | **implemented** | `0` wrote key · `1` exists without `--force` |
 | `agp doctor` | **implemented** | `0` healthy · `1` any prerequisite missing (fail-closed) |
-| `agp run` | pending (Epic 03 + daemon) | `2` not implemented |
-| `agp verify` | pending (Epic 03 + daemon) | `2` not implemented |
-| `agp sessions` | pending (Epic 03 + daemon) | `2` not implemented |
+| `agp run` | **implemented** (v0 reference mode) | `0` ran · `1` missing/invalid signing key or policy (fail-closed) |
+| `agp verify` | **implemented** | `0` journal intact · `1` tampering / broken chain / missing key |
+| `agp sessions` | **implemented** | `0` (lists sessions from the journal) |
 | `agp help` | implemented | `0` |
 
 ### `agp init`
@@ -66,13 +67,31 @@ makes `doctor` exit non-zero.
 Slack credentials may instead be supplied via `AGP_SLACK_BOT_TOKEN`,
 `AGP_SLACK_APP_TOKEN`, `AGP_SLACK_CHANNEL` (env wins over `config.json`).
 
+### `agp run` (v0 reference mode)
+
+Drives a session through the daemon governance loop: policy gate → (if
+`require`) channel HITL → signed journal → sandbox exec → journal result. At v0
+the subsystems are **AGP reference implementations**, clearly not production:
+
+| Subsystem | v0 reference | Production owner |
+|-----------|--------------|------------------|
+| Sprite | scripted self-test sprite | Claude Code sprite (Epic 06, `agp-92v`) |
+| Sandbox | recording (executes nothing; honest "no isolation") | Docker sandbox (Epic 07, `agp-yvo`) |
+| Channel | console; **auto-denies** (`AGP_AUTO_APPROVE=1` to approve, local only) | Slack HITL (Epic 08, `agp-yep`) |
+| Policy | rules from `policy.json`, default-deny | policy engine (Epic 09, `agp-9r8`) |
+| Journal | signed hash-chained `RefJournal` | journal + evidence bundles (Epic 10, `agp-qn7`) |
+
+`run` fails closed on a missing/invalid signing key or policy. The
+`substrate/ccsc/` vendor copy (ADR `009-AT-ADR`) lands when a subsystem epic
+lifts the real CCSC journal/policy.
+
 ## Architecture notes
 
 - The doctor checks are a pure function (`src/cli/checks.ts`) over an injected
   `DoctorProbe`, so they are unit-tested without Docker/Slack/keys present and
   without mocking the unit under test. The real probe (`src/cli/probe.ts`)
   answers each check against the live environment.
-- `run` / `verify` / `sessions` are registered but exit `2` ("not implemented")
-  rather than fake capability. They depend on the Epic 03 core contracts and the
-  Epic 04 daemon, plus the vendored CCSC kernel (`substrate/ccsc/`, copied per
-  ADR `009-AT-ADR` when this runtime lands).
+- The daemon orchestration (`src/daemon/daemon.ts`) `mediate` loop is generic
+  over the six contracts; the reference subsystems live in `src/runtime/`. The
+  journal is hash-chained + Ed25519-signed; `agp verify` re-derives both offline
+  and detects any tampering.

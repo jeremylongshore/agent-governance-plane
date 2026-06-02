@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.23] - 2026-06-02
+
+### Added
+
+- feat(epic03): define the 6 AGP core contracts (zod schemas, fixtures, tests) (#45) (cb35cb3)
+
+### Changed
+
+- chore(beads): re-close agp-7vh after rapid-write-race revert (4e98263)
+- chore(beads): close agp-eo8 (Epic 04 CLI foundation shipped in #44); note epic remainder (dae1c80)
+
 ## [0.1.22] - 2026-06-02
 
 ### Added
@@ -147,7 +158,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.22...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.23...HEAD
+[0.1.23]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.22...v0.1.23
 [0.1.22]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.21...v0.1.22
 [0.1.21]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.20...v0.1.21
 [0.1.20]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.19...v0.1.20

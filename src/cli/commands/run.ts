@@ -13,6 +13,9 @@ import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedSprite } from "../../runtime/sprite.ts";
 import { Daemon } from "../../daemon/daemon.ts";
+import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
+import { FsDoctorProbe } from "../probe.ts";
+import type { SandboxProvider } from "../../contracts/sandbox-provider.ts";
 
 export async function runCommand(
   env: Record<string, string | undefined> = process.env,
@@ -45,15 +48,35 @@ export async function runCommand(
     return 1;
   }
 
-  out("agp run: REFERENCE mode — recording sandbox + console channel (NOT Docker/Slack).");
+  // Select the sandbox. Default is the recording reference; AGP_SANDBOX=docker
+  // uses real namespace isolation and fails closed (never falls back to host).
+  let sandbox: SandboxProvider;
+  let image: string | undefined;
+  if (env.AGP_SANDBOX === "docker") {
+    if (!new FsDoctorProbe(env).docker().ok) {
+      out("agp run: AGP_SANDBOX=docker but Docker is not available — refusing (no host fallback). (fail-closed)");
+      return 1;
+    }
+    image = env.AGP_SANDBOX_IMAGE;
+    if (!image) {
+      out("agp run: AGP_SANDBOX=docker requires AGP_SANDBOX_IMAGE=<pinned image>. (fail-closed)");
+      return 1;
+    }
+    sandbox = new DockerSandbox();
+    out("agp run: DOCKER sandbox — namespace isolation (NOT VM-grade); console channel (NOT Slack).");
+  } else {
+    sandbox = new RecordingSandbox();
+    out("agp run: REFERENCE mode — recording sandbox + console channel (NOT Docker/Slack).");
+  }
+
   const daemon = new Daemon({
     policy,
     journal: new RefJournal(paths.journal, privateKey),
-    sandbox: new RecordingSandbox(),
+    sandbox,
     channel: new ConsoleChannel(env, out),
   });
 
-  const result = await daemon.runScripted(new ScriptedSprite());
+  const result = await daemon.runScripted(new ScriptedSprite(), image ? { image } : {});
 
   out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s):`);
   for (const o of result.outcomes) {

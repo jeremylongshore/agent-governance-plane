@@ -76,7 +76,7 @@ the subsystems are **AGP reference implementations**, clearly not production:
 | Subsystem | v0 reference | Production owner |
 |-----------|--------------|------------------|
 | Sprite | scripted self-test sprite | Claude Code sprite (Epic 06, `agp-92v`) |
-| Sandbox | recording (executes nothing; honest "no isolation") | Docker sandbox (Epic 07, `agp-yvo`) |
+| Sandbox | recording (default); **`AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` for real namespace isolation** (Epic 07 ✓) | hardening continues in `agp-yvo` |
 | Channel | console; **auto-denies** (`AGP_AUTO_APPROVE=1` to approve, local only) | Slack HITL (Epic 08, `agp-yep`) |
 | Policy | rules from `policy.json`, default-deny | policy engine (Epic 09, `agp-9r8`) |
 | Journal | signed hash-chained `RefJournal` | journal + evidence bundles (Epic 10, `agp-qn7`) |

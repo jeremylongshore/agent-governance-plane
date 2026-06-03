@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.35] - 2026-06-03
+
+### Changed
+
+- test+docs: deep /audit-tests pass — RTM/personas/journeys + fix two real gaps (#55) (1fd9319)
+- chore(beads): file backlog for deferred /audit-tests P1/P2 gaps (e4f9cb0)
+
 ## [0.1.34] - 2026-06-03
 
 ### Changed
@@ -245,7 +252,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.34...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.35...HEAD
+[0.1.35]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.34...v0.1.35
 [0.1.34]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.33...v0.1.34
 [0.1.33]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.32...v0.1.33
 [0.1.32]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.31...v0.1.32

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.34] - 2026-06-03
+
+### Changed
+
+- ci: enforce an aggregate test-coverage floor (from /audit-tests) (#54) (171e2e8)
+- chore(beads): record bd-sync note interaction for Epic 06 milestone (4eb6982)
+- chore(beads): close Epic 06 build children (agp-1lp/e4w/c0b/df6); file live-dogfood follow-on agp-3g0 (8b58fe2)
+
 ## [0.1.33] - 2026-06-03
 
 ### Added
@@ -237,7 +245,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.33...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.34...HEAD
+[0.1.34]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.33...v0.1.34
 [0.1.33]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.32...v0.1.33
 [0.1.32]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.31...v0.1.32
 [0.1.31]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.30...v0.1.31

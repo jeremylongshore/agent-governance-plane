@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.28] - 2026-06-03
+
+### Added
+
+- feat(epic10): harden audit journal — offline verifier, head checkpoint, pubkey verify, rotation (#49) (c9058c9)
+
+### Changed
+
+- chore(beads): close Epic 08 (agp-yep) + slack bead agp-9sk after #48 (ee65699)
+
 ## [0.1.27] - 2026-06-02
 
 ### Added
@@ -192,7 +202,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...HEAD
+[0.1.28]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.25...v0.1.26
 [0.1.25]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.24...v0.1.25

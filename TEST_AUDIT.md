@@ -26,7 +26,7 @@ the coverage gate landed and this pass added full traceability.
 | Layer | Status | Evidence / gap |
 |---|---|---|
 | **L1** Hooks & CI | 🟢 in place | CI jobs (code+coverage gate, claim-scan, doc-drift, markdownlint, **harness verify+escape-scan** hard; bead-validate informational) **+ pre-commit hook** mirroring all gates locally. **Vendored `@intentsolutions/audit-harness@v1.1.4`** provides hash-pin (`verify`) + `escape-scan`; policy surfaces pinned via `.harness-hash-extra-patterns`. |
-| **L2** Static analysis | 🟡 partial | Strict `tsc` ✓. No linter/formatter, no SAST. |
+| **L2** Static analysis | 🟢 mostly | Strict `tsc` ✓ + **Biome linter** (`biome.json`, recommended, hard gate in CI + pre-commit). No formatter (intentional), no SAST. |
 | **L3** Unit & function | 🟢 strong / 🟡 partial enforce | 92 tests, 93% lines, **coverage gate live**. Test quality clean (0 tautologies; asserts > tests every file; only 2 weak asserts, both in the gated E2E). No mutation gate, no CRAP (CRAP tool is Py/Go-only — N/A for TS). |
 | **L4** Integration & contract | 🟢 present | Contract schema tests + gated real-Docker E2E. |
 | **L5** System (security) | 🟢 partial | replay/bot-reject, journal tamper+truncation detection, default-deny, fail-closed `require`, gate-only mediation. No perf/chaos (not needed at v0). a11y waived (no UI). |

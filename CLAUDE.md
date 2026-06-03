@@ -29,6 +29,7 @@ No build. The CI gates (`.github/workflows/ci.yml`) are a `code` job (typecheck 
 
 ```bash
 bun run typecheck               # HARD GATE: strict tsc --noEmit
+bun run lint                    # HARD GATE: Biome linter (src/), recommended rules
 bash scripts/coverage-gate.sh   # HARD GATE: bun test --coverage + aggregate floor (lines>=90, funcs>=88)
 bash scripts/claim-scan.sh      # HARD GATE: fails on v0-banned security claims in public surfaces
 bash scripts/doc-drift.sh       # forbidden pre-monorepo paths + pre-renumbering doc IDs (informational until Epic 00 AAR closes)
@@ -37,6 +38,8 @@ npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!node_modules/**" "
 scripts/audit-harness verify    # HARD GATE: hash-pinned policy surfaces unchanged (else re-pin: scripts/audit-harness init)
 scripts/audit-harness escape-scan --staged   # HARD GATE: no gate-evasion patterns in the staged diff
 ```
+
+**Linter:** Biome (`biome.json`, devDep `@biomejs/biome`), linter-only (formatter/assist off) over `src/`, recommended rules. Two style rules are deliberately **off**: `noNonNullAssertion` (conflicts with the repo's `noUncheckedIndexedAccess` → `arr[i]!` idiom) and `useTemplate` (pure-style churn; also avoids an unsafe-fix on the intentional `"lat"+"est"` image tag). `biome.json` is hash-pinned, so loosening a rule needs a deliberate `scripts/audit-harness init` re-pin.
 
 **Vendored `@intentsolutions/audit-harness`** (`.audit-harness/`, v1.1.4, wrapper `scripts/audit-harness` — no npm dep). It hash-pins AGP's policy surfaces (`MARKETING_CLAIMS.md`, the gate scripts, `tests/TESTING.md`, `tests/RTM.md` — see `.harness-hash-extra-patterns`); editing any of them requires a deliberate `scripts/audit-harness init` re-pin, and `verify` blocks an un-re-pinned edit. Upgrade with `AUDIT_HARNESS_VERSION=vX.Y.Z` + the install.sh (note: the install.sh's unpack-dir glob needs `*audit-harness-*` — the release tarball root is `intent-audit-harness-<ver>`).
 

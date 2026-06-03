@@ -22,9 +22,11 @@
   "scripts": {
     "agp": "bun run ./src/cli/index.ts",
     "typecheck": "tsc --noEmit",
+    "lint": "biome lint src",
     "test": "bun test"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
     "@types/bun": "latest",
     "typescript": "^5.6.0"
   },

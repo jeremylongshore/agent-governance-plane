@@ -22,3 +22,4 @@ tests/RTM.md
 # Lint / coverage config.
 .markdownlint.json
 bunfig.toml
+biome.json

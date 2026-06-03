@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.29] - 2026-06-03
+
+### Added
+
+- feat(epic09): production policy engine — strictest-wins, dangerous guard, doctor validation (#51) (d3d067a)
+
+### Changed
+
+- chore(beads): close Epic 10 (agp-qn7) + journal bead agp-oub after #49 (635e22c)
+
 ## [0.1.28] - 2026-06-03
 
 ### Added
@@ -202,7 +212,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.29...HEAD
+[0.1.29]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.26...v0.1.27
 [0.1.26]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.25...v0.1.26

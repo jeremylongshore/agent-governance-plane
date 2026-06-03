@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.32] - 2026-06-03
+
+### Changed
+
+- chore(bd): resolve durability-timing decision — keep agp-4na.2/.3 post-v0 (89f0b13)
+
 ## [0.1.31] - 2026-06-03
 
 ### Changed
@@ -225,7 +231,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.31...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.32...HEAD
+[0.1.32]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.31...v0.1.32
 [0.1.31]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.30...v0.1.31
 [0.1.30]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...v0.1.29

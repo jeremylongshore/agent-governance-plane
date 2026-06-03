@@ -12,9 +12,20 @@ Waived layers) are engineer-owned. Observational sections are refreshed by
 
 ## Thresholds (engineer-owned policy)
 
-- coverage.lines: 90   (aggregate; enforced by `scripts/coverage-gate.sh`)
-- coverage.functions: 88 (aggregate)
-- mutation: not enforced (no mutation tool installed — see Waived/Deferred)
+Keys use the audit-harness schema, non-bulleted so `escape-scan` can parse them
+(it greps `^\s*coverage.line:` — a leading `-` list bullet would break the match).
+`coverage.line` is also the live floor enforced by `scripts/coverage-gate.sh`
+(which additionally gates functions at 88).
+
+```text
+coverage.line: 90
+coverage.branch: 0
+mutation.kill_rate: 0
+```
+
+- `coverage.line: 90` — aggregate line %; live-enforced by `scripts/coverage-gate.sh` (+ functions: 88).
+- `coverage.branch: 0` — not gated (Bun reports function/line, not branch).
+- `mutation.kill_rate: 0` — not gated (no mutation tool; deferred to backlog bead `agp-e3b`).
 
 > Floors are the project AGGREGATE, not per-file: Bun's built-in per-file
 > `coverageThreshold` trips on the deliberately gated real-environment paths
@@ -22,7 +33,8 @@ Waived layers) are engineer-owned. Observational sections are refreshed by
 
 ## Installed gates
 
-- L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint (hard); bead-validate (informational). **Pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed section; activate with `bd hooks install`) mirrors all five hard gates locally — no extra deps. No audit-harness (deferred — backlog bead).
+- L0: **`@intentsolutions/audit-harness@v1.1.4`** — vendored at `.audit-harness/` (wrapper `scripts/audit-harness`, no npm dep). Provides `verify` (hash-pin) + `escape-scan`. Pinned policy surfaces declared in `.harness-hash-extra-patterns`; manifest at `.harness-hash`.
+- L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint, **harness (verify + escape-scan)** (hard); bead-validate (informational). **Pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed section; activate with `bd hooks install`) mirrors all hard gates locally **including harness verify + escape-scan --staged**.
 - L2: strict `tsc --noEmit`. No linter/formatter.
 - L3: `bun test` (88 tests, 16 files) + aggregate coverage gate (`scripts/coverage-gate.sh`).
 - L4: contract schema tests + gated real-Docker E2E (`AGP_DOCKER_E2E`).
@@ -38,8 +50,8 @@ Waived layers) are engineer-owned. Observational sections are refreshed by
 - L5 a11y: waived (no UI).
 - L6 BDD/Gherkin + L7 UAT: deferred — the "Jeremy in his truck" operator persona
   is the de-facto UAT; the live dogfood is bead `agp-3g0` (off-CI).
-- Mutation testing, linter, audit-harness vendoring: deferred (backlog bead);
-  intentionally kept minimal per repo CLAUDE.md.
+- Mutation testing, linter: deferred (backlog bead `agp-e3b`); intentionally
+  kept minimal per repo CLAUDE.md. (audit-harness vendoring: DONE — v1.1.4.)
 
 ## Last audit
 

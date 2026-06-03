@@ -34,7 +34,11 @@ bash scripts/claim-scan.sh      # HARD GATE: fails on v0-banned security claims 
 bash scripts/doc-drift.sh       # forbidden pre-monorepo paths + pre-renumbering doc IDs (informational until Epic 00 AAR closes)
 bash scripts/bead-validate.sh   # Epic 00 acceptance greps (informational)
 npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!node_modules/**" "!**/CHANGELOG.md"
+scripts/audit-harness verify    # HARD GATE: hash-pinned policy surfaces unchanged (else re-pin: scripts/audit-harness init)
+scripts/audit-harness escape-scan --staged   # HARD GATE: no gate-evasion patterns in the staged diff
 ```
+
+**Vendored `@intentsolutions/audit-harness`** (`.audit-harness/`, v1.1.4, wrapper `scripts/audit-harness` — no npm dep). It hash-pins AGP's policy surfaces (`MARKETING_CLAIMS.md`, the gate scripts, `tests/TESTING.md`, `tests/RTM.md` — see `.harness-hash-extra-patterns`); editing any of them requires a deliberate `scripts/audit-harness init` re-pin, and `verify` blocks an un-re-pinned edit. Upgrade with `AUDIT_HARNESS_VERSION=vX.Y.Z` + the install.sh (note: the install.sh's unpack-dir glob needs `*audit-harness-*` — the release tarball root is `intent-audit-harness-<ver>`).
 
 The **pre-commit hook** (L1) runs all the above locally before each commit — logic in `scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed markers (bd preserves it across reinstalls; no `core.hooksPath` conflict). Activate git hooks on a fresh clone with `bd hooks install`; bypass once with `git commit --no-verify`.
 

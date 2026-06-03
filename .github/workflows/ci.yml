@@ -80,3 +80,25 @@ jobs:
         run: bun run typecheck
       - name: Tests + coverage gate
         run: bash scripts/coverage-gate.sh
+
+  harness:
+    # Vendored @intentsolutions/audit-harness (.audit-harness/). HARD gate.
+    #   verify      — fails (exit 2) if a hash-pinned policy surface changed
+    #                 without a deliberate re-pin (MARKETING_CLAIMS.md, the gate
+    #                 scripts, tests/TESTING.md, tests/RTM.md — see
+    #                 .harness-hash-extra-patterns).
+    #   escape-scan — scans the PR diff for gate-evasion patterns (lowered
+    #                 coverage floor, weakened assertions, .feature edits).
+    name: Audit-harness (hash-pin + escape-scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Verify hash-pinned policy surfaces
+        run: scripts/audit-harness verify
+      - name: Escape-scan the PR diff
+        # Exclude .audit-harness/ — the vendored scanner scripts contain the very
+        # pattern literals they hunt for (self-match false positives).
+        if: github.event_name == 'pull_request'
+        run: git diff "origin/${{ github.base_ref }}...HEAD" -- . ':(exclude).audit-harness/**' | scripts/audit-harness escape-scan -

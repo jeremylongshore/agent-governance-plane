@@ -1,0 +1,24 @@
+# AGP policy-enforcement surfaces, hash-pinned by @intentsolutions/audit-harness.
+#
+# AGP has none of the harness's default-pinned files (.feature, dependency-cruiser,
+# stryker, .c8rc) — its policy lives in these files instead. Any byte change to one
+# of them requires a deliberate re-pin (`scripts/audit-harness init`); `verify` in
+# pre-commit + CI blocks an un-re-pinned edit, so a gate or claim rule cannot be
+# silently weakened in a PR.
+
+# The v0 marketing-claim registry (Epic 11: "hash-pinned in the harness manifest").
+MARKETING_CLAIMS.md
+
+# Gate logic + thresholds — lowering a floor or removing a gate is an escape attempt.
+scripts/coverage-gate.sh
+scripts/claim-scan.sh
+scripts/doc-drift.sh
+scripts/pre-commit-gates.sh
+
+# Test policy + requirements traceability (engineer-owned; MUST tiers must not drop).
+tests/TESTING.md
+tests/RTM.md
+
+# Lint / coverage config.
+.markdownlint.json
+bunfig.toml

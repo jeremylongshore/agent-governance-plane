@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { KeyObject } from "node:crypto";
 import { Daemon } from "./daemon.ts";
-import { RefJournal, verifyJournal, readEvents } from "../runtime/journal.ts";
+import { Journal, readEvents } from "../journal/journal.ts";
+import { verifyJournalFile } from "../journal/verify.ts";
 import { RefPolicyEvaluator, type PolicyRule } from "../runtime/policy.ts";
 import { RecordingSandbox } from "../runtime/sandbox.ts";
 import { ConsoleChannel } from "../runtime/channel.ts";
@@ -23,7 +24,7 @@ function harness(rules: PolicyRule[], env: Record<string, string | undefined> = 
   const dir = mkdtempSync(join(tmpdir(), "agp-dmn-"));
   const path = join(dir, "audit.log");
   const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
-  const journal = new RefJournal(path, priv, () => "2026-06-02T00:00:00.000Z");
+  const journal = new Journal(path, priv, () => "2026-06-02T00:00:00.000Z");
   const sandbox = new RecordingSandbox();
   const daemon = new Daemon({
     policy: new RefPolicyEvaluator(rules),
@@ -46,7 +47,7 @@ test("an allowed tool call is executed, journaled, and the journal verifies", as
   expect(res.outcomes[0]!.verdict.decision).toBe("allow");
   expect(res.outcomes[0]!.executed).toBe(true);
   expect(h.sandbox.recorded).toHaveLength(1);
-  expect(verifyJournal(h.path, h.pub).ok).toBe(true);
+  expect(verifyJournalFile(h.path, h.pub).ok).toBe(true);
   rmSync(h.dir, { recursive: true, force: true });
 });
 

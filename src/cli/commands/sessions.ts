@@ -23,12 +23,12 @@ export function sessionsCommand(
   const sessions = new Map<string, { started: string | null; calls: number | null }>();
 
   for (const ev of events) {
-    const sid = str(ev.payload["sessionId"]);
+    const sid = str(ev.payload.sessionId);
     if (sid === null) continue;
     const entry = sessions.get(sid) ?? { started: null, calls: null };
     if (ev.kind === "session.started") entry.started = ev.ts;
     if (ev.kind === "session.ended") {
-      const calls = ev.payload["calls"];
+      const calls = ev.payload.calls;
       entry.calls = typeof calls === "number" ? calls : entry.calls;
     }
     sessions.set(sid, entry);

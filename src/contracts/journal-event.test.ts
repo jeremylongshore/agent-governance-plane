@@ -9,7 +9,7 @@ test("a valid v0 signed journal event parses unchanged", () => {
 test("reserves all four future fields, present and null at v0 (council lock)", () => {
   const parsed = JournalEvent.parse(validJournalEvent) as Record<string, unknown>;
   for (const field of RESERVED_FIELD_NAMES) {
-    expect(Object.prototype.hasOwnProperty.call(parsed, field)).toBe(true);
+    expect(Object.hasOwn(parsed, field)).toBe(true);
     expect(parsed[field]).toBeNull();
   }
   expect(RESERVED_FIELD_NAMES).toEqual([

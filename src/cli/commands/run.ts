@@ -41,7 +41,7 @@ export async function runCommand(
     return 1;
   }
 
-  let privateKey;
+  let privateKey: ReturnType<typeof loadPrivateKey>;
   try {
     privateKey = loadPrivateKey(readFileSync(paths.signingKey, "utf8"));
   } catch (err) {
@@ -49,7 +49,7 @@ export async function runCommand(
     return 1;
   }
 
-  let policy;
+  let policy: ReturnType<typeof loadPolicyEngine>;
   try {
     policy = loadPolicyEngine(paths.policy);
   } catch (err) {

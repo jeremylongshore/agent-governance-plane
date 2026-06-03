@@ -58,7 +58,7 @@ export class Daemon {
   }
 
   private toCommand(req: ToolCallRequest): string[] {
-    const cmd = req.args["command"];
+    const cmd = req.args.command;
     if (typeof cmd === "string") return ["sh", "-c", cmd];
     return [req.tool, JSON.stringify(req.args)];
   }

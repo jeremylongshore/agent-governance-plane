@@ -65,7 +65,6 @@ export function buildClaudeArgs(opts: { task: string; settingsPath: string; clau
 
 export class BunClaudeProcess implements ClaudeProcess {
   private readonly opts: BunClaudeOptions;
-  private handler: ((ev: PreToolUseEvent) => void) | null = null;
 
   constructor(opts: BunClaudeOptions) {
     this.opts = opts;
@@ -89,8 +88,9 @@ export class BunClaudeProcess implements ClaudeProcess {
     throw new Error("BunClaudeProcess: live spawn not yet wired — see 000-docs/027-AT-SPEC §Live path.");
   }
 
-  onPreToolUse(handler: (ev: PreToolUseEvent) => void): void {
-    this.handler = handler;
+  onPreToolUse(_handler: (ev: PreToolUseEvent) => void): void {
+    // Live wiring deferred: the bridge registers the handler when start() spawns
+    // the real `claude` (gated by AGP_CLAUDE_LIVE). Until then this is a no-op.
   }
 
   respond(_callId: string, _decision: HookDecision): void {

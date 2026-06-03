@@ -35,7 +35,7 @@ mutation.kill_rate: 0
 
 - L0: **`@intentsolutions/audit-harness@v1.1.4`** — vendored at `.audit-harness/` (wrapper `scripts/audit-harness`, no npm dep). Provides `verify` (hash-pin) + `escape-scan`. Pinned policy surfaces declared in `.harness-hash-extra-patterns`; manifest at `.harness-hash`.
 - L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint, **harness (verify + escape-scan)** (hard); bead-validate (informational). **Pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed section; activate with `bd hooks install`) mirrors all hard gates locally **including harness verify + escape-scan --staged**.
-- L2: strict `tsc --noEmit`. No linter/formatter.
+- L2: strict `tsc --noEmit` + **Biome linter** (`biome.json`, `bun run lint`, recommended rules over `src/`; `noNonNullAssertion` + `useTemplate` off — see CLAUDE.md). Hard gate in CI + pre-commit. Formatter not enabled.
 - L3: `bun test` (88 tests, 16 files) + aggregate coverage gate (`scripts/coverage-gate.sh`).
 - L4: contract schema tests + gated real-Docker E2E (`AGP_DOCKER_E2E`).
 - L5 (security): replay/bot-reject, journal tamper+truncation detection, default-deny, fail-closed `require`, gate-only mediation.
@@ -50,8 +50,9 @@ mutation.kill_rate: 0
 - L5 a11y: waived (no UI).
 - L6 BDD/Gherkin + L7 UAT: deferred — the "Jeremy in his truck" operator persona
   is the de-facto UAT; the live dogfood is bead `agp-3g0` (off-CI).
-- Mutation testing, linter: deferred (backlog bead `agp-e3b`); intentionally
-  kept minimal per repo CLAUDE.md. (audit-harness vendoring: DONE — v1.1.4.)
+- Mutation testing: deferred (backlog bead `agp-e3b`); intentionally kept
+  minimal per repo CLAUDE.md. (audit-harness vendoring: DONE — v1.1.4. Linter:
+  DONE — Biome.)
 
 ## Last audit
 

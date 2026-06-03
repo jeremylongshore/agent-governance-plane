@@ -28,6 +28,7 @@ run () {
 }
 
 run "typecheck"       bun run typecheck
+run "lint (biome)"    bunx biome lint src
 run "coverage gate"   bash scripts/coverage-gate.sh
 run "claim-scan"      bash scripts/claim-scan.sh
 run "doc-drift"       bash scripts/doc-drift.sh

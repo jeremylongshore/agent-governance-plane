@@ -67,7 +67,7 @@ export class FsDoctorProbe implements DoctorProbe {
       return { ok: false, detail: `policy file not found at ${this.paths.policy}` };
     }
     // Fatal parse: a malformed policy fails the check (it would otherwise fail open).
-    let file;
+    let file: ReturnType<typeof loadPolicyFile>;
     try {
       file = loadPolicyFile(this.paths.policy);
     } catch (err) {

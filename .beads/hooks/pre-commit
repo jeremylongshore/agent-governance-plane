@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
+# --- BEGIN AGP L1 GATES (not managed by beads; keep above the beads section) ---
+# Local mirror of the CI hard gates. Logic lives in scripts/pre-commit-gates.sh.
+bash "$(git rev-parse --show-toplevel)/scripts/pre-commit-gates.sh" || exit $?
+# --- END AGP L1 GATES ---
+
 # --- BEGIN BEADS INTEGRATION v1.0.4 ---
 # This section is managed by beads. Do not remove these markers.
 if command -v bd >/dev/null 2>&1; then

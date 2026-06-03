@@ -22,7 +22,7 @@ Waived layers) are engineer-owned. Observational sections are refreshed by
 
 ## Installed gates
 
-- L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint (hard); bead-validate (informational). No pre-commit hooks; no audit-harness.
+- L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint (hard); bead-validate (informational). **Pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed section; activate with `bd hooks install`) mirrors all five hard gates locally — no extra deps. No audit-harness (deferred — backlog bead).
 - L2: strict `tsc --noEmit`. No linter/formatter.
 - L3: `bun test` (88 tests, 16 files) + aggregate coverage gate (`scripts/coverage-gate.sh`).
 - L4: contract schema tests + gated real-Docker E2E (`AGP_DOCKER_E2E`).

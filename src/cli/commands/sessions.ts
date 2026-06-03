@@ -3,7 +3,7 @@
 
 import { existsSync } from "node:fs";
 import { resolvePaths } from "../../config.ts";
-import { readEvents } from "../../runtime/journal.ts";
+import { readEvents } from "../../journal/journal.ts";
 
 function str(value: unknown): string | null {
   return typeof value === "string" ? value : null;

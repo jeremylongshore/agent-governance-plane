@@ -52,7 +52,7 @@ export async function main(argv: string[]): Promise<number> {
     case "run":
       return runCommand();
     case "verify":
-      return verifyCommand();
+      return verifyCommand(argv.slice(1));
     case "sessions":
       return sessionsCommand();
     case "help":

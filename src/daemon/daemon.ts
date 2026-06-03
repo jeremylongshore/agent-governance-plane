@@ -14,13 +14,13 @@ import type { PolicyVerdict } from "../contracts/policy-verdict.ts";
 import type { SandboxHandle, SandboxProvider } from "../contracts/sandbox-provider.ts";
 import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
 import type { SpriteAdapter } from "../contracts/sprite-adapter.ts";
-import type { RefJournal } from "../runtime/journal.ts";
+import type { Journal } from "../journal/journal.ts";
 import type { RefPolicyEvaluator } from "../runtime/policy.ts";
 import type { ScriptedSprite } from "../runtime/sprite.ts";
 
 export interface DaemonDeps {
   policy: RefPolicyEvaluator;
-  journal: RefJournal;
+  journal: Journal;
   sandbox: SandboxProvider;
   channel: ChannelAdapter;
 }

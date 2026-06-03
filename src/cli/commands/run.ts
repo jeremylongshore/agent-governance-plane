@@ -7,7 +7,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolvePaths } from "../../config.ts";
 import { loadPrivateKey } from "../../runtime/crypto.ts";
-import { RefJournal } from "../../runtime/journal.ts";
+import { Journal } from "../../journal/journal.ts";
 import { loadPolicyEvaluator } from "../../runtime/policy.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
@@ -71,7 +71,7 @@ export async function runCommand(
 
   const daemon = new Daemon({
     policy,
-    journal: new RefJournal(paths.journal, privateKey),
+    journal: new Journal(paths.journal, privateKey),
     sandbox,
     channel: new ConsoleChannel(env, out),
   });

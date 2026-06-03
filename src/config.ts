@@ -18,6 +18,8 @@ export interface AgpPaths {
   signingDir: string;
   /** The Ed25519 private signing key for the audit journal. */
   signingKey: string;
+  /** The Ed25519 public key — used for offline verification (no private key). */
+  signingPubKey: string;
   /** The policy file gating tool calls. */
   policy: string;
   /** The authoritative hash-chained audit journal (written at runtime). */
@@ -35,6 +37,7 @@ export function resolvePaths(env: Record<string, string | undefined> = process.e
     config: join(home, "config.json"),
     signingDir: join(home, "signing"),
     signingKey: join(home, "signing", "journal-ed25519.key"),
+    signingPubKey: join(home, "signing", "journal-ed25519.pub"),
     policy: join(home, "policy.json"),
     journal: join(home, "audit.log"),
   };

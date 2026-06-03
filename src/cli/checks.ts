@@ -41,11 +41,20 @@ export interface DoctorReport {
 }
 
 /**
- * Run all prerequisite checks. `ok` is true only when every check passed —
+ * Run prerequisite checks. With `only`, run just that named check (e.g.
+ * `agp doctor --check policy`). `ok` is true only when every run check passed —
  * fail-closed by construction.
  */
-export function runDoctor(probe: DoctorProbe): DoctorReport {
-  const results: CheckResult[] = CHECK_ORDER.map(({ name, run }) => {
+export function runDoctor(probe: DoctorProbe, only?: string): DoctorReport {
+  const selected = only ? CHECK_ORDER.filter((c) => c.name === only) : CHECK_ORDER;
+  if (only && selected.length === 0) {
+    const valid = CHECK_ORDER.map((c) => c.name).join(", ");
+    return {
+      ok: false,
+      results: [{ name: only, status: "fail", detail: `unknown check '${only}' (valid: ${valid})` }],
+    };
+  }
+  const results: CheckResult[] = selected.map(({ name, run }) => {
     const { ok, detail } = run(probe);
     return { name, status: ok ? "ok" : "fail", detail };
   });

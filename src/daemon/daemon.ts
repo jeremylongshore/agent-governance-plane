@@ -15,11 +15,11 @@ import type { SandboxHandle, SandboxProvider } from "../contracts/sandbox-provid
 import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
 import type { SpriteAdapter } from "../contracts/sprite-adapter.ts";
 import type { Journal } from "../journal/journal.ts";
-import type { RefPolicyEvaluator } from "../runtime/policy.ts";
+import type { PolicyEngine } from "../policy/engine.ts";
 import type { ScriptedSprite } from "../runtime/sprite.ts";
 
 export interface DaemonDeps {
-  policy: RefPolicyEvaluator;
+  policy: PolicyEngine;
   journal: Journal;
   sandbox: SandboxProvider;
   channel: ChannelAdapter;

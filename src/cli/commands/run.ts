@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolvePaths } from "../../config.ts";
 import { loadPrivateKey } from "../../runtime/crypto.ts";
 import { Journal } from "../../journal/journal.ts";
-import { loadPolicyEvaluator } from "../../runtime/policy.ts";
+import { loadPolicyEngine } from "../../policy/engine.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedSprite } from "../../runtime/sprite.ts";
@@ -42,7 +42,7 @@ export async function runCommand(
 
   let policy;
   try {
-    policy = loadPolicyEvaluator(paths.policy);
+    policy = loadPolicyEngine(paths.policy);
   } catch (err) {
     out(`agp run: invalid policy: ${(err as Error).message} (fail-closed)`);
     return 1;

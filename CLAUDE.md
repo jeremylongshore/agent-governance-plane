@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **agent-governance-plane (AGP)** — a Slack-native, OSS-first governance plane that runs any agent harness (Claude Code first, Codex next) in a sandbox, gates every tool call through Slack human-in-the-loop approvals, and records each event in a signed, hash-chained audit journal. License Apache-2.0.
 
-**⚠️ This repo currently contains NO source code.** It is in **Phase B, v0 — planning and governance only.** There is no `package.json`, no `src/`, no build step. The first code (the `agp` CLI scaffold) lands with **Epic 04**. Until then, the load-bearing artifacts are the foundation docs in `000-docs/` and the bead-tracked 16-epic plan. Do not scaffold a Node project, add `npm ci`, or assume a TypeScript toolchain exists — the original `/repo-dress` CI made that mistake and failed every PR.
+**Phase B, v0 — implementation in flight.** The `agp` CLI + governance kernel now exist: a **Bun + TypeScript** codebase under `src/` (`package.json`, `bunfig.toml`, strict `tsc --noEmit`, `bun test`). Epics 04–10 shipped the contract-first daemon and its real subsystems (Docker sandbox, Slack HITL, signed journal, policy engine) and Epic 06's Claude Code sprite; the foundation docs in `000-docs/` + the bead-tracked 16-epic plan remain the design source of truth. **This is a Bun toolchain, not Node/npm** — do not add `npm ci`/`pnpm`; use `bun install`, `bun test`, `bun run typecheck`. (Historical note: the original `/repo-dress` CI assumed a Node project before any code existed and failed every PR — hence the Bun-native CI.)
 
 ## The CCSC substrate (most important orienting fact)
 

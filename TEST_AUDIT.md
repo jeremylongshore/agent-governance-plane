@@ -1,79 +1,63 @@
 # TEST_AUDIT.md — agent-governance-plane
 
-> Diagnostic produced by `/audit-tests`. Read-only audit. Transient file.
-> Date: 2026-06-03 · Branch: `main` · Version: v0.1.33
+> Diagnostic produced by `/audit-tests` (deep pass: 7-layer + RTM/personas/journeys).
+> Date: 2026-06-03 · Branch: `main` · Version: v0.1.34
 
-## Grade: C+ (74/100)
+## Grade: B− (78/100)
 
-Excellent L3 **content** (93% line coverage, real security-invariant tests), but
-the IS-SOP **enforcement** layers are largely absent: no audit-harness, no
-coverage/mutation gate, no linter, no BDD/acceptance layer. The suite is good;
-CI does not lock its quality in.
+Strong, well-asserted L3 content (93% lines, **22/22 MUST requirements covered**,
+no tautologies, no assertion-free tests) with a coverage gate now enforcing the
+floor. Held back from A-range by the missing IS-SOP enforcement layers (no
+harness, mutation, linter, BDD/UAT). Up from C+ (74) on the prior shallow pass —
+the coverage gate landed and this pass added full traceability.
 
 ## Classification
 
 | Field | Value |
 |---|---|
-| Repo type | **cli + library hybrid** (`agp` CLI binary + governance-plane internals) |
-| Stack | Bun 1.2.23 + TypeScript (strict, `noEmit`, `verbatimModuleSyntax`, `noUncheckedIndexedAccess`) |
-| Tests | 16 files, **88 tests** (87 pass / 1 skip), colocated `*.test.ts` |
-| Coverage (native `bun test --coverage`) | **91.2% funcs / 93.2% lines** |
-| audit-harness | **not installed** (npm latest 0.1.0) |
-| `tests/TESTING.md` | absent (no engineer policy declared) |
-
-## Freshness
-
-⚠ `@intentsolutions/audit-harness` is **not installed** in this repo. The IS
-Testing SOP requires it as the in-repo enforcement substrate (hash-pin,
-escape-scan, CRAP, architecture, bias, Gherkin lint). Node repos install via
-`pnpm add -D`; this is a Bun repo, so the vendored `install.sh` path applies.
+| Repo type | **cli + library hybrid** (`agp` CLI + governance-plane internals) |
+| Stack | Bun 1.2.23 + TypeScript (strict) |
+| Tests | 17 files, **92 tests** (was 88 — +4 `sessions` tests this pass), 1 skip (gated Docker E2E) |
+| Coverage (aggregate) | **93.2% lines / 91.2% funcs**, gated by `scripts/coverage-gate.sh` (floor 90/88) |
+| audit-harness | not installed (npm latest 0.1.0) |
 
 ## 7-layer map
 
 | Layer | Status | Evidence / gap |
 |---|---|---|
-| **L1** Git hooks & CI enforcement | 🟡 partial | CI has 5 jobs (typecheck+test, claim-scan, doc-drift, markdownlint, bead-validate) — all hard gates except bead-validate. **No pre-commit hooks, no audit-harness, no escape-scan, no hash-pin.** |
-| **L2** Static analysis & linting | 🟡 partial | Strict `tsc` typecheck ✓. **No linter/formatter** (CCSC uses Biome; AGP has none). No SAST. |
-| **L3** Unit & function | 🟢 strong content / 🟡 partly enforced | 88 tests, 93% lines. **Coverage GATE added** (`scripts/coverage-gate.sh`: aggregate lines≥90 / funcs≥88, in CI). Still no mutation testing, no CRAP gate; Walls 2–7 not enforced. |
-| **L4** Integration & contract | 🟢 present | Contract schema tests (`gateway-message`, `policy-verdict`, `journal-event`, `behavioral.test.ts`), gated real-Docker E2E (`AGP_DOCKER_E2E`). |
-| **L5** System quality (security) | 🟢 partial | Real security-invariant tests: replay rejection, bot-reject, journal truncation/tamper detection, default-deny, fail-closed `require`, gate-only mediation. No perf/chaos (not needed at v0). a11y **waived** (no UI). |
-| **L6** E2E / BDD / Gherkin | 🔴 absent | No `features/*.feature`. CLI smoke (`agp run --sprite …`) is **manual only**, not encoded. |
-| **L7** Acceptance / UAT | 🔴 absent | Blueprint persona ("Jeremy in his truck") documented in `000-docs/002` but not encoded as acceptance specs. The live dogfood (`agp-3g0`) is the de-facto UAT, still open. |
+| **L1** Hooks & CI | 🟡 partial | 5 CI jobs (code+coverage gate, claim-scan, doc-drift, markdownlint hard; bead-validate informational). No pre-commit hooks, no harness, no escape-scan/hash-pin. |
+| **L2** Static analysis | 🟡 partial | Strict `tsc` ✓. No linter/formatter, no SAST. |
+| **L3** Unit & function | 🟢 strong / 🟡 partial enforce | 92 tests, 93% lines, **coverage gate live**. Test quality clean (0 tautologies; asserts > tests every file; only 2 weak asserts, both in the gated E2E). No mutation gate, no CRAP (CRAP tool is Py/Go-only — N/A for TS). |
+| **L4** Integration & contract | 🟢 present | Contract schema tests + gated real-Docker E2E. |
+| **L5** System (security) | 🟢 partial | replay/bot-reject, journal tamper+truncation detection, default-deny, fail-closed `require`, gate-only mediation. No perf/chaos (not needed at v0). a11y waived (no UI). |
+| **L6** E2E / BDD | 🔴 absent | No `features/*.feature`; CLI smoke is manual. |
+| **L7** Acceptance / UAT | 🔴 absent | Operator persona documented; live dogfood = bead `agp-3g0` (off-CI). |
+
+## RTM / personas / journeys (this pass)
+
+- **RTM** (`tests/RTM.md`): 41 requirements. **MUST 22/22 covered → 0 P0.** SHOULD 11/11, COULD 3/3. 5 WON'T-at-v0 correctly excluded (durable sessions, exactly-once, operator non-repudiation, multi-tenant/KMS, VM-grade isolation). **No orphaned tests.**
+- **Personas** (`tests/PERSONAS.md`): operator ("Jeremy in his truck") 8/9 flows. The one uncovered flow is `live-dogfood-e2e` (gated off-CI, `agp-3g0`).
+- **Journeys** (`tests/JOURNEYS.md`): the 7-step governed-session journey. Step-4 live `claude` leg is off-CI (P1); `agp sessions` was untested (P1) — **fixed this pass** (`src/cli/commands/sessions.test.ts`, +4 tests).
 
 ## Gap list
 
-**P1 (advisory — would trigger `implement-tests` handoff):**
-- L1: `@intentsolutions/audit-harness` not installed; no pre-commit gate.
-- L3: no coverage threshold enforced in CI (93% measured, 0% gated).
-- L3: no mutation testing (kill-rate unknown — coverage ≠ assertion strength).
-- L2: no linter/formatter.
-- L6: no Gherkin/acceptance layer; CLI smoke not encoded as a repeatable test.
+**P0:** none (no uncovered MUST).
 
-**P2 (logged):**
-- No `tests/TESTING.md` policy file (thresholds, waivers, classification undeclared).
-- No RTM / personas / journeys traceability.
-- CRAP / bias / architecture gates not run (harness absent).
+**P1:**
+- ~~`agp sessions` untested~~ → **fixed this pass.**
+- Live dogfood (`agp-3g0`) — real `claude` spawn validated off-CI; no in-CI E2E/BDD layer.
+- No mutation gate (coverage ≠ assertion strength); no linter.
 
-**Not gaps (correct by design):**
-- `runner.ts` (0%) and `bun-claude-process.ts` live spawn (60%) are gated
-  real-environment paths (`AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE`) — deliberately
-  not run in CI; honest gating, not a coverage hole to paper over.
-- The 1 skip is the gated real-Docker E2E.
-
-## RTM / personas / journeys
-
-Not built — no `tests/RTM.md`, `PERSONAS.md`, or `JOURNEYS.md`. No formal MUST
-requirements are declared, so there are **no uncovered-MUST P0 blockers**. The
-governance invariants are tested in practice but not traced to declared REQs.
+**P2 / deferred (backlog bead):** mutation testing, Biome linter, BDD/UAT layer, vendoring `@intentsolutions/audit-harness`. Intentionally deferred to keep AGP minimal.
 
 ## Escape-scan
 
-Not run (harness absent). No staged diff to scan.
+No staged diff at audit time → not applicable.
 
 ## Handoff
 
-P1 gaps exist → `implement-tests` is the SOP next step. **Branch is `main`
-(protected)** → requires explicit confirmation before any filesystem mutation.
-Note AGP's deliberate-minimalism constraint (CLAUDE.md: do not scaffold a Node
-project / `npm ci`); harness install here must use the Bun/vendored path, and
-scope should be agreed before mutating the toolchain.
+P1 gaps remain (mutation, linter, BDD, harness) but all are **already tracked**
+(backlog bead + `agp-3g0`) and were explicitly scoped out as a deliberate
+minimalism choice. The one cheap P1 (`agp sessions`) was fixed inline this pass.
+No `implement-tests` handoff — the remaining P1s are not "install a measurement
+tool and re-run", they're scoped product decisions.

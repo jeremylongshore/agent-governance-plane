@@ -33,8 +33,10 @@ bash scripts/coverage-gate.sh   # HARD GATE: bun test --coverage + aggregate flo
 bash scripts/claim-scan.sh      # HARD GATE: fails on v0-banned security claims in public surfaces
 bash scripts/doc-drift.sh       # forbidden pre-monorepo paths + pre-renumbering doc IDs (informational until Epic 00 AAR closes)
 bash scripts/bead-validate.sh   # Epic 00 acceptance greps (informational)
-npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!**/CHANGELOG.md"
+npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!node_modules/**" "!**/CHANGELOG.md"
 ```
+
+The **pre-commit hook** (L1) runs all the above locally before each commit — logic in `scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed markers (bd preserves it across reinstalls; no `core.hooksPath` conflict). Activate git hooks on a fresh clone with `bd hooks install`; bypass once with `git commit --no-verify`.
 
 The coverage gate enforces the project **aggregate** (Bun's built-in per-file `coverageThreshold` is too blunt for the deliberately gated `AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE` paths). Floors live in `scripts/coverage-gate.sh`; raise them as gated paths gain in-CI coverage, never lower to dodge a regression. Last `/audit-tests`: see `TEST_AUDIT.md`.
 

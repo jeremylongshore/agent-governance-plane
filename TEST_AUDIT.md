@@ -25,7 +25,7 @@ the coverage gate landed and this pass added full traceability.
 
 | Layer | Status | Evidence / gap |
 |---|---|---|
-| **L1** Hooks & CI | 🟡 partial | 5 CI jobs (code+coverage gate, claim-scan, doc-drift, markdownlint hard; bead-validate informational). No pre-commit hooks, no harness, no escape-scan/hash-pin. |
+| **L1** Hooks & CI | 🟢 mostly | 5 CI jobs (code+coverage gate, claim-scan, doc-drift, markdownlint hard; bead-validate informational) **+ pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit`) mirroring all 5 gates locally. Still no harness/escape-scan/hash-pin (deferred). |
 | **L2** Static analysis | 🟡 partial | Strict `tsc` ✓. No linter/formatter, no SAST. |
 | **L3** Unit & function | 🟢 strong / 🟡 partial enforce | 92 tests, 93% lines, **coverage gate live**. Test quality clean (0 tautologies; asserts > tests every file; only 2 weak asserts, both in the gated E2E). No mutation gate, no CRAP (CRAP tool is Py/Go-only — N/A for TS). |
 | **L4** Integration & contract | 🟢 present | Contract schema tests + gated real-Docker E2E. |

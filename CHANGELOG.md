@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.38] - 2026-06-03
+
+### Changed
+
+- test(L2): add Biome linter as a hard gate (from /implement-tests; skip mutation) (#58) (5dcde2d)
+- chore(beads): record audit-harness vendoring done (agp-e3b) + Epic 11 hash-pin substrate (agp-6mq) (d01c762)
+
 ## [0.1.37] - 2026-06-03
 
 ### Changed
@@ -264,7 +271,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.37...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.38...HEAD
+[0.1.38]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.37...v0.1.38
 [0.1.37]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.36...v0.1.37
 [0.1.36]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.35...v0.1.36
 [0.1.35]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.34...v0.1.35

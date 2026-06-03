@@ -63,3 +63,21 @@ Apache-2.0. Attribution is recorded in the top-level [`NOTICE`](../NOTICE).
   then.
 - **Substrate-compatibility tests:** Epic 04 (need the Bun/TS test harness it
   introduces).
+
+## Upstream changes since pin (pending re-sync)
+
+Tracked here so the Epic-04 carve-out picks them up. These are upstream-only
+(landed in CCSC `main` after the `v0.10.0` pin); AGP has not physically vendored
+`lib.ts` yet, so nothing is broken — this is a forward record, not a drift fix.
+
+| Upstream change | CCSC bead / PR | Why AGP wants it |
+|-----------------|----------------|------------------|
+| `SECRET_DECLARATIONS` table + `secretPlaceholder` / `buildSecretValueSet` / `allowedSinkFor` in `lib.ts` — one declaration is the source of placeholder, guard, and routing | `ccsc-z0n.1`, CCSC PR #216 | The declaration-as-enforcement source the value-exfiltration guard below derives from. |
+| `assertNoSecretValues()` in `lib.ts` — value-exfiltration guard, **additive companion** to `assertSendable` (signature unchanged) | `ccsc-z0n.3`, CCSC PR #217 | Blocks a live credential value leaving in any outbound payload (message text / file body / attachment), not just secret *files* by path. AGP's sandbox sprite handles real credentials, so it wants the stronger guard. |
+
+**Re-sync note:** this is a deliberate kernel strengthening, not a divergence —
+when Epic 04 carves the `lib.ts` helpers into `substrate/ccsc/`, include both
+`SECRET_DECLARATIONS` (+ its derivation helpers) and `assertNoSecretValues`, and
+bump the **Pin** table to the CCSC commit that carries them. The additive shape
+(`assertSendable` untouched) is intentional so this re-sync is a pure add, never
+a signature migration.

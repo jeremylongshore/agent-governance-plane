@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.31] - 2026-06-03
+
+### Changed
+
+- chore(bd): conflict-review fixes for agp-4na hardening epic (7e2c38d)
+
 ## [0.1.30] - 2026-06-03
 
 ### Changed
@@ -219,7 +225,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.30...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.31...HEAD
+[0.1.31]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.30...v0.1.31
 [0.1.30]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...v0.1.28

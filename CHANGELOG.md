@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.36] - 2026-06-03
+
+### Changed
+
+- ci(L1): add a pre-commit hook mirroring the CI gates (from /implement-tests) (#56) (af35161)
+
 ## [0.1.35] - 2026-06-03
 
 ### Changed
@@ -252,7 +258,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.35...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.36...HEAD
+[0.1.36]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.35...v0.1.36
 [0.1.35]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.34...v0.1.35
 [0.1.34]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.33...v0.1.34
 [0.1.33]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.32...v0.1.33

@@ -25,14 +25,18 @@ AGP does not build its governance kernel from scratch. It **composes the product
 
 ## Build & Test
 
-No build. The CI gates (`.github/workflows/ci.yml`) are doc/hygiene checks — run them locally before pushing:
+No build. The CI gates (`.github/workflows/ci.yml`) are a `code` job (typecheck + tests + coverage gate) plus doc/hygiene checks — run them locally before pushing:
 
 ```bash
+bun run typecheck               # HARD GATE: strict tsc --noEmit
+bash scripts/coverage-gate.sh   # HARD GATE: bun test --coverage + aggregate floor (lines>=90, funcs>=88)
 bash scripts/claim-scan.sh      # HARD GATE: fails on v0-banned security claims in public surfaces
 bash scripts/doc-drift.sh       # forbidden pre-monorepo paths + pre-renumbering doc IDs (informational until Epic 00 AAR closes)
 bash scripts/bead-validate.sh   # Epic 00 acceptance greps (informational)
 npx markdownlint-cli2 --config .markdownlint.json "**/*.md" "!**/CHANGELOG.md"
 ```
+
+The coverage gate enforces the project **aggregate** (Bun's built-in per-file `coverageThreshold` is too blunt for the deliberately gated `AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE` paths). Floors live in `scripts/coverage-gate.sh`; raise them as gated paths gain in-CI coverage, never lower to dodge a regression. Last `/audit-tests`: see `TEST_AUDIT.md`.
 
 Releases are automated by `.github/workflows/release.yml` (conventional-commit-driven bump → `version.txt` + `CHANGELOG.md` + tag + GitHub release). Don't hand-edit `version.txt` or release sections of `CHANGELOG.md`.
 

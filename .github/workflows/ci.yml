@@ -78,5 +78,5 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Typecheck
         run: bun run typecheck
-      - name: Tests
-        run: bun test
+      - name: Tests + coverage gate
+        run: bash scripts/coverage-gate.sh

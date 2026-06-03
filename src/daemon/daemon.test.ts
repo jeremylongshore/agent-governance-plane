@@ -6,7 +6,7 @@ import type { KeyObject } from "node:crypto";
 import { Daemon } from "./daemon.ts";
 import { Journal, readEvents } from "../journal/journal.ts";
 import { verifyJournalFile } from "../journal/verify.ts";
-import { RefPolicyEvaluator, type PolicyRule } from "../runtime/policy.ts";
+import { PolicyEngine, type PolicyRule } from "../policy/engine.ts";
 import { RecordingSandbox } from "../runtime/sandbox.ts";
 import { ConsoleChannel } from "../runtime/channel.ts";
 import { ScriptedSprite } from "../runtime/sprite.ts";
@@ -27,7 +27,7 @@ function harness(rules: PolicyRule[], env: Record<string, string | undefined> = 
   const journal = new Journal(path, priv, () => "2026-06-02T00:00:00.000Z");
   const sandbox = new RecordingSandbox();
   const daemon = new Daemon({
-    policy: new RefPolicyEvaluator(rules),
+    policy: new PolicyEngine(rules),
     journal,
     sandbox,
     channel: new ConsoleChannel(env, () => {}),

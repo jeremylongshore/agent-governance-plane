@@ -23,6 +23,7 @@ Commands:
               --force   overwrite existing config/policy files
   keygen      Generate the Ed25519 journal-signing key (--force to replace)
   doctor      Validate prerequisites (Docker, Slack, signing key, policy) — fail-closed
+              --check <name>   run only one check (e.g. --check policy)
   run         Drive a session through the governance loop (v0: reference mode) — fail-closed
   verify      Verify the audit journal (hash chain + signatures), offline
   sessions    List the sessions recorded in the audit journal
@@ -47,8 +48,11 @@ export async function main(argv: string[]): Promise<number> {
       console.log(res.message);
       return res.code;
     }
-    case "doctor":
-      return doctorCommand();
+    case "doctor": {
+      const ci = argv.indexOf("--check");
+      const only = ci >= 0 ? argv[ci + 1] : undefined;
+      return doctorCommand(process.env, console.log, only);
+    }
     case "run":
       return runCommand();
     case "verify":

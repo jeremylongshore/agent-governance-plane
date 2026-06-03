@@ -6,6 +6,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import type { DoctorProbe } from "./checks.ts";
 import { type AgpConfig, type AgpPaths, resolvePaths } from "../config.ts";
+import { loadPolicyFile } from "../policy/engine.ts";
+import { validatePolicy } from "../policy/dangerous.ts";
 
 export class FsDoctorProbe implements DoctorProbe {
   private readonly paths: AgpPaths;
@@ -64,18 +66,19 @@ export class FsDoctorProbe implements DoctorProbe {
     if (!existsSync(this.paths.policy)) {
       return { ok: false, detail: `policy file not found at ${this.paths.policy}` };
     }
-    let parsed: unknown;
+    // Fatal parse: a malformed policy fails the check (it would otherwise fail open).
+    let file;
     try {
-      parsed = JSON.parse(readFileSync(this.paths.policy, "utf8"));
+      file = loadPolicyFile(this.paths.policy);
     } catch (err) {
-      return { ok: false, detail: `policy file is not valid JSON: ${(err as Error).message}` };
+      return { ok: false, detail: `invalid policy: ${(err as Error).message}` };
     }
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-      return { ok: false, detail: "policy file must be a JSON object" };
+    const { errors, warnings } = validatePolicy(file);
+    if (errors.length > 0) {
+      return { ok: false, detail: `policy errors: ${errors.join("; ")}` };
     }
-    if (!("rules" in parsed)) {
-      return { ok: false, detail: "policy file missing required `rules` key" };
-    }
-    return { ok: true, detail: "policy file present and valid" };
+    const base = `policy valid (${file.rules.length} rule${file.rules.length === 1 ? "" : "s"})`;
+    // Warnings (e.g. broad auto-approve) do not fail the check, but are surfaced.
+    return { ok: true, detail: warnings.length > 0 ? `${base} — WARN: ${warnings.join("; ")}` : base };
   }
 }

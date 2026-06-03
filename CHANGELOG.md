@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.30] - 2026-06-03
+
+### Changed
+
+- chore(bd): file peer-runtime audit governance-plane hardening epic (agp-4na, GH #52) (96ec190)
+- chore(beads): close Epic 09 (agp-9r8) + policy bead agp-6z0 after #51 (e75e50b)
+
 ## [0.1.29] - 2026-06-03
 
 ### Added
@@ -212,7 +219,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.29...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.30...HEAD
+[0.1.30]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.29...v0.1.30
 [0.1.29]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.28...v0.1.29
 [0.1.28]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.27...v0.1.28
 [0.1.27]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.26...v0.1.27

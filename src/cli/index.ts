@@ -25,6 +25,7 @@ Commands:
   doctor      Validate prerequisites (Docker, Slack, signing key, policy) — fail-closed
               --check <name>   run only one check (e.g. --check policy)
   run         Drive a session through the governance loop (v0: reference mode) — fail-closed
+              --sprite <name>   harness to drive: scripted (default) | claude-code
   verify      Verify the audit journal (hash chain + signatures), offline
   sessions    List the sessions recorded in the audit journal
   help        Show this help
@@ -53,8 +54,11 @@ export async function main(argv: string[]): Promise<number> {
       const only = ci >= 0 ? argv[ci + 1] : undefined;
       return doctorCommand(process.env, console.log, only);
     }
-    case "run":
-      return runCommand();
+    case "run": {
+      const si = argv.indexOf("--sprite");
+      const spriteSel = si >= 0 ? argv[si + 1] : undefined;
+      return runCommand(process.env, console.log, { sprite: spriteSel });
+    }
     case "verify":
       return verifyCommand(argv.slice(1));
     case "sessions":

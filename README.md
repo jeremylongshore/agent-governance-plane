@@ -10,8 +10,12 @@
 
 Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals
 
-> **Status:** Phase B, pre-1.0. The operator CLI foundation (`agp init` / `agp doctor`)
-> is live; the runtime (`agp run` and the daemon) is in progress — see the
+> **Status:** Phase B, pre-1.0. The full operator CLI is live — `agp init`,
+> `keygen`, `doctor`, `run`, `verify`, `sessions` — driving a contract-first
+> daemon with production subsystems (Docker sandbox, signed hash-chained
+> journal, policy engine, Claude Code sprite, Unix-socket gateway). `agp run`
+> selects each subsystem and **fails closed** when a production option is
+> requested but unavailable. See the
 > [16-epic plan](000-docs/002-PP-PLAN-agp-master-blueprint-2026-05-27.md).
 
 ## Getting Started
@@ -33,18 +37,35 @@ bun install
 ## Usage
 
 ```bash
-# Scaffold the operator config home (~/.agp): config + policy skeletons + signing dir
+# 1. Scaffold the operator config home (~/.agp): config + policy skeletons + signing dir
 bun run agp -- init
 
-# Then: fill Slack creds in ~/.agp/config.json (or AGP_SLACK_* env),
-# generate the Ed25519 journal-signing key, and define rules in ~/.agp/policy.json.
+# 2. Mint the Ed25519 journal-signing key (deliberate, separate step)
+bun run agp -- keygen
 
-# Validate every prerequisite, fail-closed (Docker, Slack, signing key, policy):
+# 3. Define rules in ~/.agp/policy.json; (optional) Slack creds in config.json or AGP_SLACK_* env
+
+# 4. Validate every prerequisite, fail-closed (Docker, Slack, signing key, policy)
 bun run agp -- doctor
+
+# 5. Drive a governed session through the loop (policy gate → HITL → signed journal → sandbox)
+bun run agp -- run
+
+# 6. Verify the audit journal offline (hash chain + Ed25519 signatures); list sessions
+bun run agp -- verify
+bun run agp -- sessions
 ```
 
-`agp run` / `verify` / `sessions` are registered but pending the Epic 03 contracts
-and the Epic 04 daemon. Full command reference:
+**`agp run` subsystem selection** — each defaults to the safe reference and
+fails closed when a production option is requested but unavailable:
+
+| Axis | Default | Production | Selector |
+|------|---------|-----------|----------|
+| Sandbox | recording (runs nothing) | Docker namespace isolation | `AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` |
+| Sprite | scripted self-test | Claude Code | `--sprite claude-code` (live spawn off-CI) |
+| Channel | console (fail-closed deny) | Slack HITL | `AGP_CHANNEL=slack` (interaction receiver pending) |
+
+Full command reference:
 [`000-docs/012-AT-SPEC-cli-surface.md`](000-docs/012-AT-SPEC-cli-surface.md).
 
 The Claude sprite reuses your existing **Claude Code login session** — AGP holds

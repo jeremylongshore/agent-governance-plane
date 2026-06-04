@@ -67,23 +67,27 @@ makes `doctor` exit non-zero.
 Slack credentials may instead be supplied via `AGP_SLACK_BOT_TOKEN`,
 `AGP_SLACK_APP_TOKEN`, `AGP_SLACK_CHANNEL` (env wins over `config.json`).
 
-### `agp run` (v0 reference mode)
+### `agp run`
 
 Drives a session through the daemon governance loop: policy gate → (if
-`require`) channel HITL → signed journal → sandbox exec → journal result. At v0
-the subsystems are **AGP reference implementations**, clearly not production:
+`require`) channel HITL → signed journal → sandbox exec → journal result. Each
+subsystem axis **defaults to the safe reference** and is upgraded to its
+production implementation by a selector; an unavailable production option
+**fails closed** (never silently falls back):
 
-| Subsystem | v0 reference | Production owner |
-|-----------|--------------|------------------|
-| Sprite | scripted self-test sprite | Claude Code sprite (Epic 06, `agp-92v`) |
-| Sandbox | recording (default); **`AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` for real namespace isolation** (Epic 07 ✓) | hardening continues in `agp-yvo` |
-| Channel | console; **auto-denies** (`AGP_AUTO_APPROVE=1` to approve, local only) | Slack HITL (Epic 08, `agp-yep`) |
-| Policy | rules from `policy.json`, default-deny | policy engine (Epic 09, `agp-9r8`) |
-| Journal | signed hash-chained `RefJournal` | journal + evidence bundles (Epic 10, `agp-qn7`) |
+| Subsystem | Default (reference) | Production | Selector |
+|-----------|---------------------|-----------|----------|
+| Sprite | scripted self-test | Claude Code sprite (Epic 06 ✓) | `--sprite claude-code` (reference harness; live spawn off-CI, `agp-3g0`) |
+| Sandbox | recording (runs nothing) | Docker namespace isolation (Epic 07 ✓) | `AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` |
+| Channel | console; **auto-denies** (`AGP_AUTO_APPROVE=1` to approve, local only) | Slack HITL (Epic 08 ✓ posting; receiver pending) | `AGP_CHANNEL=slack` — fails closed pending the Socket-Mode interaction receiver (`agp-e7c`) |
+| Policy | — (always production) | policy engine, default-deny (Epic 09 ✓) | always on; rules from `policy.json` |
+| Journal | — (always production) | signed hash-chained journal (Epic 10 ✓) | always on |
 
-`run` fails closed on a missing/invalid signing key or policy. The
-`substrate/ccsc/` vendor copy (ADR `009-AT-ADR`) lands when a subsystem epic
-lifts the real CCSC journal/policy.
+`run` fails closed on a missing/invalid signing key or policy, on
+`AGP_SANDBOX=docker` without a reachable daemon or pinned image, and on
+`AGP_CHANNEL=slack` without Slack config or (currently) the interaction
+receiver. The `substrate/ccsc/` vendor copy (ADR `009-AT-ADR`) is tracked under
+Epic 02 (`agp-7ii`).
 
 ## Architecture notes
 

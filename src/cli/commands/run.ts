@@ -1,8 +1,11 @@
-// `agp run` — drive an agent session through the governance loop. At v0 this is
-// REFERENCE mode: a scripted sprite, recording sandbox, and console channel. It
-// fails closed on a missing/invalid signing key or policy (the things it needs
-// to journal and gate). Production mode (Docker sandbox + Slack channel) lands
-// with Epics 07/08.
+// `agp run` — drive an agent session through the governance loop. Three
+// subsystem axes are selectable, each defaulting to the safe reference and
+// failing closed when a production option is requested but unavailable:
+//   - sandbox: recording (default) | docker      (AGP_SANDBOX=docker)
+//   - sprite:  scripted (default)  | claude-code  (--sprite / AGP_SPRITE)
+//   - channel: console (default)   | slack        (AGP_CHANNEL=slack)
+// The journal (signed, hash-chained) and policy engine are always production.
+// `run` fails closed on a missing/invalid signing key or policy.
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolvePaths } from "../../config.ts";
@@ -72,17 +75,33 @@ export async function runCommand(
       return 1;
     }
     sandbox = new DockerSandbox();
-    out("agp run: DOCKER sandbox — namespace isolation (NOT VM-grade); console channel (NOT Slack).");
+    out("agp run: DOCKER sandbox — namespace isolation (NOT VM-grade).");
   } else {
     sandbox = new RecordingSandbox();
-    out("agp run: REFERENCE mode — recording sandbox + console channel (NOT Docker/Slack).");
+    out("agp run: recording sandbox (reference — runs nothing; set AGP_SANDBOX=docker for real isolation).");
   }
+
+  // Select the channel. Default is the console reference (fail-closed deny with
+  // no human present). AGP_CHANNEL=slack selects production Slack HITL, which
+  // posts approval requests AND needs an interaction receiver (Socket Mode) to
+  // read Allow/Deny clicks — that receiver is not yet wired (bead agp-e7c), so
+  // a slack request fails closed rather than posting and then hanging.
+  if (env.AGP_CHANNEL === "slack") {
+    const slack = new FsDoctorProbe(env).slack();
+    if (!slack.ok) {
+      out(`agp run: AGP_CHANNEL=slack but ${slack.detail}. (fail-closed)`);
+      return 1;
+    }
+    out("agp run: AGP_CHANNEL=slack — production Slack HITL needs the interaction receiver (Socket Mode), not yet wired (bead agp-e7c). (fail-closed)");
+    return 1;
+  }
+  const channel = new ConsoleChannel(env, out);
 
   const daemon = new Daemon({
     policy,
     journal: new Journal(paths.journal, privateKey),
     sandbox,
-    channel: new ConsoleChannel(env, out),
+    channel,
   });
 
   if (sprite === "claude-code") {

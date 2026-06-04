@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.42] - 2026-06-04
+
+### Added
+
+- feat(epic04): complete the CLI — channel axis, run tests, fix stale docs (#61) (193f107)
+
 ## [0.1.41] - 2026-06-04
 
 ### Changed
@@ -294,7 +300,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...HEAD
+[0.1.42]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...v0.1.42
 [0.1.41]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.40...v0.1.41
 [0.1.40]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.39...v0.1.40
 [0.1.39]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.38...v0.1.39

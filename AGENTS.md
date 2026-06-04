@@ -3,14 +3,20 @@
 ## AGP CLI (operator surface)
 
 `agp` is the operator's command surface (runs on Bun; `bun run agp -- <command>`).
-Implemented today: `agp init` (scaffold `~/.agp`) and `agp doctor` (fail-closed
-validation of Docker, Slack, signing key, and policy). `run` / `verify` /
-`sessions` are registered but pending the Epic 03 contracts + Epic 04 daemon.
+Implemented: `init` (scaffold `~/.agp`), `keygen` (mint the Ed25519 journal key),
+`doctor` (fail-closed prerequisite validation), `run` (drive a session through the
+governance loop: policy gate → HITL → signed journal → sandbox), `verify` (offline
+journal hash-chain + signature check), `sessions` (list recorded sessions).
 
 Key posture for agents operating AGP:
 
-- **Fail-closed:** `agp doctor` exits non-zero if any prerequisite is missing or
-  unsafe. Never proceed past a non-zero `doctor`.
+- **Fail-closed everywhere:** `agp doctor` exits non-zero if any prerequisite is
+  missing or unsafe; `agp run` refuses (never falls back) when a production
+  subsystem (Docker sandbox, Slack channel, signing key, policy) is requested but
+  unavailable. Never proceed past a non-zero exit.
+- **Subsystem selection on `run`:** `AGP_SANDBOX=docker` (+ `AGP_SANDBOX_IMAGE`),
+  `--sprite claude-code`, `AGP_CHANNEL=slack` — each defaults to the safe
+  reference. Unset = reference mode (recording sandbox + console channel).
 - **No Anthropic API key:** the Claude sprite reuses the operator's Claude Code
   login session.
 

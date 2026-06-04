@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.41] - 2026-06-04
+
+### Changed
+
+- chore(deps): bump vendored audit-harness to v1.1.5 (#60) (15aedcc)
+
 ## [0.1.40] - 2026-06-03
 
 ### Changed
@@ -288,7 +294,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.40...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...HEAD
+[0.1.41]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.40...v0.1.41
 [0.1.40]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.39...v0.1.40
 [0.1.39]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.38...v0.1.39
 [0.1.38]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.37...v0.1.38

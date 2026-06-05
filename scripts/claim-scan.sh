@@ -11,6 +11,11 @@
 #   SUPPORT, .github/) for security claims that are NOT allowed at the current
 #   version, using the banned-term regex read from MARKETING_CLAIMS.md.
 #
+#   `--commits <range>` instead scans the SUBJECT lines of commits in a git range.
+#   The CHANGELOG / release notes are auto-generated from commit subjects, so this
+#   catches a banned claim at its source before it can reach the release notes
+#   (which are otherwise out of scope here as a generated artifact).
+#
 # What it deliberately DOES NOT scan:
 #   - 000-docs/ — these are internal planning + audit + review docs. They legitimately
 #     DISCUSS what claims are banned (e.g. "we will NOT claim tamper-evident") which
@@ -29,6 +34,19 @@
 
 set -euo pipefail
 
+# Optional commit-subject mode: scan the release-notes source (commit subjects)
+# rather than the public-surface files.
+MODE="files"
+RANGE=""
+if [[ "${1:-}" == "--commits" ]]; then
+  MODE="commits"
+  RANGE="${2:-}"
+  if [[ -z "$RANGE" ]]; then
+    echo "[claim-scan] --commits requires a git range (e.g. origin/main...HEAD)"
+    exit 1
+  fi
+fi
+
 # Source the banned-term regex from the registry — the single source of truth.
 # Fail closed: a missing/malformed registry must NOT let banned claims through.
 REGISTRY="MARKETING_CLAIMS.md"
@@ -42,6 +60,20 @@ if [[ -z "$BANNED_PATTERNS" ]]; then
   echo "[claim-scan] BLOCKED: could not read the banned-claim regex from $REGISTRY"
   echo "[claim-scan] Expected a '<!-- regex: ... -->' line between the CLAIM-SCAN:BANNED-REGEX:V0 markers."
   exit 1
+fi
+
+# Commit-subject mode: the release-notes source. Fail closed on a banned claim.
+if [[ "$MODE" == "commits" ]]; then
+  echo "[claim-scan] Scanning commit subjects in '$RANGE' for v0-banned claims..."
+  echo "[claim-scan] Banned patterns: $BANNED_PATTERNS"
+  subjects=$(git log "$RANGE" --no-merges --format='%s' 2>/dev/null || true)
+  if [[ -n "$subjects" ]] && hits=$(echo "$subjects" | grep -nE "$BANNED_PATTERNS" 2>/dev/null); then
+    echo "[claim-scan] BLOCKED: commit subject(s) contain v0-banned claims (would reach the release notes):"
+    echo "$hits" | sed 's/^/  /'
+    exit 1
+  fi
+  echo "[claim-scan] PASS: no v0-banned claims in commit subjects."
+  exit 0
 fi
 
 SURFACES=(

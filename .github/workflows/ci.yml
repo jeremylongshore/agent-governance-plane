@@ -38,8 +38,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Scan public surfaces for v0-banned security claims
         run: bash scripts/claim-scan.sh
+      - name: Scan PR commit subjects (the release-notes source)
+        if: github.event_name == 'pull_request'
+        run: bash scripts/claim-scan.sh --commits "origin/${{ github.base_ref }}...HEAD"
 
   doc-drift:
     # HARD GATE as of the Epic 00 closeout (AAR 008-RA-AAR-agp-planning-cleanup,

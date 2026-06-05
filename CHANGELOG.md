@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.43] - 2026-06-05
+
+### Added
+
+- feat(epic11): scan commit subjects for banned claims — close claim-control (#62) (c270437)
+
+### Changed
+
+- chore(beads): close Epic 04 (agp-ixv) after PR #61; file Slack receiver follow-on agp-e7c (2f9fa9d)
+
 ## [0.1.42] - 2026-06-04
 
 ### Added
@@ -300,7 +310,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...HEAD
+[0.1.43]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...v0.1.43
 [0.1.42]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...v0.1.42
 [0.1.41]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.40...v0.1.41
 [0.1.40]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.39...v0.1.40

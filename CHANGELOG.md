@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.44] - 2026-06-06
+
+### Changed
+
+- docs(landscape): refresh competitor landscape + answer blueprint §8.5 (#64) (b2aa32b)
+- chore(beads): close Epic 11 (agp-6mq) after PR #62 (261acbc)
+
 ## [0.1.43] - 2026-06-05
 
 ### Added
@@ -310,7 +317,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...HEAD
+[0.1.44]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...v0.1.44
 [0.1.43]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...v0.1.43
 [0.1.42]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...v0.1.42
 [0.1.41]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.40...v0.1.41

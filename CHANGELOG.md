@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.45] - 2026-06-08
+
+### Added
+
+- feat(slack): production Socket Mode interaction receiver — complete the HITL round-trip (agp-e7c) (#66) (1190891)
+
+### Changed
+
+- docs(000-docs): ACS-adoption ADR (031), re-filed Paradigm/Centaur decision (032), agp-e7c receiver spec (033) (#65) (4ba8c3c)
+
 ## [0.1.44] - 2026-06-06
 
 ### Changed
@@ -317,7 +327,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...HEAD
+[0.1.45]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...v0.1.45
 [0.1.44]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...v0.1.44
 [0.1.43]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...v0.1.43
 [0.1.42]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.41...v0.1.42

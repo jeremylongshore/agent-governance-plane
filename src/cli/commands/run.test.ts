@@ -70,7 +70,11 @@ test("AGP_CHANNEL=slack fails closed when Slack is not configured", async () => 
   rmSync(dir, { recursive: true, force: true });
 });
 
-test("AGP_CHANNEL=slack fails closed pending the interaction receiver even when configured", async () => {
+test("AGP_CHANNEL=slack fails closed when configured but AGP_SLACK_LIVE is not set", async () => {
+  // The live Socket Mode receiver is the off-CI dogfood path (like AGP_DOCKER_E2E
+  // / AGP_CLAUDE_LIVE); without AGP_SLACK_LIVE=1 we refuse to post a prompt that
+  // nothing can answer. The live wiring itself is covered by the gated
+  // slack-dialer test, not here (it would make a real network call).
   const { env, dir } = provisioned();
   const slackEnv = {
     ...env,
@@ -82,7 +86,7 @@ test("AGP_CHANNEL=slack fails closed pending the interaction receiver even when 
   const lines: string[] = [];
   const code = await runCommand(slackEnv, (l) => lines.push(l));
   expect(code).toBe(1);
-  expect(lines.join("\n")).toContain("interaction receiver");
+  expect(lines.join("\n")).toContain("AGP_SLACK_LIVE");
   rmSync(dir, { recursive: true, force: true });
 });
 

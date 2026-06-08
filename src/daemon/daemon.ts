@@ -84,12 +84,22 @@ export class Daemon {
         tool: req.tool,
         verdict,
       });
-      const decision = await channel.awaitDecision(h);
-      approved = decision.approved;
+      let decidedBy: string | null = null;
+      let reason: string | undefined;
+      try {
+        const decision = await channel.awaitDecision(h);
+        approved = decision.approved;
+        decidedBy = decision.decidedBy;
+      } catch (err) {
+        // No decision (receiver timeout / socket closed) MUST fail closed — the
+        // loop never hangs or crashes waiting on a click that never arrives.
+        approved = false;
+        reason = `no decision: ${(err as Error).message}`;
+      }
       journal.append({
         kind: approved ? "approval.granted" : "approval.denied",
         actor: "session_owner",
-        payload: { messageId: req.id, decidedBy: decision.decidedBy },
+        payload: reason ? { messageId: req.id, decidedBy, reason } : { messageId: req.id, decidedBy },
       });
       effective = approved ? "allow" : "deny";
     }
@@ -144,12 +154,22 @@ export class Daemon {
         tool: req.tool,
         verdict,
       });
-      const decision = await channel.awaitDecision(h);
-      approved = decision.approved;
+      let decidedBy: string | null = null;
+      let reason: string | undefined;
+      try {
+        const decision = await channel.awaitDecision(h);
+        approved = decision.approved;
+        decidedBy = decision.decidedBy;
+      } catch (err) {
+        // No decision (receiver timeout / socket closed) MUST fail closed — the
+        // loop never hangs or crashes waiting on a click that never arrives.
+        approved = false;
+        reason = `no decision: ${(err as Error).message}`;
+      }
       journal.append({
         kind: approved ? "approval.granted" : "approval.denied",
         actor: "session_owner",
-        payload: { messageId: req.id, decidedBy: decision.decidedBy },
+        payload: reason ? { messageId: req.id, decidedBy, reason } : { messageId: req.id, decidedBy },
       });
       effective = approved ? "allow" : "deny";
     }

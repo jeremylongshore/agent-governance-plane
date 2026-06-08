@@ -54,3 +54,28 @@ export interface AgpConfig {
     image?: string;
   };
 }
+
+export interface SlackCreds {
+  botToken: string;
+  appToken: string;
+  channelId: string;
+}
+
+/**
+ * Resolve Slack creds env-first then config file, matching the doctor probe's
+ * precedence (cli/probe.ts). Throws if any is missing — callers gate on
+ * `FsDoctorProbe.slack()` first, so a throw here is a programming error, not an
+ * operator-config error.
+ */
+export function resolveSlackCreds(
+  env: Record<string, string | undefined>,
+  cfg: AgpConfig = {},
+): SlackCreds {
+  const botToken = env.AGP_SLACK_BOT_TOKEN ?? cfg.slack?.botToken;
+  const appToken = env.AGP_SLACK_APP_TOKEN ?? cfg.slack?.appToken;
+  const channelId = env.AGP_SLACK_CHANNEL ?? cfg.slack?.channel;
+  if (!botToken || !appToken || !channelId) {
+    throw new Error("slack creds incomplete (bot token, app token, channel) — run `agp doctor`");
+  }
+  return { botToken, appToken, channelId };
+}

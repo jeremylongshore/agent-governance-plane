@@ -8,7 +8,7 @@
 // `run` fails closed on a missing/invalid signing key or policy.
 
 import { existsSync, readFileSync } from "node:fs";
-import { resolvePaths } from "../../config.ts";
+import { type AgpConfig, resolvePaths, resolveSlackCreds } from "../../config.ts";
 import { loadPrivateKey } from "../../runtime/crypto.ts";
 import { Journal } from "../../journal/journal.ts";
 import { loadPolicyEngine } from "../../policy/engine.ts";
@@ -19,8 +19,13 @@ import { Daemon } from "../../daemon/daemon.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeSprite } from "../../sprites/claude-code/claude-code-sprite.ts";
 import { InMemoryClaudeProcess } from "../../sprites/claude-code/claude-process.ts";
+import { SlackChannel } from "../../channels/slack/slack-channel.ts";
+import { FetchSlackTransport } from "../../channels/slack/transport.ts";
+import { SocketModeInteractionSource } from "../../channels/slack/socket-mode.ts";
+import { FetchWebSocketDialer } from "../../channels/slack/slack-dialer.ts";
 import { FsDoctorProbe } from "../probe.ts";
 import type { SandboxProvider } from "../../contracts/sandbox-provider.ts";
+import type { ChannelAdapter } from "../../contracts/channel-adapter.ts";
 
 export interface RunOptions {
   /** Which harness to drive: "scripted" reference (default) or "claude-code". */
@@ -81,28 +86,62 @@ export async function runCommand(
     out("agp run: recording sandbox (reference — runs nothing; set AGP_SANDBOX=docker for real isolation).");
   }
 
+  // The signed, hash-chained journal is authoritative and always production.
+  const journal = new Journal(paths.journal, privateKey);
+
   // Select the channel. Default is the console reference (fail-closed deny with
-  // no human present). AGP_CHANNEL=slack selects production Slack HITL, which
-  // posts approval requests AND needs an interaction receiver (Socket Mode) to
-  // read Allow/Deny clicks — that receiver is not yet wired (bead agp-e7c), so
-  // a slack request fails closed rather than posting and then hanging.
+  // no human present). AGP_CHANNEL=slack selects production Slack HITL: it posts
+  // approval requests AND needs the Socket Mode receiver to read Allow/Deny
+  // clicks. The live socket is the off-CI dogfood path (like AGP_DOCKER_E2E /
+  // AGP_CLAUDE_LIVE), gated behind AGP_SLACK_LIVE — without it we refuse to post
+  // a prompt nothing can answer.
+  let channel: ChannelAdapter;
+  let receiver: SocketModeInteractionSource | undefined;
   if (env.AGP_CHANNEL === "slack") {
     const slack = new FsDoctorProbe(env).slack();
     if (!slack.ok) {
       out(`agp run: AGP_CHANNEL=slack but ${slack.detail}. (fail-closed)`);
       return 1;
     }
-    out("agp run: AGP_CHANNEL=slack — production Slack HITL needs the interaction receiver (Socket Mode), not yet wired (bead agp-e7c). (fail-closed)");
-    return 1;
+    if (env.AGP_SLACK_LIVE !== "1") {
+      out(
+        "agp run: AGP_CHANNEL=slack but AGP_SLACK_LIVE!=1 — the live Socket Mode click receiver is the off-CI dogfood path; refusing to post a prompt nothing can answer. (fail-closed)",
+      );
+      return 1;
+    }
+    // Safe operator-config load: a missing/malformed file resolves to {} (creds
+    // may still come from env), mirroring the doctor probe's tolerance.
+    let cfg: AgpConfig = {};
+    if (existsSync(paths.config)) {
+      try {
+        cfg = JSON.parse(readFileSync(paths.config, "utf8")) as AgpConfig;
+      } catch {
+        cfg = {};
+      }
+    }
+    const creds = resolveSlackCreds(env, cfg);
+    receiver = new SocketModeInteractionSource({
+      appToken: creds.appToken,
+      dialer: new FetchWebSocketDialer(),
+      onRejected: (r) =>
+        journal.append({
+          kind: "approval.rejected",
+          actor: "session_owner",
+          payload: { reason: r.reason, nonce: r.nonce, decidedBy: r.userId ?? null },
+        }),
+    });
+    await receiver.start();
+    channel = new SlackChannel({
+      transport: new FetchSlackTransport(creds.botToken),
+      interactions: receiver,
+      channelId: creds.channelId,
+    });
+    out("agp run: AGP_CHANNEL=slack — live Socket Mode receiver connected.");
+  } else {
+    channel = new ConsoleChannel(env, out);
   }
-  const channel = new ConsoleChannel(env, out);
 
-  const daemon = new Daemon({
-    policy,
-    journal: new Journal(paths.journal, privateKey),
-    sandbox,
-    channel,
-  });
+  const daemon = new Daemon({ policy, journal, sandbox, channel });
 
   if (sprite === "claude-code") {
     // The live `claude` spawn (BunClaudeProcess) is the manual dogfood path —
@@ -116,6 +155,7 @@ export async function runCommand(
     out("agp run: CLAUDE-CODE sprite — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
     const cc = new ClaudeCodeSprite(new InMemoryClaudeProcess());
     const result = await daemon.runLive(cc, image ? { image } : {});
+    await receiver?.stop();
     out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s) gated:`);
     for (const o of result.outcomes) {
       const approval = o.approved === null ? "" : ` → approval ${o.approved ? "granted" : "denied"}`;
@@ -127,6 +167,7 @@ export async function runCommand(
   }
 
   const result = await daemon.runScripted(new ScriptedSprite(), image ? { image } : {});
+  await receiver?.stop();
 
   out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s):`);
   for (const o of result.outcomes) {

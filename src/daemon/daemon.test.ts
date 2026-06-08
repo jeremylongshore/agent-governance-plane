@@ -11,6 +11,7 @@ import { RecordingSandbox } from "../runtime/sandbox.ts";
 import { ConsoleChannel } from "../runtime/channel.ts";
 import { ScriptedSprite } from "../runtime/sprite.ts";
 import { generateSigningKeyPem, loadPrivateKey, publicKeyFromPrivate } from "../runtime/crypto.ts";
+import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
 
 interface Harness {
   dir: string;
@@ -82,6 +83,35 @@ test("a 'require' call executes only once a human approves", async () => {
   expect(res.outcomes[0]!.executed).toBe(true);
   expect(h.sandbox.recorded).toHaveLength(1);
   rmSync(h.dir, { recursive: true, force: true });
+});
+
+test("a 'require' call fails closed (deny) when the channel cannot get a decision", async () => {
+  // A receiver timeout / socket drop makes awaitDecision reject. The loop MUST
+  // fail closed (deny, not executed, not crash) and journal the reason.
+  const dir = mkdtempSync(join(tmpdir(), "agp-dmn-"));
+  const path = join(dir, "audit.log");
+  const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
+  const journal = new Journal(path, priv, () => "2026-06-02T00:00:00.000Z");
+  const throwingChannel: ChannelAdapter = {
+    postApprovalRequest: (req) => Promise.resolve({ messageId: req.messageId }),
+    awaitDecision: () => Promise.reject(new Error("approval timed out for nonce n1")),
+    projectEvent: () => Promise.resolve(true),
+  };
+  const daemon = new Daemon({
+    policy: new PolicyEngine([{ id: "req-write", effect: "require", tool: "Write" }]),
+    journal,
+    sandbox: new RecordingSandbox(),
+    channel: throwingChannel,
+  });
+  const res = await daemon.runScripted(new ScriptedSprite([{ tool: "Write", args: { path: "/x" } }]), {
+    sessionId: "s1",
+  });
+  expect(res.outcomes[0]!.approved).toBe(false);
+  expect(res.outcomes[0]!.executed).toBe(false);
+  const denied = readEvents(path).find((e) => e.kind === "approval.denied");
+  expect(String(denied?.payload.reason)).toContain("no decision");
+  expect(verifyJournalFile(path, publicKeyFromPrivate(priv)).ok).toBe(true);
+  rmSync(dir, { recursive: true, force: true });
 });
 
 test("runScripted brackets the session with started/ended journal events", async () => {

@@ -25,7 +25,7 @@ mutation.kill_rate: 0
 
 - `coverage.line: 90` — aggregate line %; live-enforced by `scripts/coverage-gate.sh` (+ functions: 88).
 - `coverage.branch: 0` — not gated (Bun reports function/line, not branch).
-- `mutation.kill_rate: 0` — not gated (no mutation tool; deferred to backlog bead `agp-e3b`).
+- `mutation.kill_rate: 0` — not gated; blocked on toolchain. Stryker v9 cannot instrument this Bun/TS codebase (`TypeError: generator is not a function`). `stryker.config.json` + `scripts/mutation-gate.sh` are retained as scaffolding (scope: `src/policy/engine.ts` + `src/policy/dangerous.ts`); no CI job until a Bun-compatible mutation runner exists. Tracked in `agp-7r4`.
 
 > Floors are the project AGGREGATE, not per-file: Bun's built-in per-file
 > `coverageThreshold` trips on the deliberately gated real-environment paths
@@ -36,7 +36,7 @@ mutation.kill_rate: 0
 - L0: **`@intentsolutions/audit-harness@v1.1.4`** — vendored at `.audit-harness/` (wrapper `scripts/audit-harness`, no npm dep). Provides `verify` (hash-pin) + `escape-scan`. Pinned policy surfaces declared in `.harness-hash-extra-patterns`; manifest at `.harness-hash`.
 - L1: GitHub Actions CI — `code` (typecheck + tests + coverage gate), claim-scan, doc-drift, markdownlint, **harness (verify + escape-scan)** (hard); bead-validate (informational). **Pre-commit hook** (`scripts/pre-commit-gates.sh`, wired into `.beads/hooks/pre-commit` above bd's managed section; activate with `bd hooks install`) mirrors all hard gates locally **including harness verify + escape-scan --staged**.
 - L2: strict `tsc --noEmit` + **Biome linter** (`biome.json`, `bun run lint`, recommended rules over `src/`; `noNonNullAssertion` + `useTemplate` off — see CLAUDE.md). Hard gate in CI + pre-commit. Formatter not enabled.
-- L3: `bun test` (88 tests, 16 files) + aggregate coverage gate (`scripts/coverage-gate.sh`).
+- L3: `bun test` (150 tests, 24 files) + aggregate coverage gate (`scripts/coverage-gate.sh`).
 - L4: contract schema tests + gated real-Docker E2E (`AGP_DOCKER_E2E`).
 - L5 (security): replay/bot-reject, journal tamper+truncation detection, default-deny, fail-closed `require`, gate-only mediation.
 
@@ -48,11 +48,17 @@ mutation.kill_rate: 0
 ## Waived / deferred layers
 
 - L5 a11y: waived (no UI).
-- L6 BDD/Gherkin + L7 UAT: deferred — the "Jeremy in his truck" operator persona
+- L6 BDD/Gherkin: `tests/features/J1-governed-session.feature` (6 scenarios mapped
+  to INV-1 through INV-6); executed by `tests/features/J1-governed-session.steps.test.ts`
+  (5 real tests + 1 `.skip` gated behind `AGP_CLAUDE_LIVE`). Gherkin-lint is advisory
+  in CI (`continue-on-error: true`). L7 UAT: the "Jeremy in his truck" operator persona
   is the de-facto UAT; the live dogfood is bead `agp-3g0` (off-CI).
-- Mutation testing: deferred (backlog bead `agp-e3b`); intentionally kept
-  minimal per repo CLAUDE.md. (audit-harness vendoring: DONE — v1.1.4. Linter:
-  DONE — Biome.)
+- Mutation testing: blocked on toolchain (`agp-7r4`). Stryker v9 errors instrumenting
+  this Bun/TS codebase; `stryker.config.json` + `scripts/mutation-gate.sh` are retained
+  as scaffolding (scope: `src/policy/engine.ts` + `src/policy/dangerous.ts`) but NOT
+  CI-wired — no permanently-red or fake-green gate. Re-add the CI job + set a baseline
+  when a Bun-compatible mutation runner exists. (audit-harness vendoring: DONE — v1.1.4.
+  Linter: DONE — Biome.)
 
 ## Last audit
 

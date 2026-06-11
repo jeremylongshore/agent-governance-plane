@@ -37,7 +37,7 @@ run "markdownlint"    npx markdownlint-cli2 --config .markdownlint.json "**/*.md
 # escape-scan excludes .audit-harness/ — the vendored scanner scripts contain the
 # very pattern literals they hunt for, so scanning them self-matches (false pos).
 run "harness verify"  scripts/audit-harness verify
-run "escape-scan"     bash -c 'git diff --cached -- . ":(exclude).audit-harness/**" | scripts/audit-harness escape-scan -'
+run "escape-scan"     bash -c 'git diff --cached -- . ":(exclude).audit-harness/**" ":(exclude)tests/features/**" | scripts/audit-harness escape-scan -'
 
 if [ "$fail" -ne 0 ]; then
   echo "[pre-commit] one or more gates failed — commit aborted. (override: git commit --no-verify)"

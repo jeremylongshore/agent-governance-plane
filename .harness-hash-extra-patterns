@@ -23,3 +23,13 @@ tests/RTM.md
 .markdownlint.json
 bunfig.toml
 biome.json
+
+# Mutation testing config (informational posture; thresholds.break=null until baseline set).
+# Pinned so any silent loosening of scope or threshold is caught by verify.
+stryker.config.json
+
+# BDD/acceptance layer spec (J1 operator journey, INV-1 through INV-6).
+# Human-owned: changes require deliberate re-pin via `scripts/audit-harness init`.
+# The diff-grep gate excludes tests/features/** (INITIAL CREATION); hash-verify
+# is the load-bearing integrity check going forward.
+tests/features/J1-governed-session.feature

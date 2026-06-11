@@ -1,0 +1,18 @@
+{
+  "$schema": "https://stryker-mutator.io/schemas/stryker-schema.json#",
+  "testRunner": "bun",
+  "plugins": ["stryker-mutator-bun-runner"],
+  "mutate": [
+    "src/policy/engine.ts",
+    "src/policy/dangerous.ts"
+  ],
+  "coverageAnalysis": "off",
+  "timeoutMS": 15000,
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  },
+  "disableTypeChecks": true,
+  "reporters": ["progress", "clear-text"]
+}

@@ -3,7 +3,10 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { FsDoctorProbe } from "./probe.ts";
+import { runDoctor } from "./checks.ts";
 import { doctorCommand } from "./commands/doctor.ts";
+
+const dockerPresent = Bun.which("docker") !== null;
 
 function tempHome(): string {
   return mkdtempSync(join(tmpdir(), "agp-probe-"));
@@ -61,6 +64,32 @@ test("slack() requires all of bot token, app token, and channel", () => {
   expect(res.detail).toContain("app token");
   expect(res.detail).toContain("channel");
 
+  rmSync(home, { recursive: true, force: true });
+});
+
+test("runDoctor surfaces a sandbox check via the real FsDoctorProbe", () => {
+  const home = tempHome();
+  const report = runDoctor(new FsDoctorProbe({ AGP_HOME: home }));
+  expect(report.results.map((r) => r.name)).toContain("sandbox");
+  rmSync(home, { recursive: true, force: true });
+});
+
+// When docker is unavailable, sandbox() must fail closed (skipped, not ok).
+// Skip when docker IS present (the live verdict is exercised under AGP_DOCKER_E2E).
+test.skipIf(dockerPresent)("sandbox() fails closed when docker is unavailable", () => {
+  const home = tempHome();
+  const res = new FsDoctorProbe({ AGP_HOME: home }).sandbox();
+  expect(res.ok).toBe(false);
+  expect(res.detail).toContain("docker unavailable");
+  rmSync(home, { recursive: true, force: true });
+});
+
+// Real docker: a throwaway --network none container must verify as isolated. Gated.
+test.skipIf(process.env.AGP_DOCKER_E2E !== "1")("sandbox() verifies isolation against real docker", () => {
+  const home = tempHome();
+  const res = new FsDoctorProbe({ AGP_HOME: home }).sandbox();
+  expect(res.ok).toBe(true);
+  expect(res.detail).toContain("isolation verified");
   rmSync(home, { recursive: true, force: true });
 });
 

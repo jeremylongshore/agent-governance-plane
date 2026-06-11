@@ -17,13 +17,32 @@ import type { SpriteAdapter } from "../contracts/sprite-adapter.ts";
 import type { Journal } from "../journal/journal.ts";
 import type { PolicyEngine } from "../policy/engine.ts";
 import type { ScriptedSprite } from "../runtime/sprite.ts";
+import {
+  type SecretVault,
+  findPlaceholders,
+  redactSecrets,
+  resolvePlaceholders,
+  resolvedSecretValues,
+} from "../sandbox/credentials.ts";
 
 export interface DaemonDeps {
   policy: PolicyEngine;
   journal: Journal;
   sandbox: SandboxProvider;
   channel: ChannelAdapter;
+  /**
+   * Optional secret vault. When present, `{{secret:NAME}}` placeholders in a
+   * tool call's args are resolved to real secrets ONLY in the post-gate argv
+   * handed to `sandbox.exec` — never in any GatewayMessage or journal payload.
+   * When absent, a call carrying a placeholder still FAILS CLOSED (throws),
+   * rather than passing the literal placeholder to exec.
+   */
+  vault?: SecretVault;
 }
+
+/** A vault that holds nothing — used when no `vault` dep is supplied so an
+ *  unexpected placeholder fails closed instead of reaching exec verbatim. */
+const EMPTY_VAULT: SecretVault = { get: () => undefined };
 
 /**
  * A sprite the live driver (`runLive`) can drive to completion. It EXTENDS the
@@ -66,6 +85,7 @@ export class Daemon {
   /** Mediate a single tool call through the full governance loop. */
   async mediate(req: ToolCallRequest, handle: SandboxHandle, sprite: SpriteAdapter): Promise<MediationOutcome> {
     const { policy, journal, sandbox, channel } = this.deps;
+    const vault = this.deps.vault ?? EMPTY_VAULT;
 
     const verdict = policy.evaluate({ tool: req.tool, actor: req.actor });
     journal.append({
@@ -106,18 +126,35 @@ export class Daemon {
 
     let executed = false;
     if (effective === "allow") {
-      const result = await sandbox.exec(handle, this.toCommand(req));
+      // Credential-injection seam: build the argv, then resolve `{{secret:NAME}}`
+      // placeholders to real secrets ONLY here — after the gate, immediately
+      // before exec. The secret value never entered a GatewayMessage and never
+      // enters the journal; we journal the secret NAMES only. Fail closed: a
+      // referenced-but-absent secret throws (resolvePlaceholders), so the literal
+      // placeholder is never handed to exec.
+      const cmd = this.toCommand(req);
+      const secretsUsed = findPlaceholders(cmd);
+      const resolvedCmd = resolvePlaceholders(cmd, vault) as string[];
+      const secretValues = resolvedSecretValues(cmd, vault);
+
+      const result = await sandbox.exec(handle, resolvedCmd);
+      // Redact any echoed secret from the result before it reaches the journal /
+      // the sprite (defense-in-depth; not a guarantee).
+      const safeStdout = redactSecrets(result.stdout, secretValues) as string;
       journal.append({
         kind: "tool_call.executed",
         actor: req.actor,
-        payload: { messageId: req.id, exitCode: result.exitCode },
+        payload:
+          secretsUsed.length > 0
+            ? { messageId: req.id, exitCode: result.exitCode, secretsUsed }
+            : { messageId: req.id, exitCode: result.exitCode },
       });
       await sprite.deliver({
         kind: "tool_call_result",
         id: req.id,
         sessionId: req.sessionId,
         ok: result.exitCode === 0,
-        output: result.stdout,
+        output: safeStdout,
       });
       executed = true;
     } else {

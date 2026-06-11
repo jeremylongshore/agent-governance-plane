@@ -19,11 +19,38 @@ present it as one.
 | Threat | Defense |
 |--------|---------|
 | Agent reads/writes arbitrary host files | No host mounts by default; host-secret paths denied; mounts read-only by default |
-| Agent exfiltrates over the network | `--network none` by default (on only when explicitly enabled) |
+| Agent exfiltrates over the network | `--network none` by default (on only when explicitly enabled), **and the spawn actively VERIFIES the isolation** — see "Verified network isolation" below |
 | Privilege escalation inside the container | `--cap-drop ALL`, `--security-opt no-new-privileges` |
 | Resource exhaustion of the host | `--memory`, `--cpus`, `--pids-limit` |
 | Non-reproducible / tampered images | moving/unpinned images rejected; pin a tag or `@sha256` digest |
 | Silent fallthrough to the host | none — a failed launch is a hard error, never host execution |
+
+## Verified network isolation (not just declared)
+
+A declared `--network none` can silently degrade to default-allow — a daemon
+misconfig, a docker-network override, or a stale image with a baked-in network
+would otherwise pass unnoticed. AGP therefore does not *trust* the flag: after a
+`networkEnabled: false` container starts, the spawn runs an active egress probe
+**inside** the container (a busybox `nc` connect attempt to a non-routable
+TEST-NET-1 address with a short timeout) and **fails closed**:
+
+- Probe could not reach the network (non-zero exit / connection refused / DNS or
+  route failure) ⇒ isolation confirmed, the handle is returned.
+- Probe reached the network (clean connect) **or** the result is ambiguous (the
+  `nc` binary is missing, an unrecognized error) ⇒ the just-spawned container is
+  torn down and the spawn **throws** `network isolation not enforced`. A container
+  that can egress is never handed back. Cannot-prove-isolation is treated as
+  not-isolated.
+
+`agp doctor` surfaces this as a `sandbox` check (spawns a throwaway pinned
+`busybox` container with network off and runs the same probe), so the operator
+can confirm enforcement before a real session. A dev-only escape hatch
+(`AGP_SANDBOX_SKIP_NETCHECK=1`) skips the probe but emits a loud warning — it
+never skips silently.
+
+This verifies *enforcement of the configured network mode*; it does not change
+what the boundary is (see below). Once `networkEnabled: true`, isolation is not
+expected and the probe is not run.
 
 ## What the sandbox does NOT defend
 

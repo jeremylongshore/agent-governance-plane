@@ -20,6 +20,7 @@ import type {
   SandboxSpec,
 } from "../../contracts/sandbox-provider.ts";
 import { BunDockerRunner, type DockerRunner } from "./runner.ts";
+import { verifyNetworkIsolation } from "./network-preflight.ts";
 
 export interface Mount {
   source: string;
@@ -35,6 +36,16 @@ export interface DockerSandboxOptions {
   resources?: { memory?: string; cpus?: string; pidsLimit?: number };
   /** Command keeping the container alive to exec into. */
   keepAlive?: string[];
+  /**
+   * Actively verify network isolation after spawn when network is OFF (default
+   * ON). The preflight execs an egress probe and tears down + throws if the
+   * container can reach the network — never returns a handle that silently
+   * degraded from default-deny to default-allow. Set false only for the dev
+   * escape hatch (also honored via $AGP_SANDBOX_SKIP_NETCHECK=1).
+   */
+  verifyIsolation?: boolean;
+  /** Sink for the loud skip warning when the netcheck is bypassed. Default: console.warn. */
+  warn?: (message: string) => void;
 }
 
 // The moving tag is assembled from parts so the literal never appears in source
@@ -61,6 +72,8 @@ export class DockerSandbox implements SandboxProvider {
   private readonly deniedPrefixes: string[];
   private readonly resources: { memory: string; cpus: string; pidsLimit: number };
   private readonly keepAlive: string[];
+  private readonly verifyIsolation: boolean;
+  private readonly warn: (message: string) => void;
 
   constructor(options: DockerSandboxOptions = {}) {
     this.runner = options.runner ?? new BunDockerRunner();
@@ -72,6 +85,8 @@ export class DockerSandbox implements SandboxProvider {
       pidsLimit: options.resources?.pidsLimit ?? 256,
     };
     this.keepAlive = options.keepAlive ?? ["sleep", "infinity"];
+    this.verifyIsolation = options.verifyIsolation ?? true;
+    this.warn = options.warn ?? ((m) => console.warn(m));
   }
 
   isolation(): IsolationGuarantees {
@@ -144,7 +159,30 @@ export class DockerSandbox implements SandboxProvider {
     }
     const id = res.stdout.trim();
     if (id.length === 0) throw new Error("docker run returned no container id");
-    return { id, sessionId: spec.sessionId };
+    const handle: SandboxHandle = { id, sessionId: spec.sessionId };
+
+    // Network-isolation preflight: when network is OFF, PROVE the container
+    // cannot egress rather than trust the flag. Fail closed — a container that
+    // can reach the network is torn down and the spawn rejects, never returns.
+    if (spec.networkEnabled === false && this.verifyIsolation) {
+      const skip = process.env.AGP_SANDBOX_SKIP_NETCHECK === "1";
+      if (skip) {
+        // Honest dev escape hatch: never skip silently.
+        this.warn(
+          `[agp] WARNING: network-isolation preflight SKIPPED for container ${id} ` +
+            "(AGP_SANDBOX_SKIP_NETCHECK=1) — egress enforcement is UNVERIFIED. Dev only.",
+        );
+      } else {
+        const verdict = await verifyNetworkIsolation(this.runner, handle, { networkRequested: false });
+        if (!verdict.isolated) {
+          // Do not leak an unverified container: tear it down before throwing.
+          await this.teardown(handle);
+          throw new Error(`network isolation not enforced: ${verdict.detail}`);
+        }
+      }
+    }
+
+    return handle;
   }
 
   async exec(handle: SandboxHandle, command: readonly string[]): Promise<ExecResult> {

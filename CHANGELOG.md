@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.46] - 2026-06-11
+
+### Added
+
+- feat(sandbox): credential injection + verified network isolation (#67) (7da34f7)
+
+### Changed
+
+- chore(beads): close agp-e7c (Slack receiver shipped); file + flag agp-ed4 (ACS adoption, pending ISEDC) (ca886d6)
+
 ## [0.1.45] - 2026-06-08
 
 ### Added
@@ -327,7 +337,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...HEAD
+[0.1.46]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...v0.1.46
 [0.1.45]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...v0.1.45
 [0.1.44]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...v0.1.44
 [0.1.43]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.42...v0.1.43

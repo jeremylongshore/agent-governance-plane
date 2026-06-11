@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.47] - 2026-06-11
+
+### Added
+
+- feat(test-infra): close agp-e3b P1/P2 gaps — mutation gate + BDD acceptance layer (#68) (a308e52)
+
 ## [0.1.46] - 2026-06-11
 
 ### Added
@@ -337,7 +343,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.47...HEAD
+[0.1.47]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...v0.1.47
 [0.1.46]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...v0.1.46
 [0.1.45]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...v0.1.45
 [0.1.44]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.43...v0.1.44

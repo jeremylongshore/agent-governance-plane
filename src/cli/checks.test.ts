@@ -6,13 +6,22 @@ const allOk: DoctorProbe = {
   slack: () => ({ ok: true, detail: "slack ok" }),
   signing: () => ({ ok: true, detail: "signing ok" }),
   policy: () => ({ ok: true, detail: "policy ok" }),
+  sandbox: () => ({ ok: true, detail: "sandbox ok" }),
 };
 
 test("runDoctor passes only when every check passes (happy path)", () => {
   const report = runDoctor(allOk);
   expect(report.ok).toBe(true);
-  expect(report.results.map((r) => r.name)).toEqual(["docker", "slack", "signing", "policy"]);
+  expect(report.results.map((r) => r.name)).toEqual(["docker", "slack", "signing", "policy", "sandbox"]);
   expect(report.results.every((r) => r.status === "ok")).toBe(true);
+});
+
+test("runDoctor includes a sandbox check that fails closed", () => {
+  const report = runDoctor({ ...allOk, sandbox: () => ({ ok: false, detail: "isolation unverified" }) });
+  expect(report.ok).toBe(false);
+  const sandbox = report.results.find((r) => r.name === "sandbox");
+  expect(sandbox?.status).toBe("fail");
+  expect(sandbox?.detail).toBe("isolation unverified");
 });
 
 test("runDoctor fails closed when a single check fails (failure path)", () => {
@@ -26,6 +35,7 @@ test("runDoctor fails closed when a single check fails (failure path)", () => {
     "slack",
     "signing",
     "policy",
+    "sandbox",
   ]);
 });
 
@@ -35,6 +45,7 @@ test("runDoctor reports every failure, not just the first", () => {
     slack: () => ({ ok: true, detail: "b" }),
     signing: () => ({ ok: false, detail: "c" }),
     policy: () => ({ ok: false, detail: "d" }),
+    sandbox: () => ({ ok: true, detail: "e" }),
   });
   expect(report.ok).toBe(false);
   expect(report.results.filter((r) => r.status === "fail").map((r) => r.name)).toEqual([

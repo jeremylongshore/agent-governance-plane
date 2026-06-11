@@ -26,6 +26,8 @@ export interface DoctorProbe {
   signing(): { ok: boolean; detail: string };
   /** Policy file present AND parses to a valid policy. */
   policy(): { ok: boolean; detail: string };
+  /** A throwaway sandbox spawns with verified network isolation (active egress probe). */
+  sandbox(): { ok: boolean; detail: string };
 }
 
 const CHECK_ORDER: ReadonlyArray<{ name: string; run: (p: DoctorProbe) => { ok: boolean; detail: string } }> = [
@@ -33,6 +35,7 @@ const CHECK_ORDER: ReadonlyArray<{ name: string; run: (p: DoctorProbe) => { ok: 
   { name: "slack", run: (p) => p.slack() },
   { name: "signing", run: (p) => p.signing() },
   { name: "policy", run: (p) => p.policy() },
+  { name: "sandbox", run: (p) => p.sandbox() },
 ];
 
 export interface DoctorReport {

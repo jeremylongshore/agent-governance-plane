@@ -8,6 +8,11 @@ import type { DoctorProbe } from "./checks.ts";
 import { type AgpConfig, type AgpPaths, resolvePaths } from "../config.ts";
 import { loadPolicyFile } from "../policy/engine.ts";
 import { validatePolicy } from "../policy/dangerous.ts";
+import { classifyEgressProbe, egressProbeArgv } from "../sandbox/docker/network-preflight.ts";
+import type { RunResult } from "../sandbox/docker/runner.ts";
+
+// A pinned image with busybox `nc` for the throwaway isolation probe.
+const SANDBOX_PROBE_IMAGE = "busybox:1.36.1";
 
 export class FsDoctorProbe implements DoctorProbe {
   private readonly paths: AgpPaths;
@@ -60,6 +65,56 @@ export class FsDoctorProbe implements DoctorProbe {
       return { ok: false, detail: `signing key not found at ${this.paths.signingKey}` };
     }
     return { ok: true, detail: "journal signing key present" };
+  }
+
+  /** Synchronous docker invocation for the sandbox probe (mirrors docker()). */
+  private dockerSync(args: readonly string[]): RunResult {
+    const proc = Bun.spawnSync(["docker", ...args]);
+    return {
+      exitCode: proc.exitCode,
+      stdout: proc.stdout.toString(),
+      stderr: proc.stderr.toString(),
+    };
+  }
+
+  sandbox(): { ok: boolean; detail: string } {
+    // Short-circuit: no point probing isolation if docker itself is unavailable.
+    if (!this.docker().ok) {
+      return { ok: false, detail: "skipped: docker unavailable" };
+    }
+    const sessionId = `agp-doctor-${Date.now()}`;
+    const run = this.dockerSync([
+      "run",
+      "-d",
+      "--network",
+      "none",
+      "--cap-drop",
+      "ALL",
+      "--security-opt",
+      "no-new-privileges",
+      "--label",
+      `agp.session=${sessionId}`,
+      SANDBOX_PROBE_IMAGE,
+      "sleep",
+      "30",
+    ]);
+    if (run.exitCode !== 0) {
+      return { ok: false, detail: `sandbox spawn failed: ${run.stderr.trim() || run.stdout.trim()}` };
+    }
+    const id = run.stdout.trim();
+    if (id.length === 0) {
+      return { ok: false, detail: "sandbox spawn returned no container id" };
+    }
+    try {
+      const probe = this.dockerSync(["exec", id, ...egressProbeArgv()]);
+      const verdict = classifyEgressProbe(probe, false);
+      return verdict.isolated
+        ? { ok: true, detail: "sandbox network isolation verified (active egress probe blocked)" }
+        : { ok: false, detail: `sandbox isolation unverified: ${verdict.detail}` };
+    } finally {
+      // Always tear the throwaway container down, even on a thrown verdict.
+      this.dockerSync(["rm", "-f", id]);
+    }
   }
 
   policy(): { ok: boolean; detail: string } {

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.57] - 2026-06-12
+
+### Fixed
+
+- fix(dogfood): add a hard timeout to the governed-run step + job (#78) (a0e33fd)
+
 ## [0.1.56] - 2026-06-12
 
 ### Fixed
@@ -409,7 +415,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.56...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.57...HEAD
+[0.1.57]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.56...v0.1.57
 [0.1.56]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...v0.1.56
 [0.1.55]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...v0.1.55
 [0.1.54]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...v0.1.54

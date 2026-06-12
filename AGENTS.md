@@ -15,10 +15,11 @@ Key posture for agents operating AGP:
   subsystem (Docker sandbox, Slack channel, signing key, policy) is requested but
   unavailable. Never proceed past a non-zero exit.
 - **Subsystem selection on `run`:** `AGP_SANDBOX=docker` (+ `AGP_SANDBOX_IMAGE`),
-  `--sprite claude-code`, `AGP_CHANNEL=slack` — each defaults to the safe
-  reference. Unset = reference mode (recording sandbox + console channel).
-- **No Anthropic API key:** the Claude sprite reuses the operator's Claude Code
-  login session.
+  `--intendant claude-code` (+ `AGP_CLAUDE_LIVE=1`, `AGP_CLAUDE_SANDBOX=docker`),
+  `AGP_CHANNEL=slack` (+ `AGP_SLACK_LIVE=1`) — each defaults to the safe reference.
+  Unset = reference mode (recording sandbox + console channel).
+- **No Anthropic API key on the host path:** the Claude Code intendant reuses the
+  operator's Claude Code login session (a container run uses `ANTHROPIC_API_KEY`).
 
 Full reference: [`000-docs/012-AT-SPEC-cli-surface.md`](000-docs/012-AT-SPEC-cli-surface.md).
 Dev gates: `bun run typecheck` and `bun test`.

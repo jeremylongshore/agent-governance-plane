@@ -8,14 +8,22 @@
 
 ## Overview
 
-Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals
+**agent-governance-plane (AGP)** runs an AI coding agent inside a sandbox, gates
+every tool call it attempts — through a policy engine and, where a rule requires
+it, a human approval in Slack — and writes each decision to a signed, hash-chained
+audit log you can verify offline. It is OSS (Apache-2.0) and single-operator by
+default: one `agp run` spawns the agent, governs it through the harness's own hook
+interface, and **fails closed** on anything unverified. AGP holds no model
+credentials and gates the agent rather than impersonating it.
 
-> **Status:** Phase B, pre-1.0. The full operator CLI is live — `agp init`,
-> `keygen`, `doctor`, `run`, `verify`, `sessions` — driving a contract-first
-> daemon with production subsystems (Docker sandbox, signed hash-chained
-> journal, policy engine, Claude Code sprite, Unix-socket gateway). `agp run`
-> selects each subsystem and **fails closed** when a production option is
-> requested but unavailable. See the
+> **Status:** Phase B, pre-1.0. The operator CLI is live — `agp init`, `keygen`,
+> `doctor`, `run`, `verify`, `sessions` — over a contract-first daemon with real
+> subsystems: Docker sandbox (credential injection + verified network isolation),
+> signed hash-chained journal, policy engine, the Claude Code **intendant** (the
+> per-harness adapter), Slack HITL over a Socket Mode receiver, and a Unix-socket
+> gateway. The live dogfood is proven end-to-end: real Claude Code obeys the gate
+> — on the host and inside a container — and the run produces a journal that
+> `agp verify` replays. See the
 > [16-epic plan](000-docs/002-PP-PLAN-agp-master-blueprint-2026-05-27.md).
 
 ## Getting Started
@@ -62,14 +70,15 @@ fails closed when a production option is requested but unavailable:
 | Axis | Default | Production | Selector |
 |------|---------|-----------|----------|
 | Sandbox | recording (runs nothing) | Docker namespace isolation | `AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` |
-| Sprite | scripted self-test | Claude Code | `--sprite claude-code` (live spawn off-CI) |
-| Channel | console (fail-closed deny) | Slack HITL | `AGP_CHANNEL=slack` (interaction receiver pending) |
+| Intendant | scripted self-test | Claude Code | `--intendant claude-code` + `AGP_CLAUDE_LIVE=1` (add `AGP_CLAUDE_SANDBOX=docker` to run it in a container) |
+| Channel | console (fail-closed deny) | Slack HITL | `AGP_CHANNEL=slack` + `AGP_SLACK_LIVE=1` (Socket Mode receiver) |
 
 Full command reference:
 [`000-docs/012-AT-SPEC-cli-surface.md`](000-docs/012-AT-SPEC-cli-surface.md).
 
-The Claude sprite reuses your existing **Claude Code login session** — AGP holds
-no Anthropic API key.
+The Claude Code intendant reuses your existing **Claude Code login session** — AGP
+holds no Anthropic API key (in a container it authenticates with `ANTHROPIC_API_KEY`,
+passed by name so the value never enters the process arguments).
 
 ## Development
 

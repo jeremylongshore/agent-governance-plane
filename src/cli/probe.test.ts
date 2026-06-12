@@ -104,7 +104,10 @@ test.skipIf(process.env.AGP_DOCKER_E2E !== "1")("sandbox() verifies isolation ag
 test("doctorCommand returns non-zero on an unconfigured home (fail-closed end to end)", () => {
   const home = tempHome();
   const lines: string[] = [];
-  const code = doctorCommand({ AGP_HOME: home }, (l) => lines.push(l));
+  // Skip the sandbox network probe: this is an end-to-end fail-closed test, not a
+  // Docker test, and the real probe spawns a container (~6-9s) that blows the test
+  // timeout in CI. The real-Docker path is covered by the AGP_DOCKER_E2E tests above.
+  const code = doctorCommand({ AGP_HOME: home, AGP_SANDBOX_SKIP_NETCHECK: "1" }, (l) => lines.push(l));
   expect(code).toBe(1);
   expect(lines.some((l) => l.includes("✗"))).toBe(true);
   rmSync(home, { recursive: true, force: true });

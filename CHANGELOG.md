@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.55] - 2026-06-12
+
+### Changed
+
+- chore(beads): note agp-dt4 (reproducible dogfood shipped) + agp-3g0 (substance proven; CI trigger pending) (a75c2e0)
+
+### Fixed
+
+- fix(readme): escape the dash in the Apache-2.0 license badge (was rendering '404: badge not found') (#76) (72da876)
+
 ## [0.1.54] - 2026-06-12
 
 ### Added
@@ -393,7 +403,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...HEAD
+[0.1.55]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...v0.1.55
 [0.1.54]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...v0.1.54
 [0.1.53]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...v0.1.53
 [0.1.52]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.51...v0.1.52

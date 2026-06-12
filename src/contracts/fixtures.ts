@@ -8,7 +8,7 @@
 import type { JournalEvent } from "./journal-event.ts";
 import type { PolicyVerdict } from "./policy-verdict.ts";
 import type { GatewayMessage } from "./gateway-message.ts";
-import type { SpriteIdentity } from "./sprite-adapter.ts";
+import type { IntendantIdentity } from "./intendant-adapter.ts";
 import type { SandboxSpec, IsolationGuarantees } from "./sandbox-provider.ts";
 import type { ApprovalRequest } from "./channel-adapter.ts";
 
@@ -29,7 +29,7 @@ export const validJournalEvent: JournalEvent = {
   tenant_id: null,
   signing_key_id: null,
   approval_binding_type: null,
-  sprite_identity_uri: null,
+  intendant_identity_uri: null,
 };
 
 export const validAllowVerdict: PolicyVerdict = {
@@ -55,7 +55,7 @@ export const validToolCallRequest: GatewayMessage = {
   actor: "claude_process",
 };
 
-export const validSpriteIdentity: SpriteIdentity = {
+export const validIntendantIdentity: IntendantIdentity = {
   name: "claude-code",
   version: "1.0.0",
   uri: null,

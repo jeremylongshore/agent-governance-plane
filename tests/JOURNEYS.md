@@ -42,8 +42,8 @@ the governance loop end-to-end, on a fresh machine.
 | 1 | Scaffold config home (`~/.agp`): config + policy skeletons + signing dir | `agp init` | `cli/commands/init.ts`, `config.ts` | L3/L4 | INV-5 |
 | 2 | Mint the Ed25519 journal-signing key | `agp keygen` | `cli/commands/keygen.ts`, `runtime/crypto.ts` | L3/L5 | INV-2, INV-5 |
 | 3 | Fail-closed prerequisite validation (docker, slack, signing key, policy) | `agp doctor` | `cli/checks.ts`, `cli/probe.ts`, `cli/commands/doctor.ts` | L3/L5 | INV-5 |
-| 4 | Drive a session through the governance loop: policy gate → (if `require`) HITL → signed journal append → sandbox exec / gate-only → journal result | `agp run [--sprite claude-code]` | `cli/commands/run.ts`, `daemon/daemon.ts`, `policy/engine.ts`, `journal/journal.ts`, `sprites/claude-code/claude-code-sprite.ts`, `sandbox/docker/docker-sandbox.ts` | L4/L5 | INV-1, INV-2, INV-3 |
-| 4-live | Live `claude` binary leg of step 4 (real harness spawn) | `agp run --sprite claude-code` + `AGP_CLAUDE_LIVE=1` | `sprites/claude-code/bun-claude-process.ts`, `sprites/claude-code/claude-process.ts` | L6/L7 | INV-1, INV-2 |
+| 4 | Drive a session through the governance loop: policy gate → (if `require`) HITL → signed journal append → sandbox exec / gate-only → journal result | `agp run [--intendant claude-code]` | `cli/commands/run.ts`, `daemon/daemon.ts`, `policy/engine.ts`, `journal/journal.ts`, `intendants/claude-code/claude-code-intendant.ts`, `sandbox/docker/docker-sandbox.ts` | L4/L5 | INV-1, INV-2, INV-3 |
+| 4-live | Live `claude` binary leg of step 4 (real harness spawn) | `agp run --intendant claude-code` + `AGP_CLAUDE_LIVE=1` | `intendants/claude-code/bun-claude-process.ts`, `intendants/claude-code/claude-process.ts` | L6/L7 | INV-1, INV-2 |
 | 5 | Slack approval: dangerous op posts Block-Kit Allow/Deny; operator decides; replay / bot-spoofed clicks rejected | (Slack interaction) | `channels/slack/slack-channel.ts`, `channels/slack/interactions.ts`, `channels/slack/nonce-store.ts`, `channels/slack/blocks.ts` | L5 | INV-3, INV-4 |
 | 6 | Offline re-derivation of hash chain + signatures; detect tamper / truncation | `agp verify` | `cli/commands/verify.ts`, `journal/verify.ts`, `runtime/crypto.ts` | L4/L5 | INV-2 |
 | 7 | List sessions from the journal | `agp sessions` | `cli/commands/sessions.ts`, `journal/journal.ts` | L3 | INV-6 |
@@ -55,8 +55,8 @@ the governance loop end-to-end, on a fresh machine.
 | 1 | `agp init` scaffold | `src/cli/init.test.ts` (creates skeletons + signing dir; `--force` clobber semantics) | ✓ |
 | 2 | `agp keygen` | `src/cli/probe.test.ts` (`signing()` absent→present), `src/cli/verify.test.ts` (public key from keygen round-trips), `src/journal/journal.test.ts` (Ed25519 sign/verify) | ✓ |
 | 3 | `agp doctor` | `src/cli/checks.test.ts` (happy path; fail-closed on one failure; reports every failure), `src/cli/probe.test.ts` (`policy()`/`slack()`/`doctorCommand` fail-closed) | ✓ |
-| 4 | `agp run` governance loop | `src/daemon/daemon.test.ts` (allow→exec→journaled→verifies; deny not executed; `require` denied w/o human; `require` executes after approval; session brackets), `src/policy/engine.test.ts` (default-deny, strictest-effect, require>allow), `src/policy/dangerous.test.ts`, `src/sprites/claude-code/claude-code-sprite.test.ts` (gate-only mediation, default-deny, stop()), `src/sandbox/docker/docker-sandbox.test.ts` (net-off default, pinned-image, no host fallback, honest isolation) | ✓ |
-| 4-live | live `claude` spawn | `src/sprites/claude-code/claude-code-sprite.test.ts` ("live spawn is gated behind `AGP_CLAUDE_LIVE`" — asserts the gate, not the live path); no in-CI E2E/Gherkin layer exercises the real binary | ⚠ |
+| 4 | `agp run` governance loop | `src/daemon/daemon.test.ts` (allow→exec→journaled→verifies; deny not executed; `require` denied w/o human; `require` executes after approval; session brackets), `src/policy/engine.test.ts` (default-deny, strictest-effect, require>allow), `src/policy/dangerous.test.ts`, `src/intendants/claude-code/claude-code-intendant.test.ts` (gate-only mediation, default-deny, stop()), `src/sandbox/docker/docker-sandbox.test.ts` (net-off default, pinned-image, no host fallback, honest isolation) | ✓ |
+| 4-live | live `claude` spawn | `src/intendants/claude-code/claude-code-intendant.test.ts` ("live spawn is gated behind `AGP_CLAUDE_LIVE`" — asserts the gate, not the live path); no in-CI E2E/Gherkin layer exercises the real binary | ⚠ |
 | 5 | Slack approval | `src/channels/slack/slack-channel.test.ts` (Block-Kit Allow/Deny post; human approve/deny; bot cannot approve; best-effort projection), `src/channels/slack/replay-attack.test.ts` (nonce single-use; nonce request-bound; expired-nonce; replayed click denied) | ✓ |
 | 6 | `agp verify` | `src/cli/verify.test.ts` (exit 0 valid / non-zero tamper / explicit path / fail-closed no key), `src/journal/journal.test.ts` (offline public-key verify; edit/insert/reorder/bad-sig/rollback/truncation/forged-head all caught) | ✓ |
 | 7 | `agp sessions` | _none_ — `sessions.ts` has no colocated `*.test.ts` | ✗ |
@@ -73,14 +73,14 @@ the governance loop end-to-end, on a fresh machine.
   "gaps": [
     {"journey": "operator-governed-session",
      "step": "4-live",
-     "description": "Live claude binary leg of agp run --sprite claude-code (real harness spawn)",
+     "description": "Live claude binary leg of agp run --intendant claude-code (real harness spawn)",
      "layer": "L6/L7",
      "status": "partial",
      "linked_invariants": ["INV-1", "INV-2"],
      "linked_moscow": "MUST",
      "gated_by": "AGP_CLAUDE_LIVE (bead agp-3g0); no in-CI E2E or Gherkin layer exists",
      "severity": "P1",
-     "note": "The gate itself is asserted (claude-code-sprite.test.ts) and the gate-only governance loop is fully tested via InMemoryClaudeProcess; only the real-binary system/E2E leg is unexercised in CI. Honest off-CI gating, not a coverage hole. Tracked by the open dogfood bead."},
+     "note": "The gate itself is asserted (claude-code-intendant.test.ts) and the gate-only governance loop is fully tested via InMemoryClaudeProcess; only the real-binary system/E2E leg is unexercised in CI. Honest off-CI gating, not a coverage hole. Tracked by the open dogfood bead."},
     {"journey": "operator-governed-session",
      "step": 7,
      "description": "agp sessions — list sessions from the journal",

@@ -12,7 +12,7 @@ source: src/contracts/sandbox-provider.ts
 
 **INTERNAL — unstable — no public RFC.**
 
-The contract for running a sprite inside an isolated execution environment. v0 is
+The contract for running a intendant inside an isolated execution environment. v0 is
 Docker-based with **honest isolation limits** — a container is process +
 filesystem isolation, not a VM/kernel boundary — and the contract surfaces those
 limits rather than over-claiming.

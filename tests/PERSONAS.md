@@ -23,7 +23,7 @@ Critical:    true
 Permissions: full control of own ~/.agp config home, signing key, and policy;
              session_owner actor in the policy engine; sole human who approves
              or denies tool calls in Slack. Holds no Anthropic API key (the
-             Claude Code sprite reuses the operator's own Claude login).
+             Claude Code intendant reuses the operator's own Claude login).
 Key flows:
   - init-config-and-mint-key   : `agp init` scaffolds ~/.agp + `agp keygen` mints the Ed25519 signing key
   - doctor-fail-closed         : `agp doctor` validates Docker/Slack/signing/policy prerequisites, fail-closed
@@ -46,7 +46,7 @@ Test coverage:
                                             src/cli/probe.test.ts (signing/policy/slack probes; doctorCommand non-zero on unconfigured home);
                                             commands: src/cli/commands/doctor.ts, src/cli/checks.ts, src/cli/probe.ts
   - run-governed-session       : COVERED  — src/daemon/daemon.test.ts (allow->executed+journaled+verifies; started/ended bracketing);
-                                            command: src/cli/commands/run.ts (REFERENCE mode: scripted sprite + recording sandbox)
+                                            command: src/cli/commands/run.ts (REFERENCE mode: scripted intendant + recording sandbox)
   - slack-approval-prompt      : COVERED  — src/channels/slack/slack-channel.test.ts (postApprovalRequest posts nonce-bound Block Kit Approve/Deny)
   - approve-or-deny            : COVERED  — src/channels/slack/slack-channel.test.ts (human Approve->approved; Deny->denied; bot cannot approve);
                                             src/daemon/daemon.test.ts (require denied fail-closed with no human; executes only on approve);

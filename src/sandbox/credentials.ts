@@ -3,7 +3,7 @@
 // could leak into the protocol or the audit journal.
 //
 // Mechanism (canonical per 000-docs/034-AT-ARCH-credential-injection.md):
-//   - A sprite emits a tool_call_request whose `args` contain an OPAQUE
+//   - A intendant emits a tool_call_request whose `args` contain an OPAQUE
 //     placeholder string `{{secret:NAME}}` — the secret VALUE never crosses the
 //     gateway protocol, so it never enters a GatewayMessage or the journal.
 //   - The control-plane Daemon resolves the placeholder to the real secret ONLY
@@ -13,13 +13,13 @@
 //     argv. The journal records WHICH secret names were used, never the values.
 //
 // This is the gateway-side execution model the master blueprint commits to
-// (002 §2.1/§4.1), NOT a sprite-side env-placeholder swap (explicitly rejected;
+// (002 §2.1/§4.1), NOT a intendant-side env-placeholder swap (explicitly rejected;
 // see the design doc). No GatewayMessage / SandboxSpec schema change is needed —
 // `args` is already `z.record(string, unknown)`, so a placeholder is just a
 // string value.
 //
 // Honest boundary: the resolved secret IS visible in the host process table of
-// `docker exec` (host-side, not in-container), and a tool the sprite is allowed
+// `docker exec` (host-side, not in-container), and a tool the intendant is allowed
 // to run can still use — and potentially echo — the secret. `redactSecrets` is
 // best-effort defense-in-depth against an echo, not a guarantee.
 
@@ -32,7 +32,7 @@ export interface SecretVault {
 /** Env prefix a secret name is read under, e.g. AGP_SECRET_GITHUB_TOKEN. */
 export const SECRET_ENV_PREFIX = "AGP_SECRET_";
 
-/** Matches a placeholder token a sprite may emit in an arg value. */
+/** Matches a placeholder token a intendant may emit in an arg value. */
 export const PLACEHOLDER_RE = /\{\{secret:([A-Za-z0-9_]+)\}\}/g;
 
 /**

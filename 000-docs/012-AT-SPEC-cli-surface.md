@@ -18,7 +18,7 @@ a single config home (default `~/.agp`, overridable with `$AGP_HOME`).
 
 ## Claude authentication
 
-The Claude Code sprite reuses the operator's existing **Claude Code login
+The Claude Code intendant reuses the operator's existing **Claude Code login
 session** — AGP holds **no Anthropic API key** (Epic 00 contradiction C7). Quotas
 inherit from the operator's plan; re-auth is handled by `claude`, not by AGP.
 
@@ -77,7 +77,7 @@ production implementation by a selector; an unavailable production option
 
 | Subsystem | Default (reference) | Production | Selector |
 |-----------|---------------------|-----------|----------|
-| Sprite | scripted self-test | Claude Code sprite (Epic 06 ✓) | `--sprite claude-code` (reference harness; live spawn off-CI, `agp-3g0`) |
+| Intendant | scripted self-test | Claude Code intendant (Epic 06 ✓) | `--intendant claude-code` (reference harness; live spawn off-CI, `agp-3g0`) |
 | Sandbox | recording (runs nothing) | Docker namespace isolation (Epic 07 ✓) | `AGP_SANDBOX=docker` + `AGP_SANDBOX_IMAGE=<pinned>` |
 | Channel | console; **auto-denies** (`AGP_AUTO_APPROVE=1` to approve, local only) | Slack HITL (Epic 08 ✓ posting; receiver pending) | `AGP_CHANNEL=slack` — fails closed pending the Socket-Mode interaction receiver (`agp-e7c`) |
 | Policy | — (always production) | policy engine, default-deny (Epic 09 ✓) | always on; rules from `policy.json` |

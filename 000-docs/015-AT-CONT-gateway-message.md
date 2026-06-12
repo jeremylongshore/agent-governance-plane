@@ -12,7 +12,7 @@ source: src/contracts/gateway-message.ts
 
 **INTERNAL — unstable — no public RFC.**
 
-The internal protocol between a sandboxed sprite and the control plane. Every
+The internal protocol between a sandboxed intendant and the control plane. Every
 tool call the agent attempts becomes a request the gateway mediates
 (policy gate → optional HITL → journal) before a result flows back. A
 discriminated union on `kind`.
@@ -21,9 +21,9 @@ discriminated union on `kind`.
 
 | `kind` | Direction | Key fields |
 |--------|-----------|-----------|
-| `tool_call_request` | sprite → gateway | `tool`, `args`, `actor` |
-| `policy_verdict` | gateway → sprite | `verdict` ([PolicyVerdict](014-AT-CONT-policy-verdict.md)) |
-| `tool_call_result` | gateway → sprite | `ok`, `output` |
+| `tool_call_request` | intendant → gateway | `tool`, `args`, `actor` |
+| `policy_verdict` | gateway → intendant | `verdict` ([PolicyVerdict](014-AT-CONT-policy-verdict.md)) |
+| `tool_call_result` | gateway → intendant | `ok`, `output` |
 | `error` | either | `message` (protocol error, not a tool's own failure) |
 
 All variants carry `id` (correlates request ↔ verdict ↔ result) and `sessionId`.

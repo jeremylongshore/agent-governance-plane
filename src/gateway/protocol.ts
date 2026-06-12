@@ -1,5 +1,5 @@
 // Gateway wire protocol — the framing for GatewayMessages carried between a
-// sandboxed sprite and the control plane. v0 transport is a Unix domain socket
+// sandboxed intendant and the control plane. v0 transport is a Unix domain socket
 // ONLY; network transport is forbidden until sender-constrained auth lands
 // (see 000-docs/029-AT-ADR-gateway-unix-socket-only.md for the confused-deputy
 // rationale). This module is transport-agnostic framing: newline-delimited

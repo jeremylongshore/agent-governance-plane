@@ -2,7 +2,7 @@
 // subsystem axes are selectable, each defaulting to the safe reference and
 // failing closed when a production option is requested but unavailable:
 //   - sandbox: recording (default) | docker      (AGP_SANDBOX=docker)
-//   - sprite:  scripted (default)  | claude-code  (--sprite / AGP_SPRITE)
+//   - intendant:  scripted (default)  | claude-code  (--intendant / AGP_INTENDANT)
 //   - channel: console (default)   | slack        (AGP_CHANNEL=slack)
 // The journal (signed, hash-chained) and policy engine are always production.
 // `run` fails closed on a missing/invalid signing key or policy.
@@ -15,12 +15,12 @@ import { Journal } from "../../journal/journal.ts";
 import { loadPolicyEngine } from "../../policy/engine.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
-import { ScriptedSprite } from "../../runtime/sprite.ts";
+import { ScriptedIntendant } from "../../runtime/intendant.ts";
 import { Daemon } from "../../daemon/daemon.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
-import { ClaudeCodeSprite } from "../../sprites/claude-code/claude-code-sprite.ts";
-import { InMemoryClaudeProcess } from "../../sprites/claude-code/claude-process.ts";
-import { BunClaudeProcess, type DockerTarget } from "../../sprites/claude-code/bun-claude-process.ts";
+import { ClaudeCodeIntendant } from "../../intendants/claude-code/claude-code-intendant.ts";
+import { InMemoryClaudeProcess } from "../../intendants/claude-code/claude-process.ts";
+import { BunClaudeProcess, type DockerTarget } from "../../intendants/claude-code/bun-claude-process.ts";
 import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -34,7 +34,7 @@ import type { ChannelAdapter } from "../../contracts/channel-adapter.ts";
 
 export interface RunOptions {
   /** Which harness to drive: "scripted" reference (default) or "claude-code". */
-  sprite?: string;
+  intendant?: string;
   /** (live claude) the task prompt to fix; requires AGP_CLAUDE_LIVE=1. */
   task?: string;
   /** (live claude) the repo `claude` runs in. */
@@ -47,7 +47,7 @@ export async function runCommand(
   opts: RunOptions = {},
 ): Promise<number> {
   const paths = resolvePaths(env);
-  const sprite = opts.sprite ?? env.AGP_SPRITE ?? "scripted";
+  const intendant = opts.intendant ?? env.AGP_INTENDANT ?? "scripted";
 
   if (!existsSync(paths.signingKey)) {
     out(`agp run: signing key missing at ${paths.signingKey} — run \`agp keygen\`. (fail-closed)`);
@@ -152,12 +152,12 @@ export async function runCommand(
 
   const daemon = new Daemon({ policy, journal, sandbox, channel });
 
-  if (sprite === "claude-code") {
+  if (intendant === "claude-code") {
     // Live path (AGP_CLAUDE_LIVE=1): spawn the real `claude` on a task + repo and
     // gate every tool call via the PreToolUse hook bridge → session socket →
     // daemon.gate (000-docs/037-AT-ADR). Off-CI by design. Without the flag, the
     // deterministic InMemoryClaudeProcess reference drives the same gate loop.
-    let cc: ClaudeCodeSprite;
+    let cc: ClaudeCodeIntendant;
     if (env.AGP_CLAUDE_LIVE === "1") {
       const task = opts.task ?? env.AGP_TASK;
       const repo = opts.repo ?? env.AGP_REPO;
@@ -185,10 +185,10 @@ export async function runCommand(
       } else {
         out(`agp run: CLAUDE-CODE LIVE — spawning real claude on the host in ${repo}; every tool call gated via ${socketPath}.`);
       }
-      cc = new ClaudeCodeSprite(new BunClaudeProcess({ task, repoPath: repo, bridgeSocket: socketPath, env, docker }));
+      cc = new ClaudeCodeIntendant(new BunClaudeProcess({ task, repoPath: repo, bridgeSocket: socketPath, env, docker }));
     } else {
-      out("agp run: CLAUDE-CODE sprite — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
-      cc = new ClaudeCodeSprite(new InMemoryClaudeProcess());
+      out("agp run: CLAUDE-CODE intendant — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
+      cc = new ClaudeCodeIntendant(new InMemoryClaudeProcess());
     }
     const result = await daemon.runLive(cc, image ? { image } : {});
     await receiver?.stop();
@@ -202,7 +202,7 @@ export async function runCommand(
     return 0;
   }
 
-  const result = await daemon.runScripted(new ScriptedSprite(), image ? { image } : {});
+  const result = await daemon.runScripted(new ScriptedIntendant(), image ? { image } : {});
   await receiver?.stop();
 
   out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s):`);

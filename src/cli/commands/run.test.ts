@@ -96,7 +96,7 @@ test("the claude-code live flag fails closed without --task/--repo", async () =>
   // spawn is exercised off-CI — see the AGP_CLAUDE_LIVE dogfood test.)
   const { env, dir } = provisioned();
   const lines: string[] = [];
-  const code = await runCommand({ ...env, AGP_CLAUDE_LIVE: "1" }, (l) => lines.push(l), { sprite: "claude-code" });
+  const code = await runCommand({ ...env, AGP_CLAUDE_LIVE: "1" }, (l) => lines.push(l), { intendant: "claude-code" });
   expect(code).toBe(1);
   expect(lines.join("\n")).toContain("requires --task");
   rmSync(dir, { recursive: true, force: true });

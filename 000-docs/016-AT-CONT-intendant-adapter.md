@@ -1,14 +1,14 @@
 ---
-title: "Contract: SpriteAdapter"
+title: "Contract: IntendantAdapter"
 date: 2026-06-01
 author: Jeremy Longshore
 type: Contract (CONT)
 stability: INTERNAL — unstable — no public RFC
 epic: Epic 03 — core contracts (bead agp-nsd)
-source: src/contracts/sprite-adapter.ts
+source: src/contracts/intendant-adapter.ts
 ---
 
-# Contract: SpriteAdapter
+# Contract: IntendantAdapter
 
 **INTERNAL — unstable — no public RFC.**
 
@@ -20,13 +20,13 @@ harness's tool calls to the gateway and delivers verdicts/results back.
 
 | Member | Signature | Purpose |
 |--------|-----------|---------|
-| `identity` | `SpriteIdentity` | name + version (+ reserved `uri`) |
+| `identity` | `IntendantIdentity` | name + version (+ reserved `uri`) |
 | `start` | `(sessionId) => Promise<void>` | begin a session |
 | `onToolCall` | `(handler) => void` | gateway registers its tool-call receiver |
-| `deliver` | `(GatewayMessage) => Promise<void>` | push a verdict/result to the sprite |
+| `deliver` | `(GatewayMessage) => Promise<void>` | push a verdict/result to the intendant |
 | `stop` | `() => Promise<void>` | tear down; idempotent |
 
-`SpriteIdentity.uri` (Sigstore identity) is **reserved — null at v0** (sprite
+`IntendantIdentity.uri` (Sigstore identity) is **reserved — null at v0** (intendant
 identity ships at v0.6).
 
 ## Conformance

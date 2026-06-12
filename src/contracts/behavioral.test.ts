@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { SpriteIdentity, type SpriteAdapter, type ToolCallHandler } from "./sprite-adapter.ts";
+import { IntendantIdentity, type IntendantAdapter, type ToolCallHandler } from "./intendant-adapter.ts";
 import {
   SandboxSpec,
   IsolationGuarantees,
@@ -15,7 +15,7 @@ import {
 } from "./channel-adapter.ts";
 import type { GatewayMessage } from "./gateway-message.ts";
 import {
-  validSpriteIdentity,
+  validIntendantIdentity,
   validSandboxSpec,
   containerIsolation,
   validApprovalRequest,
@@ -24,10 +24,10 @@ import {
 
 // ---- data-part schemas -----------------------------------------------------
 
-test("SpriteIdentity parses; uri reserved (null) at v0", () => {
-  const parsed = SpriteIdentity.parse(validSpriteIdentity);
+test("IntendantIdentity parses; uri reserved (null) at v0", () => {
+  const parsed = IntendantIdentity.parse(validIntendantIdentity);
   expect(parsed.uri).toBeNull();
-  expect(SpriteIdentity.parse({ name: "x", version: "1" }).uri).toBeNull();
+  expect(IntendantIdentity.parse({ name: "x", version: "1" }).uri).toBeNull();
 });
 
 test("SandboxSpec defaults networkEnabled to false (fail-closed)", () => {
@@ -50,8 +50,8 @@ test("ApprovalRequest accepts a require verdict, rejects a non-require one", () 
 
 // ---- reference-fake conformance --------------------------------------------
 
-class FakeSprite implements SpriteAdapter {
-  readonly identity = validSpriteIdentity;
+class FakeIntendant implements IntendantAdapter {
+  readonly identity = validIntendantIdentity;
   private handler: ToolCallHandler | null = null;
   delivered: GatewayMessage[] = [];
   started = false;
@@ -102,14 +102,14 @@ class FakeChannel implements ChannelAdapter {
   }
 }
 
-test("a reference SpriteAdapter conforms and drives a session", async () => {
-  const sprite = new FakeSprite();
-  await sprite.start("s1");
-  expect(sprite.started).toBe(true);
-  sprite.onToolCall(() => {});
-  expect(sprite.hasHandler()).toBe(true);
-  await sprite.stop();
-  expect(sprite.started).toBe(false);
+test("a reference IntendantAdapter conforms and drives a session", async () => {
+  const intendant = new FakeIntendant();
+  await intendant.start("s1");
+  expect(intendant.started).toBe(true);
+  intendant.onToolCall(() => {});
+  expect(intendant.hasHandler()).toBe(true);
+  await intendant.stop();
+  expect(intendant.started).toBe(false);
 });
 
 test("a reference SandboxProvider spawns/execs/tears down", async () => {

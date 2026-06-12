@@ -11,7 +11,7 @@
 // Topology + the measured PreToolUse hook contract: 000-docs/037-AT-ADR.
 // Flow per tool call:
 //   claude PreToolUse hook → `agp bridge` (the hook command) → session Unix socket
-//   → this GatewayServer → onPreToolUse → ClaudeCodeSprite → daemon.gate
+//   → this GatewayServer → onPreToolUse → ClaudeCodeIntendant → daemon.gate
 //   → respond() → socket reply → bridge exits 0 (allow) / 2 (deny) → claude obeys.
 
 import { writeFileSync } from "node:fs";
@@ -145,7 +145,7 @@ export class BunClaudeProcess implements ClaudeProcess {
       handler: (req) =>
         new Promise<GatewayMessage>((resolve) => {
           if (this.handler === null) {
-            // No sprite handler wired → fail closed.
+            // No intendant handler wired → fail closed.
             resolve({ kind: "error", id: req.id, sessionId: req.sessionId, message: "no gate handler registered" });
             return;
           }

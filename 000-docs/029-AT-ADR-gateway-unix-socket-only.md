@@ -16,7 +16,7 @@ supersedes: none
 
 ## Context
 
-The Gateway carries every tool call from a sandboxed sprite to the control
+The Gateway carries every tool call from a sandboxed intendant to the control
 plane. The sandbox runs a potentially **prompt-injected agent** — it is, in the
 threat model's words (`002-PP-PLAN` §2.2, TB2), a *confused-deputy factory*. A
 compromised agent will try to forge Gateway calls that the operator's signing

@@ -128,3 +128,54 @@ jobs:
         # Falls back to the harness's built-in awk rubric if gherkin-lint CLI is absent.
         continue-on-error: true
         run: scripts/audit-harness gherkin-lint --path tests/features/
+
+  dogfood:
+    # Deterministic governed-loop dogfood — HARD gate, every PR. Drives the
+    # claude-code intendant with its in-memory harness (no model, no docker, no
+    # network, no cost) through the full loop: policy gate → HITL → signed journal.
+    # Proves end-to-end that the governance loop produces a verifiable journal with
+    # real gated decisions (allow + require→approve + deny). The real-Claude
+    # witnessed run lives off-CI in dogfood.yml. evidence-bundle.sh fails the run if
+    # zero calls were gated (no fake-green).
+    name: Governed-loop dogfood (deterministic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.23"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Provision AGP (init + keygen + gating policy)
+        run: |
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          bun src/cli/index.ts init
+          bun src/cli/index.ts keygen
+          cat > "$AGP_HOME/policy.json" <<'POLICY'
+          {
+            "rules": [
+              { "id": "allow-read",    "effect": "allow",   "tool": "Read" },
+              { "id": "require-write", "effect": "require", "tool": "Write" },
+              { "id": "deny-bash",     "effect": "deny",    "tool": "Bash" }
+            ]
+          }
+          POLICY
+      - name: Run the deterministic governed loop
+        run: |
+          set -o pipefail
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          AGP_AUTO_APPROVE=1 bun src/cli/index.ts run --intendant claude-code | tee "$RUNNER_TEMP/run.log"
+      - name: Verify + assemble evidence (fails if 0 calls gated)
+        run: |
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          bash scripts/evidence-bundle.sh \
+            --home "$AGP_HOME" --out "$RUNNER_TEMP/evidence" \
+            --task "deterministic governed-loop (in-memory claude-code intendant)" \
+            --bead "agp-dt4" --repo "(in-memory)"
+      - name: Upload the evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: governed-loop-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/evidence

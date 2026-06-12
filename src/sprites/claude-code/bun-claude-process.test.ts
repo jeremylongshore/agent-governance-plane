@@ -122,6 +122,40 @@ test("run spawns claude (injected) with the bridge settings + argv, then awaits 
   await proc.stop();
 });
 
+test("docker mode writes container settings + launches via the docker launcher", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "agp-bcpd-"));
+  const socketPath = join(dir, "gate.sock");
+  let got: { image: string; repoPath: string; socketDir: string; agpRepoPath: string; apiKey?: string } | null = null;
+  const proc = new BunClaudeProcess({
+    task: "fix the flake",
+    repoPath: "/tmp/ccsc",
+    bridgeSocket: socketPath,
+    env: LIVE,
+    docker: { image: "agp-claude-sandbox:v0", agpRepoPath: "/tmp/agp", apiKey: "sk-test", networkEnabled: true },
+    dockerLaunch: (opts) => {
+      got = opts;
+      return { exited: Promise.resolve(0), kill: () => {} };
+    },
+  });
+  proc.onPreToolUse(() => {});
+  await proc.start("sD");
+  await proc.run();
+
+  expect(got).not.toBeNull();
+  const opts = got as unknown as { image: string; repoPath: string; socketDir: string; agpRepoPath: string; apiKey?: string };
+  expect(opts.image).toBe("agp-claude-sandbox:v0");
+  expect(opts.repoPath).toBe("/tmp/ccsc");
+  expect(opts.socketDir).toBe(dir);
+  expect(opts.agpRepoPath).toBe("/tmp/agp");
+  expect(opts.apiKey).toBe("sk-test");
+
+  const settings = JSON.parse(readFileSync(join(dir, "settings.json"), "utf8")) as {
+    hooks: { PreToolUse: Array<{ hooks: Array<{ command: string }> }> };
+  };
+  expect(settings.hooks.PreToolUse[0]!.hooks[0]!.command).toContain("/agp/src/cli/index.ts bridge");
+  await proc.stop();
+});
+
 test("stop fails closed on a pending hook and closes the socket (no hang)", async () => {
   const socketPath = freshSocket();
   const proc = new BunClaudeProcess({ task: "t", repoPath: "/tmp", bridgeSocket: socketPath, env: LIVE });

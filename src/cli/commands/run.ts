@@ -7,7 +7,8 @@
 // The journal (signed, hash-chained) and policy engine are always production.
 // `run` fails closed on a missing/invalid signing key or policy.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { type AgpConfig, resolvePaths, resolveSlackCreds } from "../../config.ts";
 import { loadPrivateKey } from "../../runtime/crypto.ts";
 import { Journal } from "../../journal/journal.ts";
@@ -19,7 +20,7 @@ import { Daemon } from "../../daemon/daemon.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeSprite } from "../../sprites/claude-code/claude-code-sprite.ts";
 import { InMemoryClaudeProcess } from "../../sprites/claude-code/claude-process.ts";
-import { BunClaudeProcess } from "../../sprites/claude-code/bun-claude-process.ts";
+import { BunClaudeProcess, type DockerTarget } from "../../sprites/claude-code/bun-claude-process.ts";
 import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -164,9 +165,27 @@ export async function runCommand(
         out("agp run: AGP_CLAUDE_LIVE=1 requires --task <prompt> and --repo <path> (or AGP_TASK / AGP_REPO). (fail-closed)");
         return 1;
       }
-      const socketPath = join(tmpdir(), `agp-${randomUUID()}.sock`);
-      out(`agp run: CLAUDE-CODE LIVE — spawning real claude in ${repo}; every tool call gated via ${socketPath}.`);
-      cc = new ClaudeCodeSprite(new BunClaudeProcess({ task, repoPath: repo, bridgeSocket: socketPath, env }));
+      // The socket lives in its own dir so Topology B can bind-mount that dir
+      // into the container (the in-container bridge reaches the host gate there).
+      const socketDir = join(tmpdir(), `agp-${randomUUID()}`);
+      mkdirSync(socketDir, { recursive: true });
+      const socketPath = join(socketDir, "gate.sock");
+
+      let docker: DockerTarget | undefined;
+      if (env.AGP_CLAUDE_SANDBOX === "docker") {
+        // Topology B (037-AT-ADR): claude runs in a network-enabled container.
+        const image = env.AGP_CLAUDE_SANDBOX_IMAGE ?? env.AGP_SANDBOX_IMAGE;
+        if (!image) {
+          out("agp run: AGP_CLAUDE_SANDBOX=docker requires AGP_CLAUDE_SANDBOX_IMAGE=<pinned image>. (fail-closed)");
+          return 1;
+        }
+        const agpRepoPath = fileURLToPath(new URL("../../..", import.meta.url));
+        docker = { image, agpRepoPath, apiKey: env.ANTHROPIC_API_KEY, networkEnabled: true };
+        out(`agp run: CLAUDE-CODE LIVE (Topology B) — claude in container ${image} on ${repo}; tool calls gated via ${socketPath} (full egress — see 037-AT-ADR).`);
+      } else {
+        out(`agp run: CLAUDE-CODE LIVE — spawning real claude on the host in ${repo}; every tool call gated via ${socketPath}.`);
+      }
+      cc = new ClaudeCodeSprite(new BunClaudeProcess({ task, repoPath: repo, bridgeSocket: socketPath, env, docker }));
     } else {
       out("agp run: CLAUDE-CODE sprite — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
       cc = new ClaudeCodeSprite(new InMemoryClaudeProcess());

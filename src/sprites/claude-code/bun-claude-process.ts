@@ -16,11 +16,37 @@
 
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { GatewayMessage } from "../../contracts/gateway-message.ts";
 import { GatewayServer } from "../../gateway/server.ts";
 import type { ClaudeProcess, HookDecision, PreToolUseEvent } from "./claude-process.ts";
+import {
+  buildContainerBridgeCommand,
+  dockerClaudeLaunch,
+  type DockerLaunchHandle,
+} from "./docker-claude-launch.ts";
+
+/** Options for running the harness inside a Docker container (Topology B). */
+export interface DockerTarget {
+  image: string;
+  /** Host AGP repo, mounted ro at /agp so `agp bridge` runs in-container. */
+  agpRepoPath: string;
+  /** Anthropic API key (in-container auth; passed by name, never in argv). */
+  apiKey?: string;
+  /** Full egress to reach the model API (Topology B default true). */
+  networkEnabled?: boolean;
+}
+
+type DockerLauncher = (opts: {
+  image: string;
+  repoPath: string;
+  socketDir: string;
+  agpRepoPath: string;
+  task: string;
+  networkEnabled?: boolean;
+  apiKey?: string;
+}) => DockerLaunchHandle;
 
 export interface BunClaudeOptions {
   /** The task prompt handed to `claude` (e.g. "fix the failing test in foo.ts"). */
@@ -38,6 +64,12 @@ export interface BunClaudeOptions {
    * correlation can be unit-tested without a real binary. Defaults to Bun.spawn.
    */
   launch?: (argv: string[], cwd: string) => { exited: Promise<number>; kill: () => void };
+  /** When set, run claude INSIDE a Docker container (Topology B) instead of on
+   *  the host. The bridgeSocket's parent dir is mounted into the container at
+   *  /agp-sock, so the in-container bridge reaches the host gate over the socket. */
+  docker?: DockerTarget;
+  /** Injectable docker launcher (tests); defaults to dockerClaudeLaunch. */
+  dockerLaunch?: DockerLauncher;
 }
 
 /** A PreToolUse hook entry for Claude Code's settings file. */
@@ -151,6 +183,31 @@ export class BunClaudeProcess implements ClaudeProcess {
    *  PreToolUse hook until the gate responds — real back-pressure. */
   async run(): Promise<void> {
     this.assertLive();
+
+    // Topology B: claude runs inside a container; settings + bridge command use
+    // CONTAINER paths, and the spawn is `docker run` with the repo/socket/agp
+    // mounted. The host GatewayServer still owns the gate over the bind-mounted socket.
+    if (this.opts.docker !== undefined) {
+      const socketDir = dirname(this.opts.bridgeSocket);
+      writeFileSync(
+        join(socketDir, "settings.json"),
+        JSON.stringify(buildHookSettings(buildContainerBridgeCommand()), null, 2),
+      );
+      const launch = this.opts.dockerLaunch ?? dockerClaudeLaunch;
+      this.child = launch({
+        image: this.opts.docker.image,
+        repoPath: this.opts.repoPath,
+        socketDir,
+        agpRepoPath: this.opts.docker.agpRepoPath,
+        task: this.opts.task,
+        networkEnabled: this.opts.docker.networkEnabled ?? true,
+        apiKey: this.opts.docker.apiKey,
+      });
+      await this.child.exited;
+      return;
+    }
+
+    // Host path: claude runs on the host with the host bridge command.
     const settingsPath = join(tmpdir(), `agp-${this.sessionId}-settings.json`);
     const bridgeCommand = buildBridgeCommand(this.opts.bridgeSocket);
     writeFileSync(settingsPath, JSON.stringify(buildHookSettings(bridgeCommand), null, 2));

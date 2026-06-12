@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.58] - 2026-06-12
+
+### Added
+
+- feat(ci): deterministic governed-loop dogfood as a required gate (agp-dt4) (#79) (e9013c2)
+
 ## [0.1.57] - 2026-06-12
 
 ### Fixed
@@ -415,7 +421,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.57...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.58...HEAD
+[0.1.58]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.57...v0.1.58
 [0.1.57]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.56...v0.1.57
 [0.1.56]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...v0.1.56
 [0.1.55]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...v0.1.55

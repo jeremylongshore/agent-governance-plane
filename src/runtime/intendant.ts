@@ -1,17 +1,17 @@
-// ScriptedSprite — AGP reference SpriteAdapter. Emits a fixed sequence of
+// ScriptedIntendant — AGP reference IntendantAdapter. Emits a fixed sequence of
 // tool-call requests so `agp run` can drive the governance loop end-to-end as a
 // self-test, with no real harness attached. It records what the gateway delivers
 // back (verdicts/results).
 //
-// REFERENCE — the production sprite (Epic 06, agp-92v) replaces this with the
+// REFERENCE — the production intendant (Epic 06, agp-92v) replaces this with the
 // real Claude Code adapter, which reuses the operator's Claude Code login
 // session (no Anthropic API key).
 
 import type { GatewayMessage, ToolCallRequest } from "../contracts/gateway-message.ts";
-import type { SpriteAdapter, SpriteIdentity, ToolCallHandler } from "../contracts/sprite-adapter.ts";
+import type { IntendantAdapter, IntendantIdentity, ToolCallHandler } from "../contracts/intendant-adapter.ts";
 
-export class ScriptedSprite implements SpriteAdapter {
-  readonly identity: SpriteIdentity = { name: "scripted-reference", version: "0.0.0", uri: null };
+export class ScriptedIntendant implements IntendantAdapter {
+  readonly identity: IntendantIdentity = { name: "scripted-reference", version: "0.0.0", uri: null };
   readonly delivered: GatewayMessage[] = [];
   private handler: ToolCallHandler | null = null;
   private readonly script: ReadonlyArray<{ tool: string; args: Record<string, unknown> }>;

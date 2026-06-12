@@ -29,9 +29,9 @@ test("with no journal yet, reports nothing to list and exits 0", () => {
 test("lists each recorded session with its start time and call count", () => {
   const { env, dir } = homeEnv();
   const j = journalFor(env);
-  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "s1", sprite: { name: "scripted" } } });
+  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "s1", intendant: { name: "scripted" } } });
   j.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId: "s1", calls: 3 } });
-  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "s2", sprite: { name: "claude-code" } } });
+  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "s2", intendant: { name: "claude-code" } } });
   j.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId: "s2", calls: 0 } });
 
   const lines: string[] = [];
@@ -48,7 +48,7 @@ test("lists each recorded session with its start time and call count", () => {
 test("an in-flight session (started, not ended) shows calls unknown", () => {
   const { env, dir } = homeEnv();
   const j = journalFor(env);
-  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "live", sprite: { name: "claude-code" } } });
+  j.append({ kind: "session.started", actor: "session_owner", payload: { sessionId: "live", intendant: { name: "claude-code" } } });
 
   const lines: string[] = [];
   sessionsCommand(env, (l) => lines.push(l));

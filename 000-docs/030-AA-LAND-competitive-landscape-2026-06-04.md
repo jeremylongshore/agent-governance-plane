@@ -138,7 +138,7 @@ audit are marked ⚠️ with the mechanism noted.
 | Player | Layer | Sandbox | Multi-harness | Slack-native HITL | Signed audit | All 4? |
 |---|---|---|---|---|---|---|
 | **AGP** (this project) | L2–L4 | ✅ Docker v0 / Firecracker v0.3+ | ✅ Claude v0; Codex v0.1; pluggable | ✅ Slack-native (CCSC primitives) | ✅ Ed25519 + JCS + hash chain (publicly verifiable) | **YES** |
-| **Microsoft AGT / ACS** | L3–L4 | ✅ sandbox is a policy action | ⚠️ framework-agnostic via ACS manifest; no per-harness "sprite" | ❌ generic approval workflows; no chat-native surface | ⚠️ Merkle hash-chain + **HMAC** (symmetric) | **No** — no Slack HITL; symmetric signing |
+| **Microsoft AGT / ACS** | L3–L4 | ✅ sandbox is a policy action | ⚠️ framework-agnostic via ACS manifest; no per-harness "intendant" | ❌ generic approval workflows; no chat-native surface | ⚠️ Merkle hash-chain + **HMAC** (symmetric) | **No** — no Slack HITL; symmetric signing |
 | **Runtime** (YC P26) | L2–L4 | ✅ isolated envs (E2B/Daytona/EC2/k8s) | ✅ Claude Code, Cursor, Codex, Copilot, Gemini CLI, Devin, OpenCode | ✅ @mention agents in Slack | ⚠️ "audit logs" — signing/chaining unconfirmed | **~3.5** — closest same-span rival |
 | **Credal** | L3–L4 | ✅ browser + code sandbox | ✅ Claude/GPT/Gemini + MCP (was mis-read as Anthropic-only) | ⚠️ Slack-integrated (1 of 50+ connectors), not Slack-native | ✅ full traceability + SOC2 (not crypto-signed) | **No** — not Slack-native; enterprise buyer |
 | **Speakeasy** | L3 | ✅ SDK/workflow sandbox | ✅ multi-LLM workflow | ❌ web UI / GH Actions | ✅ workflow log | **No** — no Slack HITL |
@@ -241,8 +241,8 @@ strictly earn.
 
 **What AGT/ACS does NOT do** (the surviving AGP differentiation): no Slack-native (or
 any chat-native) HITL surface — its human path is generic "approval workflows with
-quorum logic"; no per-harness "sprite" adapter model (its agnosticism is spec-level,
-not a Claude-sprite/Codex-sprite architecture); and it is framed for multi-team
+quorum logic"; no per-harness "intendant" adapter model (its agnosticism is spec-level,
+not a Claude-intendant/Codex-intendant architecture); and it is framed for multi-team
 enterprise (EU AI Act / HIPAA / SOC2 compliance grading), **not** a single-operator
 self-host. (See §5 for whether those hold up as a wedge.)
 

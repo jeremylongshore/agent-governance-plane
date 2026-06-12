@@ -10,7 +10,7 @@ stability: INTERNAL — unstable — will break through v0.5; no public RFC at v
 
 # Architecture: Gateway Protocol
 
-The Gateway is the boundary between a **sandboxed sprite** and the **control
+The Gateway is the boundary between a **sandboxed intendant** and the **control
 plane** — the one protocol the blueprint says is "worth taking seriously"
 (`002-PP-PLAN` §1). Every tool call the agent attempts crosses it: request in,
 policy verdict (or result) out. v0 carries `GatewayMessage`
@@ -21,7 +21,7 @@ only** — network transport is forbidden at v0 (see
 ## Topology
 
 ```
-sandboxed sprite ──tool_call_request──▶ GatewayClient ═╗ (Unix socket)
+sandboxed intendant ──tool_call_request──▶ GatewayClient ═╗ (Unix socket)
                                                        ║
 control plane (daemon.gate) ◀──────────── GatewayServer ╝
                   │

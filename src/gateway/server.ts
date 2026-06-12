@@ -1,7 +1,7 @@
 // GatewayServer — the control-plane end of the Gateway protocol. It listens on
 // a Unix domain socket (network transport is forbidden at v0 — see
 // 000-docs/029-AT-ADR-gateway-unix-socket-only.md), reads framed tool-call
-// requests from a sandboxed sprite, runs an injected mediation handler (the
+// requests from a sandboxed intendant, runs an injected mediation handler (the
 // daemon's gate loop), and writes the correlated response.
 //
 // Security posture (v0): the sandbox is a confused-deputy factory. The single-

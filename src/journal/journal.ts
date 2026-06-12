@@ -82,7 +82,7 @@ export class Journal {
       tenant_id: null,
       signing_key_id: null,
       approval_binding_type: null,
-      sprite_identity_uri: null,
+      intendant_identity_uri: null,
     };
 
     const bytes = eventCanonicalBytes(unsealed, prevHash);

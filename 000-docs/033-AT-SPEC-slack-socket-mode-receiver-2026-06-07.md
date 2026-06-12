@@ -12,7 +12,7 @@ Out of scope (state honestly): multi-approver quorum, text-reply (`y <id>` / `n 
 
 ### 1.1 Where the receiver lives and how it connects
 
-The receiver is a control-plane component. It lives **entirely in the control plane**, never in the sandbox. The trust boundary AGP enforces is Sandbox (untrusted agent) → Control Plane (trusted governor). The Socket Mode WebSocket is an **outbound dial from the control plane to Slack** authenticated by the operator's app-level token; the sandbox never sees the token, never opens a socket, and never receives a click. This preserves isolation: a compromised sprite cannot reach the approval channel because the channel is in a different process boundary, and approval flows in over a connection the sandbox has no handle to.
+The receiver is a control-plane component. It lives **entirely in the control plane**, never in the sandbox. The trust boundary AGP enforces is Sandbox (untrusted agent) → Control Plane (trusted governor). The Socket Mode WebSocket is an **outbound dial from the control plane to Slack** authenticated by the operator's app-level token; the sandbox never sees the token, never opens a socket, and never receives a click. This preserves isolation: a compromised intendant cannot reach the approval channel because the channel is in a different process boundary, and approval flows in over a connection the sandbox has no handle to.
 
 Connection model (Socket Mode, lifted from CCSC `server.ts:235-236` + `server.ts:3331`):
 

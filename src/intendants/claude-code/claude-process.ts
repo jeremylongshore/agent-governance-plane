@@ -1,8 +1,8 @@
-// ClaudeProcess — the injectable seam between the ClaudeCodeSprite and the real
+// ClaudeProcess — the injectable seam between the ClaudeCodeIntendant and the real
 // Claude Code harness. It mirrors the Slack epic's transport/interaction split:
-// the sprite holds the protocol logic; the process holds the harness I/O. Two
+// the intendant holds the protocol logic; the process holds the harness I/O. Two
 // implementations exist — InMemoryClaudeProcess (deterministic, for tests + the
-// v0 `--sprite claude-code` reference) and BunClaudeProcess (gated, spawns the
+// v0 `--intendant claude-code` reference) and BunClaudeProcess (gated, spawns the
 // real `claude` binary).
 //
 // Interception mechanism: Claude Code's **PreToolUse hook**. Anthropic's
@@ -25,7 +25,7 @@ export interface PreToolUseEvent {
 export type HookDecision = { allow: true } | { allow: false; reason: string };
 
 /**
- * The harness side of the sprite. The harness executes its own tools INSIDE the
+ * The harness side of the intendant. The harness executes its own tools INSIDE the
  * sandbox; the process only surfaces each pending call (via the hook) and blocks
  * until `respond` is called. AGP never proxy-executes a live harness's tools.
  */

@@ -114,6 +114,6 @@ with the Slack HITL leg). Tracked as follow-on beads.
 
 ## References
 
-`027-AT-SPEC` (sprite + live-path sketch), `029-AT-ADR` (Unix-socket gateway),
+`027-AT-SPEC` (intendant + live-path sketch), `029-AT-ADR` (Unix-socket gateway),
 `020-AT-THRT` (isolation limits), `036-OD-SPEC` (evidence bundle), `001-AT-DECR` Q4
 (honest claims). Bead: `agp-3g0` under epic `agp-92v`.

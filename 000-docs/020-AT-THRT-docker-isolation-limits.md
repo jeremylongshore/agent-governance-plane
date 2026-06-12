@@ -61,7 +61,7 @@ expected and the probe is not run.
   the shared kernel are out of scope.
 - **Supply-chain trust of the image itself.** Pinning makes the image
   *reproducible*, not *trustworthy*; image provenance/signing is a separate
-  concern (sprite identity / Sigstore lands at v0.6).
+  concern (intendant identity / Sigstore lands at v0.6).
 - **Anything once `networkEnabled: true`.** Enabling network re-opens
   exfiltration; only enable it for a trusted workload.
 

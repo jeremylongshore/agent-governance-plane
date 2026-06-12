@@ -12,22 +12,22 @@ stability: INTERNAL — unstable — no public RFC at v0
 
 ## Decision (canonical mechanism)
 
-A sprite that needs a secret to run a tool emits a tool-call request whose
+A intendant that needs a secret to run a tool emits a tool-call request whose
 `args` contain an **opaque placeholder** `{{secret:NAME}}`. The control-plane
 Daemon resolves that placeholder to the real secret value **only** in the argv it
 hands to `sandbox.exec`, immediately **after** the policy gate and immediately
 **before** execution. This is the **gateway-side execution** model the master
 blueprint commits to (`002-PP-PLAN` §2.1 / §4.1).
 
-This explicitly **rejects** the alternative "sprite-side env placeholder swap"
+This explicitly **rejects** the alternative "intendant-side env placeholder swap"
 mechanism (where the container would be launched with secret-bearing env that the
-sprite substitutes). That alternative is rejected because:
+intendant substitutes). That alternative is rejected because:
 
 1. It would require spawning the container with secret env. `DockerSandbox.spawn`
    passes **no** `-e`/`--env` and must stay that way — a secret in container env
    is readable by every process in the container and survives in
    `docker inspect`.
-2. It would put the secret on the sprite side of the trust boundary, outside the
+2. It would put the secret on the intendant side of the trust boundary, outside the
    control plane that owns the policy gate and the journal.
 
 If a future reviewer wants the env-swap mechanism instead, the daemon-seam design
@@ -50,7 +50,7 @@ key, not a new schema field, and never the secret values. The four reserved
 ## Flow
 
 ```
-sprite → tool_call_request { args: { command: "curl -H '… {{secret:GITHUB_TOKEN}}' …" } }
+intendant → tool_call_request { args: { command: "curl -H '… {{secret:GITHUB_TOKEN}}' …" } }
    │           (placeholder is an opaque string; the VALUE never crosses the wire)
    ▼
 Daemon.mediate → policy gate → (if require) Slack HITL → journal
@@ -62,7 +62,7 @@ Daemon.mediate → policy gate → (if require) Slack HITL → journal
    │    safeStdout   = redactSecrets(result.stdout, values)  # best-effort echo guard
    ▼
 journal: tool_call.executed { exitCode, secretsUsed: ["GITHUB_TOKEN"] }   # no values
-sprite ← tool_call_result { output: safeStdout }                          # redacted
+intendant ← tool_call_result { output: safeStdout }                          # redacted
 ```
 
 The secret value lives only in (a) the control-plane process memory and (b) the
@@ -88,7 +88,7 @@ journal payload, and **no** delivered `ToolCallResult`.
 - **A tool can still use — and echo — the secret.** Once a tool is allowed to run
   with the secret, it can do anything that secret permits, including printing it.
   `redactSecrets` masks known secret values in the tool's stdout before it reaches
-  the journal or the sprite, but this is **best-effort defense-in-depth**, not a
+  the journal or the intendant, but this is **best-effort defense-in-depth**, not a
   guarantee (a tool can transform/encode the value to evade a literal match).
 - **The vault itself.** Where real secrets live (env via `EnvSecretVault`'s
   `AGP_SECRET_*` namespace at v0, or a future KMS-backed vault) is the operator's

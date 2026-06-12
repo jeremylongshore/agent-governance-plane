@@ -66,6 +66,6 @@ Feature: Operator runs a governed agent session
   Scenario: Live claude binary session is governed end-to-end
     Given the AGP_CLAUDE_LIVE environment variable is set
     And the claude binary is available on the PATH
-    When a live claude-code sprite session runs through the daemon
+    When a live claude-code intendant session runs through the daemon
     Then every tool call is recorded in a signed journal
     And only policy-allowed tools are executed

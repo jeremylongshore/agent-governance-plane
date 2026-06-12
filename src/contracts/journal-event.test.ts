@@ -16,17 +16,17 @@ test("reserves all four future fields, present and null at v0 (council lock)", (
     "tenant_id",
     "signing_key_id",
     "approval_binding_type",
-    "sprite_identity_uri",
+    "intendant_identity_uri",
   ]);
 });
 
 test("reserved fields default to null when omitted (forward-compatible slot)", () => {
-  const { tenant_id, signing_key_id, approval_binding_type, sprite_identity_uri, ...withoutReserved } =
+  const { tenant_id, signing_key_id, approval_binding_type, intendant_identity_uri, ...withoutReserved } =
     validJournalEvent;
   void tenant_id;
   void signing_key_id;
   void approval_binding_type;
-  void sprite_identity_uri;
+  void intendant_identity_uri;
   const parsed = JournalEvent.parse(withoutReserved) as Record<string, unknown>;
   for (const field of RESERVED_FIELD_NAMES) {
     expect(parsed[field]).toBeNull();

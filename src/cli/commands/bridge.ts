@@ -4,7 +4,7 @@
 // All the logic lives in the testable hook-bridge module; this is the thin CLI
 // shell. Fail-closed: a missing socket arg denies.
 
-import { runBridge } from "../../sprites/claude-code/hook-bridge.ts";
+import { runBridge } from "../../intendants/claude-code/hook-bridge.ts";
 
 export async function bridgeCommand(
   argv: string[],

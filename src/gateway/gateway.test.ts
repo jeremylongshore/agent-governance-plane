@@ -6,7 +6,7 @@ import { GatewayServer, type MediationHandler } from "./server.ts";
 import { GatewayClient } from "./client.ts";
 import { encodeMessage, decodeMessage, FrameDecoder, GatewayProtocolError, MAX_FRAME_BYTES } from "./protocol.ts";
 import type { GatewayMessage, ToolCallRequest } from "../contracts/gateway-message.ts";
-import type { SpriteAdapter } from "../contracts/sprite-adapter.ts";
+import type { IntendantAdapter } from "../contracts/intendant-adapter.ts";
 import { Daemon } from "../daemon/daemon.ts";
 import { Journal } from "../journal/journal.ts";
 import { PolicyEngine, type PolicyRule } from "../policy/engine.ts";
@@ -203,7 +203,7 @@ test("the Gateway carries a real daemon.gate decision: deny is delivered as a de
   // Server handler = run daemon.gate, capturing the verdict it delivers.
   const handler: MediationHandler = async (r) => {
     let delivered: GatewayMessage | null = null;
-    const capturing: SpriteAdapter = {
+    const capturing: IntendantAdapter = {
       identity: { name: "gateway", version: "0", uri: null },
       start: () => Promise.resolve(),
       onToolCall: () => {},

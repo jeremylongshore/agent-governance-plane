@@ -30,7 +30,7 @@ This decision record examines what AGP should do given that the spec it was sequ
 3. **Adopt ACS's portable policy manifest** where its schema fits AGP's policy surfaces, so an operator's policy is expressed in a portable, non-AGP-proprietary form.
 4. **Do not author a competing Gateway / runtime-governance specification.** The Gateway-only protocol-publication path contemplated under Q5's CTO compromise is superseded by conforming to ACS at the policy layer.
 
-This is a profiling-and-conformance posture: AGP adopts ACS's policy-manifest schema and verdict semantics as its public policy contract, and contributes back where AGP's real-world needs (chat-native HITL, per-harness sprites) expose gaps, rather than publishing a rival spec.
+This is a profiling-and-conformance posture: AGP adopts ACS's policy-manifest schema and verdict semantics as its public policy contract, and contributes back where AGP's real-world needs (chat-native HITL, per-harness intendants) expose gaps, rather than publishing a rival spec.
 
 ## Why this de-risks Q5
 
@@ -56,7 +56,7 @@ ACS conformance does **not** commoditize AGP's moat. The differentiators documen
 
 - **The journal is the durable moat.** AGP's audit journal is a publicly and independently verifiable Ed25519 asymmetric signed and hash-chained record, with the public key published for offline verification and no shared secret required to verify (`src/config.ts`: `journal-ed25519.pub`). Microsoft's audit sink uses symmetric HMAC signing plus Merkle hash-chaining — verifying its log requires holding the shared secret. The honest, narrow, real distinction (per `030-AA-LAND`, lines 223–233) is **publicly and independently verifiable signatures**, not the false claim that Microsoft "does not sign." HMAC is symmetric; Ed25519 is asymmetric with a published verification key. A conformant policy layer changes none of this — the journal's verifiability is a property of AGP's signing architecture, not of its policy schema.
 - **Chat-native HITL.** ACS has no Slack-native human-in-the-loop surface; its human path is generic approval workflows with quorum logic. AGP realizes ACS's `escalate` verdict as a real Slack thread.
-- **The per-harness sprite adapter model.** ACS's agnosticism is spec-level; AGP's is an actual Claude-Code-sprite / Codex-sprite architecture (`016-AT-CONT`, `027-AT-SPEC`).
+- **The per-harness intendant adapter model.** ACS's agnosticism is spec-level; AGP's is an actual Claude-Code-intendant / Codex-intendant architecture (`016-AT-CONT`, `027-AT-SPEC`).
 - **Single-operator self-host framing.** ACS is framed for multi-team enterprise compliance grading (EU AI Act, HIPAA, SOC2); AGP's v0 target is the single operator, consistent with Q1's OSS-first frame and the Q3 dogfooding persona.
 
 Conforming to ACS at the policy layer makes AGP a better citizen of an open standard while leaving every one of these untouched.
@@ -70,7 +70,7 @@ Per Q4's marketing-claims discipline (`001-AT-DECR` Q4; `MARKETING_CLAIMS.md`, h
 What a council session convened to revisit Q5 would need to decide:
 
 - **Whether to revise Q5** from "author no RFCs, sequence toward our own runtime-governance protocol via the 4-phase path" to "conform to and profile ACS at the policy layer; author no rival spec." This is the central question.
-- **The disposition of the 4-phase RFC sequencing.** If AGP conforms to ACS at the policy layer, the informal community-temperature phase (v0.5 to v0.7) and the eventual RFC path would be re-scoped: from authoring a protocol to contributing AGP's gaps (chat-native HITL, sprite adapter model) back to ACS. The council should decide whether that re-scoping is the new binding commitment.
+- **The disposition of the 4-phase RFC sequencing.** If AGP conforms to ACS at the policy layer, the informal community-temperature phase (v0.5 to v0.7) and the eventual RFC path would be re-scoped: from authoring a protocol to contributing AGP's gaps (chat-native HITL, intendant adapter model) back to ACS. The council should decide whether that re-scoping is the new binding commitment.
 - **The status of the CMO's logged dissent.** The CMO's verbatim "ceded category authorship is permanent" position must be re-weighed against the new fact pattern: the category is now authored by Microsoft regardless of AGP's choice. The council should decide whether conformance satisfies, redirects, or overrides that dissent.
 - **The transport boundary as an explicit ratified constraint.** The council should affirm that ACS adoption is policy-layer-only and that the Unix-socket Gateway transport stays unpublished, with the confused-deputy fix remaining a hard prerequisite for any future transport publication.
 - **The Q1 / Q4 alignment check.** Confirm that ACS conformance is consistent with the OSS-first commercial frame (Q1) and does not tempt any drift toward the runtime-competitor or compliance-first frames explicitly excluded through v0.4, and that no Q4-banned assurance term enters public surfaces as a side effect of standards alignment.
@@ -80,7 +80,7 @@ What a council session convened to revisit Q5 would need to decide:
 - It does not recommend publishing any AGP transport protocol.
 - It does not recommend filing any RFC with a standards body at v0.
 - It does not recommend any new public security claim beyond the v0 allowlist.
-- It does not assert that AGP's moat depends on a proprietary policy schema — the moat is the verifiable journal, the chat-native HITL, and the sprite model, none of which conformance commoditizes.
+- It does not assert that AGP's moat depends on a proprietary policy schema — the moat is the verifiable journal, the chat-native HITL, and the intendant model, none of which conformance commoditizes.
 
 ## References
 

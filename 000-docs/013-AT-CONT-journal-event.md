@@ -33,10 +33,10 @@ per ADR [`009-AT-ADR`](009-AT-ADR-ccsc-substrate-extraction-strategy.md).
 
 ## Reserved future fields (council non-negotiable — CISO-locked, AT-DECR Q4)
 
-`tenant_id`, `signing_key_id`, `approval_binding_type`, `sprite_identity_uri` are
+`tenant_id`, `signing_key_id`, `approval_binding_type`, `intendant_identity_uri` are
 present in the schema from the first commit and are **`null` at v0**. Reserving
 them now means populating them later (multi-tenant, per-tenant KMS, approval
-binding, Sigstore sprite identity) is **not** a breaking change. The contract
+binding, Sigstore intendant identity) is **not** a breaking change. The contract
 test asserts all four are present and null.
 
 ## Invariants

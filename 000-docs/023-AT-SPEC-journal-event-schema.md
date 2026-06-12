@@ -39,7 +39,7 @@ still verifies after a tail is removed, but the signed head pins the expected
 
 ## Reserved fields (council non-negotiable, AT-DECR Q4)
 
-`tenant_id`, `signing_key_id`, `approval_binding_type`, `sprite_identity_uri` are
+`tenant_id`, `signing_key_id`, `approval_binding_type`, `intendant_identity_uri` are
 present in every event and **null at v0**. They are reserved so activating them
 later is not a breaking change. `signing_key_id` being null is why v0 is a
 single signing-key era (see audit-chain ARCH).

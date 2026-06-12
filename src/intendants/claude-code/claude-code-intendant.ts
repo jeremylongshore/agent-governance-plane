@@ -1,22 +1,22 @@
-// ClaudeCodeSprite — AGP's first real harness adapter (Epic 06, agp-92v). It
-// implements the FROZEN SpriteAdapter contract (016) with no one-off backdoor:
+// ClaudeCodeIntendant — AGP's first real harness adapter (Epic 06, agp-92v). It
+// implements the FROZEN IntendantAdapter contract (016) with no one-off backdoor:
 // the harness's PreToolUse hook events become ToolCallRequests, and the gate's
 // verdicts (delivered as policy_verdict messages) become hook allow/deny
 // decisions. The harness itself is reached only through the injectable
 // ClaudeProcess seam, so the whole adapter is unit-testable without a real
 // `claude` binary or a login session.
 //
-// Auth: the sprite reuses the operator's existing Claude Code LOGIN SESSION.
+// Auth: the intendant reuses the operator's existing Claude Code LOGIN SESSION.
 // AGP holds no Anthropic API key (CLI spec 012 / Epic-00 contradiction C7).
 
 import type { GatewayMessage } from "../../contracts/gateway-message.ts";
 import type { ToolCallRequest } from "../../contracts/gateway-message.ts";
-import type { SpriteIdentity, ToolCallHandler } from "../../contracts/sprite-adapter.ts";
-import type { RunnableSprite } from "../../daemon/daemon.ts";
+import type { IntendantIdentity, ToolCallHandler } from "../../contracts/intendant-adapter.ts";
+import type { RunnableIntendant } from "../../daemon/daemon.ts";
 import type { ClaudeProcess, HookDecision } from "./claude-process.ts";
 
-export class ClaudeCodeSprite implements RunnableSprite {
-  readonly identity: SpriteIdentity = { name: "claude-code", version: "0.1.0", uri: null };
+export class ClaudeCodeIntendant implements RunnableIntendant {
+  readonly identity: IntendantIdentity = { name: "claude-code", version: "0.1.0", uri: null };
   private readonly process: ClaudeProcess;
   private handler: ToolCallHandler | null = null;
   private sessionId = "";
@@ -26,7 +26,7 @@ export class ClaudeCodeSprite implements RunnableSprite {
     // Each PreToolUse hook event becomes a tool-call request to the gateway.
     this.process.onPreToolUse((ev) => {
       if (!this.handler) {
-        throw new Error("ClaudeCodeSprite: tool call before a handler was registered");
+        throw new Error("ClaudeCodeIntendant: tool call before a handler was registered");
       }
       const req: ToolCallRequest = {
         kind: "tool_call_request",
@@ -73,7 +73,7 @@ export class ClaudeCodeSprite implements RunnableSprite {
 
   async run(sessionId: string): Promise<void> {
     if (sessionId !== this.sessionId) {
-      throw new Error(`ClaudeCodeSprite: run(${sessionId}) does not match started session ${this.sessionId}`);
+      throw new Error(`ClaudeCodeIntendant: run(${sessionId}) does not match started session ${this.sessionId}`);
     }
     await this.process.run();
   }

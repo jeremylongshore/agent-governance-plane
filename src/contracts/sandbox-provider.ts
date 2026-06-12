@@ -1,7 +1,7 @@
 // INTERNAL — unstable — no public RFC.
 // Breaking changes require a Bead + an ADR. See 000-docs/017-AT-CONT-sandbox-provider.md.
 //
-// SandboxProvider — the contract for running a sprite inside an isolated
+// SandboxProvider — the contract for running a intendant inside an isolated
 // execution environment. v0 is Docker-based with HONEST isolation limits
 // (a container is not a VM); the contract surfaces those limits rather than
 // over-claiming, so callers reason about real guarantees.
@@ -9,7 +9,7 @@
 import { z } from "zod";
 
 export const SandboxSpec = z.object({
-  /** Container image (or equivalent) to run the sprite in. */
+  /** Container image (or equivalent) to run the intendant in. */
   image: z.string().min(1),
   /** Session this sandbox serves. */
   sessionId: z.string().min(1),

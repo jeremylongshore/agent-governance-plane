@@ -14,7 +14,7 @@ import { Daemon } from "../daemon/daemon.ts";
 import { Journal, readEvents } from "../journal/journal.ts";
 import { PolicyEngine } from "../policy/engine.ts";
 import { ConsoleChannel } from "../runtime/channel.ts";
-import { ScriptedSprite } from "../runtime/sprite.ts";
+import { ScriptedIntendant } from "../runtime/intendant.ts";
 import { generateSigningKeyPem, loadPrivateKey } from "../runtime/crypto.ts";
 import type {
   ExecResult,
@@ -138,7 +138,7 @@ test("BOUNDARY: the raw secret appears ONLY in the exec argv, never in spawn/jou
   const journal = new Journal(path, priv, () => "2026-06-02T00:00:00.000Z");
   const sandbox = new RecordingBoundarySandbox();
 
-  const sprite = new ScriptedSprite([
+  const intendant = new ScriptedIntendant([
     { tool: "Bash", args: { command: "curl -H 'Authorization: Bearer {{secret:GITHUB_TOKEN}}' https://api" } },
   ]);
 
@@ -150,7 +150,7 @@ test("BOUNDARY: the raw secret appears ONLY in the exec argv, never in spawn/jou
     vault: VAULT,
   });
 
-  const res = await daemon.runScripted(sprite, { sessionId: "s1" });
+  const res = await daemon.runScripted(intendant, { sessionId: "s1" });
   expect(res.outcomes[0]!.executed).toBe(true);
 
   const SECRET = "ghp_supersecret";
@@ -171,8 +171,8 @@ test("BOUNDARY: the raw secret appears ONLY in the exec argv, never in spawn/jou
 
   // (d) NEVER in the delivered ToolCallResult — even though the tool echoed it,
   // redaction masked it.
-  expect(JSON.stringify(sprite.delivered)).not.toContain(SECRET);
-  const result = sprite.delivered.find((m) => m.kind === "tool_call_result");
+  expect(JSON.stringify(intendant.delivered)).not.toContain(SECRET);
+  const result = intendant.delivered.find((m) => m.kind === "tool_call_result");
   expect(String((result as { output?: unknown })?.output)).toContain("***");
 
   rmSync(dir, { recursive: true, force: true });
@@ -192,7 +192,7 @@ test("BOUNDARY: a placeholder with NO vault dep fails closed (never reaches exec
     // no vault
   });
   await expect(
-    daemon.runScripted(new ScriptedSprite([{ tool: "Bash", args: { command: "echo {{secret:GITHUB_TOKEN}}" } }]), {
+    daemon.runScripted(new ScriptedIntendant([{ tool: "Bash", args: { command: "echo {{secret:GITHUB_TOKEN}}" } }]), {
       sessionId: "s1",
     }),
   ).rejects.toThrow("unresolved secret placeholder");
@@ -214,7 +214,7 @@ test("a placeholder-free call still works unchanged when a vault is present", as
     channel: new ConsoleChannel({}, () => {}),
     vault: VAULT,
   });
-  const res = await daemon.runScripted(new ScriptedSprite([{ tool: "Read", args: { path: "/x" } }]), {
+  const res = await daemon.runScripted(new ScriptedIntendant([{ tool: "Read", args: { path: "/x" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes[0]!.executed).toBe(true);

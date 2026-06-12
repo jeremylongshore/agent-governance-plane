@@ -10,7 +10,7 @@ source: src/sandbox/docker/
 # Architecture: Docker Sandbox
 
 The production `SandboxProvider` (contract: `016`/`017`-AT-CONT) backed by
-`docker`. It runs a sprite inside a hardened container and surfaces **honest**
+`docker`. It runs a intendant inside a hardened container and surfaces **honest**
 isolation guarantees — see the threat model in
 [`020-AT-THRT-docker-isolation-limits.md`](020-AT-THRT-docker-isolation-limits.md).
 

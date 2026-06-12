@@ -11,7 +11,7 @@ import { PolicyEngine, type PolicyRule } from "../../policy/engine.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { generateSigningKeyPem, loadPrivateKey, publicKeyFromPrivate } from "../../runtime/crypto.ts";
-import { ClaudeCodeSprite } from "./claude-code-sprite.ts";
+import { ClaudeCodeIntendant } from "./claude-code-intendant.ts";
 import { InMemoryClaudeProcess, type HookDecision } from "./claude-process.ts";
 import { buildHookSettings, buildClaudeArgs, BunClaudeProcess } from "./bun-claude-process.ts";
 
@@ -52,7 +52,7 @@ test("read/write/shell/git calls each pass through the gate and are journaled, g
     { id: "allow-bash", effect: "allow", tool: "Bash" },
   ]);
   const proc = new InMemoryClaudeProcess(FOUR_TOOLS);
-  const res = await h.daemon.runLive(new ClaudeCodeSprite(proc), { sessionId: "s1" });
+  const res = await h.daemon.runLive(new ClaudeCodeIntendant(proc), { sessionId: "s1" });
 
   expect(res.outcomes).toHaveLength(4);
   expect(res.outcomes.map((o) => o.request.tool)).toEqual(["Read", "Write", "Bash", "Bash"]);
@@ -78,7 +78,7 @@ test("a denied call is blocked: the hook receives allow=false with the reason, h
     { tool: "Bash", args: { command: "rm -rf /" } },
     { tool: "Read", args: { path: "/work/c.ts" } },
   ]);
-  const res = await h.daemon.runLive(new ClaudeCodeSprite(proc), { sessionId: "s1" });
+  const res = await h.daemon.runLive(new ClaudeCodeIntendant(proc), { sessionId: "s1" });
 
   expect(res.outcomes.map((o) => o.verdict.decision)).toEqual(["allow", "deny", "allow"]);
   const denied = proc.responses[1]!.decision as Exclude<HookDecision, { allow: true }>;
@@ -93,7 +93,7 @@ test("a denied call is blocked: the hook receives allow=false with the reason, h
 test("an unmatched call is default-denied (fail-closed) at the gate", async () => {
   const h = harness([{ id: "allow-read", effect: "allow", tool: "Read" }]);
   const proc = new InMemoryClaudeProcess([{ tool: "WebFetch", args: { url: "http://x" } }]);
-  const res = await h.daemon.runLive(new ClaudeCodeSprite(proc), { sessionId: "s1" });
+  const res = await h.daemon.runLive(new ClaudeCodeIntendant(proc), { sessionId: "s1" });
   expect(res.outcomes[0]!.verdict.decision).toBe("deny");
   expect((proc.responses[0]!.decision as { allow: boolean }).allow).toBe(false);
   rmSync(h.dir, { recursive: true, force: true });
@@ -102,7 +102,7 @@ test("an unmatched call is default-denied (fail-closed) at the gate", async () =
 test("a 'require' call is approved by a human channel, and the hook is then allowed", async () => {
   const h = harness([{ id: "req-write", effect: "require", tool: "Write" }], { AGP_AUTO_APPROVE: "1" });
   const proc = new InMemoryClaudeProcess([{ tool: "Write", args: { path: "/work/b.ts", content: "x" } }]);
-  const res = await h.daemon.runLive(new ClaudeCodeSprite(proc), { sessionId: "s1" });
+  const res = await h.daemon.runLive(new ClaudeCodeIntendant(proc), { sessionId: "s1" });
 
   expect(res.outcomes[0]!.verdict.decision).toBe("require");
   expect(res.outcomes[0]!.approved).toBe(true);
@@ -116,7 +116,7 @@ test("a 'require' call is approved by a human channel, and the hook is then allo
 test("a 'require' call is denied by the fail-closed channel when no human is present", async () => {
   const h = harness([{ id: "req-write", effect: "require", tool: "Write" }]); // AGP_AUTO_APPROVE unset
   const proc = new InMemoryClaudeProcess([{ tool: "Write", args: { path: "/work/b.ts", content: "x" } }]);
-  const res = await h.daemon.runLive(new ClaudeCodeSprite(proc), { sessionId: "s1" });
+  const res = await h.daemon.runLive(new ClaudeCodeIntendant(proc), { sessionId: "s1" });
   expect(res.outcomes[0]!.approved).toBe(false);
   expect((proc.responses[0]!.decision as { allow: boolean }).allow).toBe(false);
   rmSync(h.dir, { recursive: true, force: true });
@@ -126,25 +126,25 @@ test("stop() terminates the session: pending hooks unblock as denied and remaini
   // A process that emits one call, waits forever for a verdict, then would emit more.
   const handler = { fn: null as ((d: HookDecision) => void) | null };
   const proc = new InMemoryClaudeProcess([{ tool: "Read", args: {} }]);
-  const sprite = new ClaudeCodeSprite(proc);
+  const intendant = new ClaudeCodeIntendant(proc);
   // Register a handler that never responds — simulating a stuck gate — then stop.
-  sprite.onToolCall(() => {
+  intendant.onToolCall(() => {
     /* swallow: never deliver a verdict, leaving the hook blocked */
   });
-  await sprite.start("s1");
-  const running = sprite.run("s1");
+  await intendant.start("s1");
+  const running = intendant.run("s1");
   // Give the emit a tick, then terminate.
   await Promise.resolve();
-  await sprite.stop();
+  await intendant.stop();
   await running; // resolves because stop() unblocked the pending hook as denied
   expect(proc.responses[0]!.decision.allow).toBe(false);
   void handler;
 });
 
 test("run(sessionId) must match the started session", async () => {
-  const sprite = new ClaudeCodeSprite(new InMemoryClaudeProcess([]));
-  await sprite.start("s1");
-  await expect(sprite.run("s2")).rejects.toThrow(/does not match/);
+  const intendant = new ClaudeCodeIntendant(new InMemoryClaudeProcess([]));
+  await intendant.start("s1");
+  await expect(intendant.run("s2")).rejects.toThrow(/does not match/);
 });
 
 test("BunClaudeProcess builders are pure and login-session based (no API key)", () => {

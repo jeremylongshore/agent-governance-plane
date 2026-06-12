@@ -8,6 +8,6 @@ export * from "./_common.ts";
 export * from "./journal-event.ts";
 export * from "./policy-verdict.ts";
 export * from "./gateway-message.ts";
-export * from "./sprite-adapter.ts";
+export * from "./intendant-adapter.ts";
 export * from "./sandbox-provider.ts";
 export * from "./channel-adapter.ts";

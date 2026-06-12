@@ -9,7 +9,7 @@ import { verifyJournalFile } from "../journal/verify.ts";
 import { PolicyEngine, type PolicyRule } from "../policy/engine.ts";
 import { RecordingSandbox } from "../runtime/sandbox.ts";
 import { ConsoleChannel } from "../runtime/channel.ts";
-import { ScriptedSprite } from "../runtime/sprite.ts";
+import { ScriptedIntendant } from "../runtime/intendant.ts";
 import { generateSigningKeyPem, loadPrivateKey, publicKeyFromPrivate } from "../runtime/crypto.ts";
 import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
 
@@ -41,7 +41,7 @@ test("an allowed tool call is executed, journaled, and the journal verifies", as
     { id: "allow-read", effect: "allow", tool: "Read" },
     { id: "deny-bash", effect: "deny", tool: "Bash" },
   ]);
-  const res = await h.daemon.runScripted(new ScriptedSprite([{ tool: "Read", args: { path: "/x" } }]), {
+  const res = await h.daemon.runScripted(new ScriptedIntendant([{ tool: "Read", args: { path: "/x" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes).toHaveLength(1);
@@ -54,7 +54,7 @@ test("an allowed tool call is executed, journaled, and the journal verifies", as
 
 test("a denied tool call is NOT executed (the dangerous default path)", async () => {
   const h = harness([{ id: "deny-bash", effect: "deny", tool: "Bash" }]);
-  const res = await h.daemon.runScripted(new ScriptedSprite([{ tool: "Bash", args: { command: "rm -rf /" } }]), {
+  const res = await h.daemon.runScripted(new ScriptedIntendant([{ tool: "Bash", args: { command: "rm -rf /" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes[0]!.verdict.decision).toBe("deny");
@@ -65,7 +65,7 @@ test("a denied tool call is NOT executed (the dangerous default path)", async ()
 
 test("a 'require' call is denied by the fail-closed console channel (no human)", async () => {
   const h = harness([{ id: "req-write", effect: "require", tool: "Write" }]); // AGP_AUTO_APPROVE unset
-  const res = await h.daemon.runScripted(new ScriptedSprite([{ tool: "Write", args: { path: "/x" } }]), {
+  const res = await h.daemon.runScripted(new ScriptedIntendant([{ tool: "Write", args: { path: "/x" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes[0]!.verdict.decision).toBe("require");
@@ -76,7 +76,7 @@ test("a 'require' call is denied by the fail-closed console channel (no human)",
 
 test("a 'require' call executes only once a human approves", async () => {
   const h = harness([{ id: "req-write", effect: "require", tool: "Write" }], { AGP_AUTO_APPROVE: "1" });
-  const res = await h.daemon.runScripted(new ScriptedSprite([{ tool: "Write", args: { path: "/x" } }]), {
+  const res = await h.daemon.runScripted(new ScriptedIntendant([{ tool: "Write", args: { path: "/x" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes[0]!.approved).toBe(true);
@@ -103,7 +103,7 @@ test("a 'require' call fails closed (deny) when the channel cannot get a decisio
     sandbox: new RecordingSandbox(),
     channel: throwingChannel,
   });
-  const res = await daemon.runScripted(new ScriptedSprite([{ tool: "Write", args: { path: "/x" } }]), {
+  const res = await daemon.runScripted(new ScriptedIntendant([{ tool: "Write", args: { path: "/x" } }]), {
     sessionId: "s1",
   });
   expect(res.outcomes[0]!.approved).toBe(false);
@@ -116,7 +116,7 @@ test("a 'require' call fails closed (deny) when the channel cannot get a decisio
 
 test("runScripted brackets the session with started/ended journal events", async () => {
   const h = harness([{ id: "allow-all", effect: "allow", tool: "*" }]);
-  await h.daemon.runScripted(new ScriptedSprite([{ tool: "Read", args: {} }]), { sessionId: "s1" });
+  await h.daemon.runScripted(new ScriptedIntendant([{ tool: "Read", args: {} }]), { sessionId: "s1" });
   const kinds = readEvents(h.path).map((e) => e.kind);
   expect(kinds[0]).toBe("session.started");
   expect(kinds[kinds.length - 1]).toBe("session.ended");

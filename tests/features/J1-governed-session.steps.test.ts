@@ -10,7 +10,7 @@
 // Slack, no real claude binary in CI.
 //
 // The @gated live scenario is test.skip'd with an explicit bead reference
-// (mirrors the pattern in claude-code-sprite.test.ts).
+// (mirrors the pattern in claude-code-intendant.test.ts).
 
 import { test, expect, describe } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -24,7 +24,7 @@ import { verifyJournalFile } from "../../src/journal/verify.ts";
 import { PolicyEngine, type PolicyRule } from "../../src/policy/engine.ts";
 import { RecordingSandbox } from "../../src/runtime/sandbox.ts";
 import { ConsoleChannel } from "../../src/runtime/channel.ts";
-import { ScriptedSprite } from "../../src/runtime/sprite.ts";
+import { ScriptedIntendant } from "../../src/runtime/intendant.ts";
 import { generateSigningKeyPem, loadPrivateKey, publicKeyFromPrivate } from "../../src/runtime/crypto.ts";
 import { sessionsCommand } from "../../src/cli/commands/sessions.ts";
 import { resolvePaths } from "../../src/config.ts";
@@ -83,7 +83,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     try {
       // When the agent requests that tool
       const result = await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Bash", args: { command: "ls" } }]),
+        new ScriptedIntendant([{ tool: "Bash", args: { command: "ls" } }]),
         { sessionId: "j1-s1" },
       );
       // Then the policy engine returns a deny verdict
@@ -107,7 +107,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     try {
       // When the agent requests that tool and the daemon processes the request
       const result = await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Read", args: { path: "/etc/hostname" } }]),
+        new ScriptedIntendant([{ tool: "Read", args: { path: "/etc/hostname" } }]),
         { sessionId: "j1-s2" },
       );
       // Then the journal contains the tool call event
@@ -133,7 +133,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     try {
       // When the agent requests that tool
       const result = await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
+        new ScriptedIntendant([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
         { sessionId: "j1-s3" },
       );
       // Then the approval request is denied
@@ -158,7 +158,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     try {
       // When the agent requests that tool
       const result = await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
+        new ScriptedIntendant([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
         { sessionId: "j1-s4" },
       );
       // Then the approval is granted
@@ -188,7 +188,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     try {
       // When the agent requests that tool
       const result = await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
+        new ScriptedIntendant([{ tool: "Write", args: { path: "/tmp/x", content: "y" } }]),
         { sessionId: "j1-s5" },
       );
       // Then the approval request is denied
@@ -212,7 +212,7 @@ describe("Feature: Operator runs a governed agent session", () => {
     const h = makeHarness([{ id: "allow-read", effect: "allow", tool: "Read" }]);
     try {
       await h.daemon.runScripted(
-        new ScriptedSprite([{ tool: "Read", args: { path: "/README.md" } }]),
+        new ScriptedIntendant([{ tool: "Read", args: { path: "/README.md" } }]),
         { sessionId: "j1-s6" },
       );
       // When the operator lists sessions (using the same journal path via AGP_HOME)

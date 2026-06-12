@@ -5,7 +5,7 @@
 // audit journal. Aligned with the CCSC `journal.ts` substrate (v2 signed events).
 //
 // COUNCIL NON-NEGOTIABLE (AT-DECR Q4, CISO-locked): the four future fields
-// (tenant_id, signing_key_id, approval_binding_type, sprite_identity_uri) are
+// (tenant_id, signing_key_id, approval_binding_type, intendant_identity_uri) are
 // reserved in the schema from the first commit and are `null` at v0. Reserving
 // them now means populating them later is NOT a breaking change.
 
@@ -23,8 +23,8 @@ export const ReservedFutureFields = z.object({
   signing_key_id: z.string().nullable().default(null),
   /** How an approval was bound (nonce / WebAuthn) — null until binding lands. */
   approval_binding_type: z.string().nullable().default(null),
-  /** Sprite identity URI (Sigstore) — null until sprite identity lands (v0.6). */
-  sprite_identity_uri: z.string().nullable().default(null),
+  /** Intendant identity URI (Sigstore) — null until intendant identity lands (v0.6). */
+  intendant_identity_uri: z.string().nullable().default(null),
 });
 
 export const JournalEvent = z
@@ -55,5 +55,5 @@ export const RESERVED_FIELD_NAMES = [
   "tenant_id",
   "signing_key_id",
   "approval_binding_type",
-  "sprite_identity_uri",
+  "intendant_identity_uri",
 ] as const;

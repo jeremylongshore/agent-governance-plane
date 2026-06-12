@@ -14,7 +14,7 @@ Slack become the source of truth.
 ## Sequence
 
 ```text
-sprite → tool_call_request
+intendant → tool_call_request
   daemon: policy.evaluate → verdict = require
   daemon: journal.append("tool_call.require")          # authoritative, local, signed
   daemon: channel.postApprovalRequest(req)

@@ -26,7 +26,7 @@ Commands:
   doctor      Validate prerequisites (Docker, Slack, signing key, policy) — fail-closed
               --check <name>   run only one check (e.g. --check policy)
   run         Drive a session through the governance loop (v0: reference mode) — fail-closed
-              --sprite <name>   harness to drive: scripted (default) | claude-code
+              --intendant <name>   harness to drive: scripted (default) | claude-code
               --task <prompt>   (live claude) the task to fix; needs AGP_CLAUDE_LIVE=1
               --repo <path>     (live claude) the repo to run in
   bridge      PreToolUse hook bridge (internal; Claude runs this per tool call)
@@ -35,7 +35,7 @@ Commands:
   sessions    List the sessions recorded in the audit journal
   help        Show this help
 
-Claude auth: the Claude Code sprite reuses your existing Claude Code login
+Claude auth: the Claude Code intendant reuses your existing Claude Code login
 session — AGP holds no Anthropic API key.
 `;
 
@@ -60,13 +60,13 @@ export async function main(argv: string[]): Promise<number> {
       return doctorCommand(process.env, console.log, only);
     }
     case "run": {
-      const si = argv.indexOf("--sprite");
-      const spriteSel = si >= 0 ? argv[si + 1] : undefined;
+      const si = argv.indexOf("--intendant");
+      const intendantSel = si >= 0 ? argv[si + 1] : undefined;
       const ti = argv.indexOf("--task");
       const task = ti >= 0 ? argv[ti + 1] : undefined;
       const ri = argv.indexOf("--repo");
       const repo = ri >= 0 ? argv[ri + 1] : undefined;
-      return runCommand(process.env, console.log, { sprite: spriteSel, task, repo });
+      return runCommand(process.env, console.log, { intendant: intendantSel, task, repo });
     }
     case "bridge": {
       const stdin = await Bun.stdin.text();

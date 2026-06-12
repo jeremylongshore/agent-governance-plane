@@ -1,7 +1,7 @@
 // INTERNAL — unstable — no public RFC.
 // Breaking changes require a Bead + an ADR. See 000-docs/015-AT-CONT-gateway-message.md.
 //
-// GatewayMessage — the internal protocol between a sandboxed sprite and the
+// GatewayMessage — the internal protocol between a sandboxed intendant and the
 // control plane. Every tool call the agent attempts becomes a request the
 // gateway mediates (policy gate → optional HITL → journal) before a result
 // flows back. Discriminated on `kind`.
@@ -17,7 +17,7 @@ const Base = {
   sessionId: z.string().min(1),
 };
 
-/** Sprite → gateway: "the agent wants to make this tool call". */
+/** Intendant → gateway: "the agent wants to make this tool call". */
 export const ToolCallRequest = z.object({
   ...Base,
   kind: z.literal("tool_call_request"),
@@ -26,14 +26,14 @@ export const ToolCallRequest = z.object({
   actor: Actor,
 });
 
-/** Gateway → sprite: the policy verdict for a pending request. */
+/** Gateway → intendant: the policy verdict for a pending request. */
 export const VerdictMessage = z.object({
   ...Base,
   kind: z.literal("policy_verdict"),
   verdict: PolicyVerdict,
 });
 
-/** Gateway → sprite: the result of an allowed tool call. */
+/** Gateway → intendant: the result of an allowed tool call. */
 export const ToolCallResult = z.object({
   ...Base,
   kind: z.literal("tool_call_result"),

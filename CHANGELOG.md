@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.56] - 2026-06-12
+
+### Fixed
+
+- fix(dogfood): kill the fake-green + run the reproducible dogfood on the host path (#77) (6c4f6dd)
+
 ## [0.1.55] - 2026-06-12
 
 ### Changed
@@ -403,7 +409,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.56...HEAD
+[0.1.56]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...v0.1.56
 [0.1.55]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...v0.1.55
 [0.1.54]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...v0.1.54
 [0.1.53]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...v0.1.53

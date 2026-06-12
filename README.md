@@ -2,7 +2,7 @@
 
 > Slack-native, OSS governance for AI coding agents: sandboxed execution, human-in-the-loop approval on every tool call, and a signed audit log of each.
 
-[![License](https://img.shields.io/badge/license-Apache-2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/jeremylongshore/agent-governance-plane/actions/workflows/ci.yml/badge.svg)](https://github.com/jeremylongshore/agent-governance-plane/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/jeremylongshore/agent-governance-plane)](https://github.com/jeremylongshore/agent-governance-plane/releases)
 

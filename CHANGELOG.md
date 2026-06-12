@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.50] - 2026-06-12
+
+### Added
+
+- feat(claude-sprite): Topology B — run the Claude harness in a Docker container (agp-9sz) (#71) (4055dd6)
+
 ## [0.1.49] - 2026-06-12
 
 ### Added
@@ -363,7 +369,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.49...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.50...HEAD
+[0.1.50]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.49...v0.1.50
 [0.1.49]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.48...v0.1.49
 [0.1.48]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.47...v0.1.48
 [0.1.47]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...v0.1.47

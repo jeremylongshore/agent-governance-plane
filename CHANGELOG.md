@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.48] - 2026-06-12
+
+### Added
+
+- feat(governance): finish repo-governance + release-discipline epics (agp-7j5, agp-upt) (#69) (1a005b9)
+
+### Changed
+
+- chore(beads): close agp-4na.1/.4 + agp-e3b (shipped v0.1.46); revert 4na.2/.3 to open (post-v0); file agp-7r4 (mutation toolchain) (85d349c)
+
 ## [0.1.47] - 2026-06-11
 
 ### Added
@@ -343,7 +353,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.47...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.48...HEAD
+[0.1.48]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.47...v0.1.48
 [0.1.47]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...v0.1.47
 [0.1.46]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...v0.1.46
 [0.1.45]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.44...v0.1.45

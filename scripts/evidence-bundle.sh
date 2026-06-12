@@ -69,5 +69,10 @@ AGP_HOME=<dir-with-this-journal-and-pubkey> agp verify
 \`\`\`
 AAR
 
+# A dogfood that gated nothing proves nothing — fail closed (no fake-green).
+if [ "${gated:-0}" -eq 0 ]; then
+  echo "evidence-bundle: FAIL — 0 tool calls gated; the governed run did not exercise the gate" >&2
+  exit 1
+fi
 echo "evidence-bundle: wrote $OUT ($event_count events, $gated gated, verify rc=$verify_rc)"
 [ "$verify_rc" -eq 0 ] || exit 1

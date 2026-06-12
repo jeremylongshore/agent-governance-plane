@@ -37,6 +37,7 @@ jobs:
   dogfood:
     name: Governed intendant on a real bug
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
@@ -91,8 +92,9 @@ jobs:
         run: |
           set -o pipefail
           export AGP_HOME="$RUNNER_TEMP/agp-home"
+          # Hard wall: a hung harness fails the step fast (never an infinite run).
           AGP_CLAUDE_LIVE=1 AGP_AUTO_APPROVE=1 \
-            bun src/cli/index.ts run --intendant claude-code \
+            timeout 360 bun src/cli/index.ts run --intendant claude-code \
               --task "${{ github.event.inputs.task }}" \
               --repo "$RUNNER_TEMP/target" | tee "$RUNNER_TEMP/run.log"
 

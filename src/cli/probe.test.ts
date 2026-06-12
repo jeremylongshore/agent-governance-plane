@@ -67,12 +67,20 @@ test("slack() requires all of bot token, app token, and channel", () => {
   rmSync(home, { recursive: true, force: true });
 });
 
-test("runDoctor surfaces a sandbox check via the real FsDoctorProbe", () => {
-  const home = tempHome();
-  const report = runDoctor(new FsDoctorProbe({ AGP_HOME: home }));
-  expect(report.results.map((r) => r.name)).toContain("sandbox");
-  rmSync(home, { recursive: true, force: true });
-});
+// Gated: via the REAL FsDoctorProbe, runDoctor invokes sandbox() which spawns a
+// throwaway container + runs the egress preflight — real Docker, non-deterministic
+// in CI. The deterministic wiring ("runDoctor surfaces a sandbox check") is covered
+// by checks.test.ts with a fake probe; this exercises the real path under the same
+// AGP_DOCKER_E2E gate as the other real-Docker tests below.
+test.skipIf(process.env.AGP_DOCKER_E2E !== "1")(
+  "runDoctor surfaces a sandbox check via the real FsDoctorProbe",
+  () => {
+    const home = tempHome();
+    const report = runDoctor(new FsDoctorProbe({ AGP_HOME: home }));
+    expect(report.results.map((r) => r.name)).toContain("sandbox");
+    rmSync(home, { recursive: true, force: true });
+  },
+);
 
 // When docker is unavailable, sandbox() must fail closed (skipped, not ok).
 // Skip when docker IS present (the live verdict is exercised under AGP_DOCKER_E2E).
@@ -96,7 +104,10 @@ test.skipIf(process.env.AGP_DOCKER_E2E !== "1")("sandbox() verifies isolation ag
 test("doctorCommand returns non-zero on an unconfigured home (fail-closed end to end)", () => {
   const home = tempHome();
   const lines: string[] = [];
-  const code = doctorCommand({ AGP_HOME: home }, (l) => lines.push(l));
+  // Skip the sandbox network probe: this is an end-to-end fail-closed test, not a
+  // Docker test, and the real probe spawns a container (~6-9s) that blows the test
+  // timeout in CI. The real-Docker path is covered by the AGP_DOCKER_E2E tests above.
+  const code = doctorCommand({ AGP_HOME: home, AGP_SANDBOX_SKIP_NETCHECK: "1" }, (l) => lines.push(l));
   expect(code).toBe(1);
   expect(lines.some((l) => l.includes("✗"))).toBe(true);
   rmSync(home, { recursive: true, force: true });

@@ -78,6 +78,13 @@ export class FsDoctorProbe implements DoctorProbe {
   }
 
   sandbox(): { ok: boolean; detail: string } {
+    // Dev/CI escape hatch (same flag DockerSandbox.spawn honors): skip the active
+    // egress probe, which would otherwise spawn a throwaway container on every
+    // `agp doctor` run. Reported as not-ok (we did NOT verify isolation), never
+    // silently green.
+    if (this.env.AGP_SANDBOX_SKIP_NETCHECK === "1") {
+      return { ok: false, detail: "skipped: network probe disabled (AGP_SANDBOX_SKIP_NETCHECK=1)" };
+    }
     // Short-circuit: no point probing isolation if docker itself is unavailable.
     if (!this.docker().ok) {
       return { ok: false, detail: "skipped: docker unavailable" };

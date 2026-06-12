@@ -52,3 +52,6 @@ desktop.ini
 .dolt/
 *.db
 .beads-credential-key
+
+# Architecture-check + harness report output
+reports/

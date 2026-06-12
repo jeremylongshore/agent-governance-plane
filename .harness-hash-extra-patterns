@@ -33,3 +33,9 @@ stryker.config.json
 # The diff-grep gate excludes tests/features/** (INITIAL CREATION); hash-verify
 # is the load-bearing integrity check going forward.
 tests/features/J1-governed-session.feature
+
+# Architecture rules (layering invariants enforced by `audit-harness arch`).
+.dependency-cruiser.cjs
+
+# Release-readiness gate (Epic 15). Pinned so a silent loosening is caught by verify.
+scripts/release-validate.sh

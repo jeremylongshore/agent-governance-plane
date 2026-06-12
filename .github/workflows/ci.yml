@@ -87,6 +87,13 @@ jobs:
         run: bunx biome lint src
       - name: Tests + coverage gate
         run: bash scripts/coverage-gate.sh
+      - name: Architecture check (dependency-cruiser)
+        # Enforces the layering invariants in .dependency-cruiser.cjs
+        # (no-circular, contracts-as-leaf, cli-is-top, daemon-not-imported-by-leaves).
+        run: scripts/audit-harness arch
+      - name: Dependency audit
+        # Surfaces known advisories in the dependency tree.
+        run: bun audit
 
   harness:
     # Vendored @intentsolutions/audit-harness (.audit-harness/). HARD gate.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.54] - 2026-06-12
+
+### Added
+
+- feat(dogfood): reproducible CI dogfood workflow + evidence bundle; real ccsc-2oy run proven (agp-dt4) (#75) (fb08770)
+
 ## [0.1.53] - 2026-06-12
 
 ### Changed
@@ -387,7 +393,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.54...HEAD
+[0.1.54]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...v0.1.54
 [0.1.53]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...v0.1.53
 [0.1.52]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.51...v0.1.52
 [0.1.51]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.50...v0.1.51

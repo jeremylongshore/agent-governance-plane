@@ -1,6 +1,6 @@
 # agent-governance-plane
 
-> Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals
+> Slack-native, OSS governance for AI coding agents: sandboxed execution, human-in-the-loop approval on every tool call, and a signed audit log of each.
 
 [![License](https://img.shields.io/badge/license-Apache-2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/jeremylongshore/agent-governance-plane/actions/workflows/ci.yml/badge.svg)](https://github.com/jeremylongshore/agent-governance-plane/actions/workflows/ci.yml)

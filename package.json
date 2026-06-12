@@ -1,7 +1,7 @@
 {
   "name": "agent-governance-plane",
   "version": "0.1.52",
-  "description": "Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals",
+  "description": "Slack-native, OSS governance for AI coding agents: sandboxed execution, human-in-the-loop approval on every tool call, and a signed audit log of each.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "Jeremy Longshore <jeremy@intentsolutions.io>",

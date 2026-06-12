@@ -90,11 +90,14 @@ test("AGP_CHANNEL=slack fails closed when configured but AGP_SLACK_LIVE is not s
   rmSync(dir, { recursive: true, force: true });
 });
 
-test("the claude-code live flag fails closed (dogfood is off-CI)", async () => {
+test("the claude-code live flag fails closed without --task/--repo", async () => {
+  // AGP_CLAUDE_LIVE=1 now wires the real spawn, but it must be given a task + repo;
+  // missing either fails closed rather than spawning aimlessly. (The actual live
+  // spawn is exercised off-CI — see the AGP_CLAUDE_LIVE dogfood test.)
   const { env, dir } = provisioned();
   const lines: string[] = [];
   const code = await runCommand({ ...env, AGP_CLAUDE_LIVE: "1" }, (l) => lines.push(l), { sprite: "claude-code" });
   expect(code).toBe(1);
-  expect(lines.join("\n")).toContain("dogfood");
+  expect(lines.join("\n")).toContain("requires --task");
   rmSync(dir, { recursive: true, force: true });
 });

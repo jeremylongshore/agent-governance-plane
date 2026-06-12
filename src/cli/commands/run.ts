@@ -19,6 +19,10 @@ import { Daemon } from "../../daemon/daemon.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeSprite } from "../../sprites/claude-code/claude-code-sprite.ts";
 import { InMemoryClaudeProcess } from "../../sprites/claude-code/claude-process.ts";
+import { BunClaudeProcess } from "../../sprites/claude-code/bun-claude-process.ts";
+import { randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { SlackChannel } from "../../channels/slack/slack-channel.ts";
 import { FetchSlackTransport } from "../../channels/slack/transport.ts";
 import { SocketModeInteractionSource } from "../../channels/slack/socket-mode.ts";
@@ -30,6 +34,10 @@ import type { ChannelAdapter } from "../../contracts/channel-adapter.ts";
 export interface RunOptions {
   /** Which harness to drive: "scripted" reference (default) or "claude-code". */
   sprite?: string;
+  /** (live claude) the task prompt to fix; requires AGP_CLAUDE_LIVE=1. */
+  task?: string;
+  /** (live claude) the repo `claude` runs in. */
+  repo?: string;
 }
 
 export async function runCommand(
@@ -144,16 +152,25 @@ export async function runCommand(
   const daemon = new Daemon({ policy, journal, sandbox, channel });
 
   if (sprite === "claude-code") {
-    // The live `claude` spawn (BunClaudeProcess) is the manual dogfood path —
-    // it needs a task + repo + login session and is validated off-CI. `agp run`
-    // does not yet accept those, so the live flag fails closed here; the v0
-    // reference is the deterministic InMemoryClaudeProcess driven gate-only.
+    // Live path (AGP_CLAUDE_LIVE=1): spawn the real `claude` on a task + repo and
+    // gate every tool call via the PreToolUse hook bridge → session socket →
+    // daemon.gate (000-docs/037-AT-ADR). Off-CI by design. Without the flag, the
+    // deterministic InMemoryClaudeProcess reference drives the same gate loop.
+    let cc: ClaudeCodeSprite;
     if (env.AGP_CLAUDE_LIVE === "1") {
-      out("agp run: live Claude Code spawn is the manual dogfood path (see 000-docs/027-AT-SPEC); not wired into `agp run` yet. (fail-closed)");
-      return 1;
+      const task = opts.task ?? env.AGP_TASK;
+      const repo = opts.repo ?? env.AGP_REPO;
+      if (!task || !repo) {
+        out("agp run: AGP_CLAUDE_LIVE=1 requires --task <prompt> and --repo <path> (or AGP_TASK / AGP_REPO). (fail-closed)");
+        return 1;
+      }
+      const socketPath = join(tmpdir(), `agp-${randomUUID()}.sock`);
+      out(`agp run: CLAUDE-CODE LIVE — spawning real claude in ${repo}; every tool call gated via ${socketPath}.`);
+      cc = new ClaudeCodeSprite(new BunClaudeProcess({ task, repoPath: repo, bridgeSocket: socketPath, env }));
+    } else {
+      out("agp run: CLAUDE-CODE sprite — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
+      cc = new ClaudeCodeSprite(new InMemoryClaudeProcess());
     }
-    out("agp run: CLAUDE-CODE sprite — reference harness (InMemoryClaudeProcess), gate-only mediation (the harness executes its own tools).");
-    const cc = new ClaudeCodeSprite(new InMemoryClaudeProcess());
     const result = await daemon.runLive(cc, image ? { image } : {});
     await receiver?.stop();
     out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s) gated:`);

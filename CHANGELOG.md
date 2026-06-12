@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.49] - 2026-06-12
+
+### Added
+
+- feat(claude-sprite): live dogfood gate wiring — real Claude governed end-to-end (agp-3g0 Increment 1) (#70) (4cc1246)
+
+### Changed
+
+- chore(beads): close epics agp-7j5 (repo governance) + agp-upt (release discipline) — shipped v0.1.47 (f247c37)
+
 ## [0.1.48] - 2026-06-12
 
 ### Added
@@ -353,7 +363,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.48...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.49...HEAD
+[0.1.49]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.48...v0.1.49
 [0.1.48]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.47...v0.1.48
 [0.1.47]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.46...v0.1.47
 [0.1.46]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.45...v0.1.46

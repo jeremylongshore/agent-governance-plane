@@ -1,6 +1,6 @@
 {
   "name": "agent-governance-plane",
-  "version": "0.1.48",
+  "version": "0.1.49",
   "description": "Multi-harness agent governance plane with signed audit, policy-gated execution, and Slack-channel HITL approvals",
   "type": "module",
   "license": "Apache-2.0",

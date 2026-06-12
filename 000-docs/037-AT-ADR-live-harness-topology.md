@@ -108,9 +108,29 @@ a mode that defers entirely to the hook — at the cost of fail-OPEN if the hook
 to fire. v0 keeps `default` (fail-closed; deny is authoritative); making AGP the sole
 authority is a deliberate later choice, not a silent default.
 
-Remaining for full `agp-3g0` closure: Increment 2 (Topology B — harness in the
-network-enabled container) and Increment 3 (reproducible CI + the actual `ccsc-2oy` fix
-with the Slack HITL leg). Tracked as follow-on beads.
+**Increment 2 (Topology B) — done (2026-06-12, PR #71).** Container plumbing live-proven:
+`agp bridge` in an `oven/bun` container reaches the host gate over a bind-mounted socket
+(allow/deny both honored).
+
+**Increment 3 (reproducible run) — done on the real bug (2026-06-12).** The host intendant
+was run on the **actual `ccsc-2oy` flake in a real `claude-code-slack-channel` checkout**:
+95 journal events, 47 tool calls gated — real Claude tried `Agent`/`Bash`/`ToolSearch`
+(denied) then ~40 `Read`s (allowed), and `agp verify` confirmed chain + signatures + signed
+head. The reproducible CI mechanism ships as `.github/workflows/dogfood.yml` (manual
+`workflow_dispatch`: builds the image, runs the **containerized** intendant, verifies, and
+uploads the evidence bundle via `scripts/evidence-bundle.sh` per `036-OD-SPEC`).
+
+**Dev-sandbox limitation (not an AGP bug, documented).** In this Claude-Code dev sandbox,
+a bun process that binds the gate socket and then `Bun.spawn`s `docker` with the full
+multi-mount set cannot make the unix socket visible inside the container (a docker-in-sandbox
+filesystem-virtualization artifact — every component works in isolation, and a separate-process
+or single-mount run works). A real CI runner / operator host has no such virtualization, so
+the containerized path is validated there via the dogfood workflow.
+
+**Remaining for full `agp-3g0` closure:** one triggered **green CI run** of the container
+path — which needs the `ANTHROPIC_API_KEY` repo secret and a manual `Run workflow` (a model
+credential + trigger that are the operator's to provide), plus the Slack HITL leg (the Socket
+Mode receiver is independently tested; the dogfood here uses `AGP_AUTO_APPROVE`).
 
 ## References
 

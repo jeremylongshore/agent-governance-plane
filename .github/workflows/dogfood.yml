@@ -1,0 +1,106 @@
+# Reproducible, witnessed live dogfood (Increment 3 / agp-dt4, per 037-AT-ADR D3).
+#
+# Manually triggered. On a clean runner it builds the claude sandbox image, runs
+# the real Claude Code intendant IN A CONTAINER (Topology B) against a target
+# repo + task — every tool call gated through AGP's policy + signed journal — then
+# verifies the journal offline and uploads the evidence bundle (036-OD-SPEC).
+# "Trust me, I ran it" becomes "here, re-run it and verify the chain."
+#
+# Requires repo secret ANTHROPIC_API_KEY (the intendant's model auth; passed into
+# the container by name, never echoed). For a private target repo, also set
+# TARGET_REPO_TOKEN.
+
+name: Live dogfood (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: "Target repo to fix (HTTPS clone URL)"
+        default: "https://github.com/jeremylongshore/claude-code-slack-channel.git"
+        required: true
+      task:
+        description: "Task for the intendant"
+        default: "Investigate the intermittent 2-test flake under 'bun test --coverage' (ccsc-2oy). Read the test files, identify the cause, and give the minimal fix in your final message. Do not run shell commands."
+        required: true
+      bead:
+        description: "Bead this run evidences"
+        default: "agp-3g0"
+        required: true
+
+jobs:
+  dogfood:
+    name: Containerized intendant on a real bug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.23"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Require ANTHROPIC_API_KEY
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::repo secret ANTHROPIC_API_KEY is required for the live dogfood"; exit 1
+          fi
+
+      - name: Build the claude sandbox image
+        run: docker build -t agp-claude-sandbox:v0 -f docker/claude-sandbox.Dockerfile .
+
+      - name: Clone the target repo
+        env:
+          TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        run: |
+          url="${{ github.event.inputs.repo_url }}"
+          if [ -n "$TOKEN" ]; then url="${url/https:\/\//https:\/\/x-access-token:$TOKEN@}"; fi
+          git clone --depth 1 "$url" "$RUNNER_TEMP/target"
+
+      - name: Provision AGP (init + keygen + gating policy)
+        run: |
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          bun src/cli/index.ts init
+          bun src/cli/index.ts keygen
+          cat > "$AGP_HOME/policy.json" <<'POLICY'
+          {
+            "rules": [
+              { "id": "allow-read",   "effect": "allow",   "tool": "Read" },
+              { "id": "allow-glob",   "effect": "allow",   "tool": "Glob" },
+              { "id": "allow-grep",   "effect": "allow",   "tool": "Grep" },
+              { "id": "allow-ls",     "effect": "allow",   "tool": "LS" },
+              { "id": "require-edit", "effect": "require", "tool": "Edit" },
+              { "id": "require-write","effect": "require", "tool": "Write" },
+              { "id": "deny-bash",    "effect": "deny",    "tool": "Bash" }
+            ]
+          }
+          POLICY
+
+      - name: Run the governed dogfood (intendant in a container)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          AGP_CLAUDE_LIVE=1 AGP_CLAUDE_SANDBOX=docker AGP_CLAUDE_SANDBOX_IMAGE=agp-claude-sandbox:v0 \
+          AGP_AUTO_APPROVE=1 \
+            bun src/cli/index.ts run --intendant claude-code \
+              --task "${{ github.event.inputs.task }}" \
+              --repo "$RUNNER_TEMP/target" | tee "$RUNNER_TEMP/run.log"
+
+      - name: Assemble the evidence bundle
+        run: |
+          export AGP_HOME="$RUNNER_TEMP/agp-home"
+          bash scripts/evidence-bundle.sh \
+            --home "$AGP_HOME" --out "$RUNNER_TEMP/evidence" \
+            --task "${{ github.event.inputs.task }}" \
+            --bead "${{ github.event.inputs.bead }}" \
+            --repo "${{ github.event.inputs.repo_url }}"
+          cp "$RUNNER_TEMP/run.log" "$RUNNER_TEMP/evidence/run.log" || true
+
+      - name: Upload the evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: dogfood-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/evidence

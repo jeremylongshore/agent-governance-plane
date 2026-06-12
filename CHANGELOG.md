@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.52] - 2026-06-12
+
+### Changed
+
+- docs(readme): refresh README/AGENTS/CLAUDE — real description, sprite→intendant, current status (#73) (64a4791)
+
 ## [0.1.51] - 2026-06-12
 
 ### Changed
@@ -375,7 +381,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.51...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...HEAD
+[0.1.52]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.51...v0.1.52
 [0.1.51]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.50...v0.1.51
 [0.1.50]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.49...v0.1.50
 [0.1.49]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.48...v0.1.49

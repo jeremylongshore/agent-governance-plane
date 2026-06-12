@@ -92,8 +92,11 @@ jobs:
         # (no-circular, contracts-as-leaf, cli-is-top, daemon-not-imported-by-leaves).
         run: scripts/audit-harness arch
       - name: Dependency audit
-        # Surfaces known advisories in the dependency tree.
-        run: bun audit
+        # Hard gate on the PRODUCTION dependency tree (the actual shipped attack
+        # surface). Dev-tool advisories (e.g. a transitive devDep) don't block the
+        # daemon's release gate; production vulns do. Tracked dev advisories live
+        # in their own beads.
+        run: bun audit --production
 
   harness:
     # Vendored @intentsolutions/audit-harness (.audit-harness/). HARD gate.

@@ -90,6 +90,28 @@ advisory. This is the governance guarantee Epic 06 exists to establish.
 - Topology C: model-only egress-allowlist sandbox (enables the spec's fully-isolated harness).
 - Increment 3: reproducible `workflow_dispatch` dogfood CI job with an API-key harness.
 
+## Validation (Increment 1 — done, 2026-06-12)
+
+Run autonomously against real `claude` 2.1.172 (control-plane spawn, throwaway repo,
+policy: allow Read, require Write, deny Bash; `AGP_AUTO_APPROVE=1`):
+
+- `Read` → gate **allow** (rule `allow-read`); Claude received the content.
+- `Write` → gate **require → approval.granted → allow** (the HITL leg fired).
+- `Bash git init` → gate **deny** (rule `deny-bash`); Claude **refused to route around it**.
+- Signed journal: 9 events; `agp verify` → "chain, signatures, and signed head verified."
+
+**Permission-mode nuance (honest):** at `--permission-mode default` an AGP *allow* is
+necessary-but-not-sufficient — Claude's own permission layer is a second gate, so an
+AGP-allowed Write can still be blocked Claude-side (observed). AGP *deny* is fully
+authoritative regardless. For AGP to be the sole authority (allow + deny), run Claude in
+a mode that defers entirely to the hook — at the cost of fail-OPEN if the hook ever fails
+to fire. v0 keeps `default` (fail-closed; deny is authoritative); making AGP the sole
+authority is a deliberate later choice, not a silent default.
+
+Remaining for full `agp-3g0` closure: Increment 2 (Topology B — harness in the
+network-enabled container) and Increment 3 (reproducible CI + the actual `ccsc-2oy` fix
+with the Slack HITL leg). Tracked as follow-on beads.
+
 ## References
 
 `027-AT-SPEC` (sprite + live-path sketch), `029-AT-ADR` (Unix-socket gateway),

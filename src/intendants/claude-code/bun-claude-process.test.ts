@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { BunClaudeProcess, buildBridgeCommand } from "./bun-claude-process.ts";
@@ -148,6 +148,10 @@ test("docker mode writes container settings + launches via the docker launcher",
   expect(opts.socketDir).toBe(dir);
   expect(opts.agpRepoPath).toBe("/tmp/agp");
   expect(opts.apiKey).toBe("sk-test");
+
+  // The gate socket must be world-connectable so a --cap-drop ALL container (no
+  // CAP_DAC_OVERRIDE, non-owner uid) can connect — otherwise connect → ENOENT (agp-9sz).
+  expect(statSync(socketPath).mode & 0o777).toBe(0o777);
 
   const settings = JSON.parse(readFileSync(join(dir, "settings.json"), "utf8")) as {
     hooks: { PreToolUse: Array<{ hooks: Array<{ command: string }> }> };

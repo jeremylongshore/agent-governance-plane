@@ -120,24 +120,24 @@ head. The reproducible CI mechanism ships as `.github/workflows/dogfood.yml` (ma
 `workflow_dispatch`: builds the image, runs the **containerized** intendant, verifies, and
 uploads the evidence bundle via `scripts/evidence-bundle.sh` per `036-OD-SPEC`).
 
-**Container socket-sharing bug (CORRECTION).** An earlier revision of this ADR called the
-container failure a dev-sandbox-only artifact. That was wrong: the first CI dogfood
-(2026-06-12, host-process gate + intendant in a Docker container) **reproduced it on a clean
-runner** — and went green on a hollow run (0 tool calls gated). The precise symptom: the
-bind-mounted gate socket is *visible* in the container (`ls` shows `gate.sock`) but the
-in-container bridge's `connect()` returns **ENOENT**. It correlates with the GatewayServer
-being bound in the **same process** that `Bun.spawn`s `docker`; a separate-process gate
-connects fine. This is a real container-IPC problem — tracked as its own bead — not an
-environment quirk. Fixes applied in response: `evidence-bundle.sh` now **fails on a 0-gated
-run** (no fake-green), and the reproducible dogfood (`.github/workflows/dogfood.yml`) runs the
-**host path** (Claude on the ephemeral runner — real isolation per run, gated, signed),
-which works end-to-end.
+**Container socket-sharing bug — root-caused and FIXED (agp-9sz, 2026-06-12).** Symptom: the
+bind-mounted gate socket was *visible* in the container (`ls` showed `gate.sock`) but the
+in-container bridge's `connect()` returned ENOENT, so the dogfood gated 0 calls (a hollow
+green, since fixed by failing `evidence-bundle.sh` on 0-gated). Earlier revisions wrongly
+blamed a dev-sandbox artifact / same-process spawn. **Real root cause:** `--cap-drop ALL`
+(part of the hardened `docker run`) removes `CAP_DAC_OVERRIDE`, and the gate socket was mode
+0775 — "others" lack the **write** bit needed to `connect()`. A non-owner, cap-dropped
+container therefore cannot connect. **Fix:** `BunClaudeProcess` chmods the gate socket to
+**0777** (world-connectable) before launching the container. Acceptable: single-host,
+local-only (029-AT-ADR keeps the socket off the network); it conveys gate verdicts, not
+execution, and every decision is journaled. **Verified end-to-end:** real Claude in a
+`--cap-drop ALL` container governed correctly — `Bash`/`Glob`/`ToolSearch` denied, `Read`
+allowed, signed journal verified (3 gated calls, not 0).
 
-**Remaining for full `agp-3g0` closure (Docker-container literal acceptance):** the
-container socket-sharing fix (separate-process gate, or an alternate in-container IPC that
-preserves the no-public-surface posture). The *substance* — real Claude governed on the real
-`ccsc-2oy` bug, signed journal, reproducible CI — is met via the host path. The Slack HITL
-leg is covered by the Socket Mode receiver tests; the dogfood uses `AGP_AUTO_APPROVE`.
+The reproducible per-PR gate is the **deterministic governed-loop** (`ci.yml` `dogfood` job,
+in-memory harness). The real-Claude witnessed run (`dogfood.yml`) uses the now-working
+container path (Topology B). The Slack HITL leg is covered by the Socket Mode receiver tests;
+the dogfood uses `AGP_AUTO_APPROVE`.
 
 ## References
 

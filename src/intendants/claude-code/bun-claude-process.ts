@@ -14,7 +14,7 @@
 //   → this GatewayServer → onPreToolUse → ClaudeCodeIntendant → daemon.gate
 //   → respond() → socket reply → bridge exits 0 (allow) / 2 (deny) → claude obeys.
 
-import { writeFileSync } from "node:fs";
+import { chmodSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -193,6 +193,13 @@ export class BunClaudeProcess implements ClaudeProcess {
         join(socketDir, "settings.json"),
         JSON.stringify(buildHookSettings(buildContainerBridgeCommand()), null, 2),
       );
+      // The hardened container (`--cap-drop ALL`) runs as a non-owner uid and has no
+      // CAP_DAC_OVERRIDE, so it can only connect to the gate socket if "others" hold
+      // the write bit. The default mode (0775) blocks it → connect ENOENT. Widen the
+      // socket to world-connectable. Acceptable: single-host, local-only (029-AT-ADR
+      // keeps it off the network); the socket conveys gate verdicts, not execution,
+      // and every decision is journaled.
+      chmodSync(this.opts.bridgeSocket, 0o777);
       const launch = this.opts.dockerLaunch ?? dockerClaudeLaunch;
       this.child = launch({
         image: this.opts.docker.image,

@@ -13,6 +13,7 @@ import { keygenCommand } from "./commands/keygen.ts";
 import { runCommand } from "./commands/run.ts";
 import { verifyCommand } from "./commands/verify.ts";
 import { sessionsCommand } from "./commands/sessions.ts";
+import { bridgeCommand } from "./commands/bridge.ts";
 
 const USAGE = `agp — agent governance plane
 
@@ -26,6 +27,10 @@ Commands:
               --check <name>   run only one check (e.g. --check policy)
   run         Drive a session through the governance loop (v0: reference mode) — fail-closed
               --sprite <name>   harness to drive: scripted (default) | claude-code
+              --task <prompt>   (live claude) the task to fix; needs AGP_CLAUDE_LIVE=1
+              --repo <path>     (live claude) the repo to run in
+  bridge      PreToolUse hook bridge (internal; Claude runs this per tool call)
+              --socket <path>   the session gateway socket to gate against
   verify      Verify the audit journal (hash chain + signatures), offline
   sessions    List the sessions recorded in the audit journal
   help        Show this help
@@ -57,7 +62,15 @@ export async function main(argv: string[]): Promise<number> {
     case "run": {
       const si = argv.indexOf("--sprite");
       const spriteSel = si >= 0 ? argv[si + 1] : undefined;
-      return runCommand(process.env, console.log, { sprite: spriteSel });
+      const ti = argv.indexOf("--task");
+      const task = ti >= 0 ? argv[ti + 1] : undefined;
+      const ri = argv.indexOf("--repo");
+      const repo = ri >= 0 ? argv[ri + 1] : undefined;
+      return runCommand(process.env, console.log, { sprite: spriteSel, task, repo });
+    }
+    case "bridge": {
+      const stdin = await Bun.stdin.text();
+      return bridgeCommand(argv.slice(1), stdin);
     }
     case "verify":
       return verifyCommand(argv.slice(1));

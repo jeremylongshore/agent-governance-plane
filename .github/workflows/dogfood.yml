@@ -1,14 +1,19 @@
 # Reproducible, witnessed live dogfood (Increment 3 / agp-dt4, per 037-AT-ADR D3).
 #
-# Manually triggered. On a clean runner it builds the claude sandbox image, runs
-# the real Claude Code intendant IN A CONTAINER (Topology B) against a target
-# repo + task — every tool call gated through AGP's policy + signed journal — then
-# verifies the journal offline and uploads the evidence bundle (036-OD-SPEC).
-# "Trust me, I ran it" becomes "here, re-run it and verify the chain."
+# Manually triggered. On a clean, ephemeral runner it installs Claude Code, runs
+# the real intendant against a target repo + task — every tool call gated through
+# AGP's policy + signed journal — then verifies the journal offline and uploads
+# the evidence bundle (036-OD-SPEC). "Trust me, I ran it" becomes "here, re-run it
+# and verify the chain." The evidence step FAILS the run if zero calls were gated
+# (no fake-green).
 #
-# Requires repo secret ANTHROPIC_API_KEY (the intendant's model auth; passed into
-# the container by name, never echoed). For a private target repo, also set
-# TARGET_REPO_TOKEN.
+# Host path (Claude on the runner). Topology B (intendant inside a Docker container)
+# is tracked separately: the host-process gate socket is not reachable from the
+# container even on a clean runner (bind-mounted unix-socket connect → ENOENT) —
+# see the container-socket bead. The ephemeral runner is itself the isolation here.
+#
+# Requires repo secret ANTHROPIC_API_KEY (the intendant's model auth). For a
+# private target repo, also set TARGET_REPO_TOKEN.
 
 name: Live dogfood (manual)
 
@@ -30,7 +35,7 @@ on:
 
 jobs:
   dogfood:
-    name: Containerized intendant on a real bug
+    name: Governed intendant on a real bug
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -48,8 +53,10 @@ jobs:
             echo "::error::repo secret ANTHROPIC_API_KEY is required for the live dogfood"; exit 1
           fi
 
-      - name: Build the claude sandbox image
-        run: docker build -t agp-claude-sandbox:v0 -f docker/claude-sandbox.Dockerfile .
+      - name: Install Claude Code on the runner
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Clone the target repo
         env:
@@ -78,18 +85,18 @@ jobs:
           }
           POLICY
 
-      - name: Run the governed dogfood (intendant in a container)
+      - name: Run the governed dogfood
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
+          set -o pipefail
           export AGP_HOME="$RUNNER_TEMP/agp-home"
-          AGP_CLAUDE_LIVE=1 AGP_CLAUDE_SANDBOX=docker AGP_CLAUDE_SANDBOX_IMAGE=agp-claude-sandbox:v0 \
-          AGP_AUTO_APPROVE=1 \
+          AGP_CLAUDE_LIVE=1 AGP_AUTO_APPROVE=1 \
             bun src/cli/index.ts run --intendant claude-code \
               --task "${{ github.event.inputs.task }}" \
               --repo "$RUNNER_TEMP/target" | tee "$RUNNER_TEMP/run.log"
 
-      - name: Assemble the evidence bundle
+      - name: Assemble the evidence bundle (fails if 0 calls gated)
         run: |
           export AGP_HOME="$RUNNER_TEMP/agp-home"
           bash scripts/evidence-bundle.sh \
@@ -100,6 +107,7 @@ jobs:
           cp "$RUNNER_TEMP/run.log" "$RUNNER_TEMP/evidence/run.log" || true
 
       - name: Upload the evidence bundle
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dogfood-evidence-${{ github.run_id }}

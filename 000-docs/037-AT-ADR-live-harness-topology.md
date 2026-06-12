@@ -120,17 +120,24 @@ head. The reproducible CI mechanism ships as `.github/workflows/dogfood.yml` (ma
 `workflow_dispatch`: builds the image, runs the **containerized** intendant, verifies, and
 uploads the evidence bundle via `scripts/evidence-bundle.sh` per `036-OD-SPEC`).
 
-**Dev-sandbox limitation (not an AGP bug, documented).** In this Claude-Code dev sandbox,
-a bun process that binds the gate socket and then `Bun.spawn`s `docker` with the full
-multi-mount set cannot make the unix socket visible inside the container (a docker-in-sandbox
-filesystem-virtualization artifact — every component works in isolation, and a separate-process
-or single-mount run works). A real CI runner / operator host has no such virtualization, so
-the containerized path is validated there via the dogfood workflow.
+**Container socket-sharing bug (CORRECTION).** An earlier revision of this ADR called the
+container failure a dev-sandbox-only artifact. That was wrong: the first CI dogfood
+(2026-06-12, host-process gate + intendant in a Docker container) **reproduced it on a clean
+runner** — and went green on a hollow run (0 tool calls gated). The precise symptom: the
+bind-mounted gate socket is *visible* in the container (`ls` shows `gate.sock`) but the
+in-container bridge's `connect()` returns **ENOENT**. It correlates with the GatewayServer
+being bound in the **same process** that `Bun.spawn`s `docker`; a separate-process gate
+connects fine. This is a real container-IPC problem — tracked as its own bead — not an
+environment quirk. Fixes applied in response: `evidence-bundle.sh` now **fails on a 0-gated
+run** (no fake-green), and the reproducible dogfood (`.github/workflows/dogfood.yml`) runs the
+**host path** (Claude on the ephemeral runner — real isolation per run, gated, signed),
+which works end-to-end.
 
-**Remaining for full `agp-3g0` closure:** one triggered **green CI run** of the container
-path — which needs the `ANTHROPIC_API_KEY` repo secret and a manual `Run workflow` (a model
-credential + trigger that are the operator's to provide), plus the Slack HITL leg (the Socket
-Mode receiver is independently tested; the dogfood here uses `AGP_AUTO_APPROVE`).
+**Remaining for full `agp-3g0` closure (Docker-container literal acceptance):** the
+container socket-sharing fix (separate-process gate, or an alternate in-container IPC that
+preserves the no-public-surface posture). The *substance* — real Claude governed on the real
+`ccsc-2oy` bug, signed journal, reproducible CI — is met via the host path. The Slack HITL
+leg is covered by the Socket Mode receiver tests; the dogfood uses `AGP_AUTO_APPROVE`.
 
 ## References
 

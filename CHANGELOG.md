@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.53] - 2026-06-12
+
+### Changed
+
+- docs: enhance + sync the one-line tagline (README + package.json) (#74) (7f115df)
+
 ## [0.1.52] - 2026-06-12
 
 ### Changed
@@ -381,7 +387,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.53...HEAD
+[0.1.53]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.52...v0.1.53
 [0.1.52]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.51...v0.1.52
 [0.1.51]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.50...v0.1.51
 [0.1.50]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.49...v0.1.50

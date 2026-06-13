@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.59] - 2026-06-13
+
+### Changed
+
+- chore(beads): close agp-3g0 (live dogfood validated) + agp-92v (Epic 06 complete); file dogfood-perf follow-on (9c17dec)
+- chore(beads): close agp-9sz (container socket fixed); note agp-3g0 (Topology B works) (7f844f9)
+- chore(beads): close agp-dt4 (reproducible CI dogfood green); note agp-3g0 (Docker-literal pending agp-9sz) (9911d15)
+
+### Fixed
+
+- fix(dogfood): give the manual container run real headroom (timeout 1200s / job 30m) (#81) (44fada9)
+- fix(sandbox): container gate-socket connect under --cap-drop ALL (agp-9sz) (#80) (53577ae)
+
 ## [0.1.58] - 2026-06-12
 
 ### Added
@@ -421,7 +434,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.58...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.59...HEAD
+[0.1.59]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.58...v0.1.59
 [0.1.58]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.57...v0.1.58
 [0.1.57]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.56...v0.1.57
 [0.1.56]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.55...v0.1.56

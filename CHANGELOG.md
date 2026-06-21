@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.66] - 2026-06-21
+
+### Added
+
+- feat(verify): pluggable Verifier seam + IntendantManifest contract (agp-z26.2) (#94) (672217b)
+
 ## [0.1.65] - 2026-06-21
 
 ### Added
@@ -470,7 +476,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.65...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.66...HEAD
+[0.1.66]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.65...v0.1.66
 [0.1.65]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.64...v0.1.65
 [0.1.64]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.63...v0.1.64
 [0.1.63]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.62...v0.1.63

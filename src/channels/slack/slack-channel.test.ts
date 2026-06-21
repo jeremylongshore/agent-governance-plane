@@ -6,6 +6,7 @@ import type { SlackTransport, PostResult } from "./transport.ts";
 import type { SlackBlock } from "./blocks.ts";
 import { ACTION_APPROVE, ACTION_DENY } from "./blocks.ts";
 import { validApprovalRequest } from "../../contracts/fixtures.ts";
+import { assertNoSecretValues, SecretExfiltrationError } from "../../sandbox/credentials.ts";
 
 class FakeSlackTransport implements SlackTransport {
   readonly posts: { channel: string; blocks: SlackBlock[]; text: string }[] = [];
@@ -87,4 +88,36 @@ test("projectEvent is best-effort: returns true on success, false on failure, ne
   expect(await channel.projectEvent("tool_call.allow", "Read /x")).toBe(true);
   transport.failPost = true;
   expect(await channel.projectEvent("tool_call.deny", "Bash blocked")).toBe(false);
+});
+
+test("the fail-closed screen refuses to POST an approval prompt carrying a secret value", async () => {
+  const transport = new FakeSlackTransport();
+  const channel = new SlackChannel({
+    transport,
+    interactions: new InMemoryInteractionSource(),
+    channelId: "C1",
+    nonceStore: new NonceStore({ gen: () => "n1" }),
+    screen: (p) => assertNoSecretValues(p, ["SUPERSECRET"], "slack"),
+  });
+  // A request whose content carries the secret value must not be posted.
+  await expect(channel.postApprovalRequest({ ...validApprovalRequest, tool: "Bash--SUPERSECRET" })).rejects.toThrow(
+    SecretExfiltrationError,
+  );
+  expect(transport.posts).toHaveLength(0);
+  // A clean request still posts.
+  await channel.postApprovalRequest(validApprovalRequest);
+  expect(transport.posts).toHaveLength(1);
+});
+
+test("projectEvent declines (false, no throw) when the summary would leak a secret", async () => {
+  const transport = new FakeSlackTransport();
+  const channel = new SlackChannel({
+    transport,
+    interactions: new InMemoryInteractionSource(),
+    channelId: "C1",
+    screen: (p) => assertNoSecretValues(p, ["SUPERSECRET"], "slack"),
+  });
+  expect(await channel.projectEvent("tool_call.allow", "leaked SUPERSECRET here")).toBe(false);
+  expect(transport.posts).toHaveLength(0);
+  expect(await channel.projectEvent("tool_call.allow", "harmless summary")).toBe(true);
 });

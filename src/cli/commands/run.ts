@@ -17,6 +17,7 @@ import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedIntendant } from "../../runtime/intendant.ts";
 import { Daemon } from "../../daemon/daemon.ts";
+import { assertNoSecretValues, EnvSecretVault } from "../../sandbox/credentials.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeIntendant } from "../../intendants/claude-code/claude-code-intendant.ts";
 import { InMemoryClaudeProcess } from "../../intendants/claude-code/claude-process.ts";
@@ -95,8 +96,24 @@ export async function runCommand(
     out("agp run: recording sandbox (reference — runs nothing; set AGP_SANDBOX=docker for real isolation).");
   }
 
+  // Known secret values to screen outbound surfaces against (defense-in-depth):
+  // AGP's vault secrets + the model auth. AGP already keeps values out of the
+  // journal/channel by construction (it records tool names + decisions, never args
+  // or values); this set makes that invariant fail-closed so a future change that
+  // adds a value-bearing field can't silently leak a credential.
+  const knownSecrets = (extra: readonly string[] = []): string[] => {
+    const set = new Set<string>();
+    for (const v of new EnvSecretVault(env).values()) set.add(v);
+    if (env.ANTHROPIC_API_KEY) set.add(env.ANTHROPIC_API_KEY);
+    for (const e of extra) if (e.length > 0) set.add(e);
+    return [...set];
+  };
+
   // The signed, hash-chained journal is authoritative and always production.
-  const journal = new Journal(paths.journal, privateKey);
+  const journalSecrets = knownSecrets();
+  const journal = new Journal(paths.journal, privateKey, undefined, (event) =>
+    assertNoSecretValues(event, journalSecrets, "journal"),
+  );
 
   // Select the channel. Default is the console reference (fail-closed deny with
   // no human present). AGP_CHANNEL=slack selects production Slack HITL: it posts
@@ -140,10 +157,12 @@ export async function runCommand(
         }),
     });
     await receiver.start();
+    const slackSecrets = knownSecrets([creds.botToken, creds.appToken]);
     channel = new SlackChannel({
       transport: new FetchSlackTransport(creds.botToken),
       interactions: receiver,
       channelId: creds.channelId,
+      screen: (payload) => assertNoSecretValues(payload, slackSecrets, "slack"),
     });
     out("agp run: AGP_CHANNEL=slack — live Socket Mode receiver connected.");
   } else {

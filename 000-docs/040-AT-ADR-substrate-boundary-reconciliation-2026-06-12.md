@@ -112,21 +112,28 @@ Assessed against AGP's as-built reality:
   records secret **names** only, never values or stdout. AGP does not need CCSC's
   declaration table; its placeholder discipline covers the injected-secret case.
 - **CCSC PR #217 — `assertNoSecretValues()` (fail-closed value-exfiltration
-  guard).** **AGP has no equivalent.** AGP's `redactSecrets` (`credentials.ts:124`)
-  is *silent masking*, wired at a **single site** — proxy-exec stdout → intendant
-  (`daemon.ts:143`) — and the journal there records names + exit code, not stdout.
-  Strong for the proxy-exec path, but there is a real gap on the **live /
-  Topology-B path** (the primary v0 dogfood path): the harness's own tool args are
-  journaled verbatim (`args = tool_input`, per `037-AT-ADR`). If the model inlines
-  a credential value in a tool call (e.g. `Bash` with an inline token), that value
-  lands in the **permanent signed journal**, with no fail-closed guard to stop it.
+  guard).** AGP had **no equivalent assertion**, though — verified against
+  `daemon.ts` — AGP **does not journal tool args or secret values in either path**:
+  both `mediate` (proxy-exec) and `gate` (live) record only the tool **name** +
+  decision metadata (`{messageId, tool, ruleId, reason}`), the executed payload
+  records `{exitCode, secretsUsed}` (secret **names**), and the Slack approval
+  prompt is posted `{tool, verdict}` — never `req.args`. `redactSecrets`
+  (`credentials.ts`) additionally masks proxy-exec stdout before it reaches the
+  intendant. So **no secret value reaches the journal or the channel today, by
+  construction** — the earlier draft of this ADR overstated an "inlined credential
+  reaches the signed journal" exposure; that is not the as-built behavior and is
+  corrected here.
 
-**Conclusion:** AGP's placeholder model is stronger than CCSC's for *injected*
-secrets, but AGP lacks a fail-closed, universal value-exfiltration assertion at the
-**journal-append and channel-emit boundaries**. This is defense-in-depth, not a v0
-blocker (the proxy-exec data plane is clean by construction), but the signed-journal
-exposure on the live path makes it worth doing. **Filed as a follow-on security
-bead** (see References) and slated as the immediate next hardening item.
+**Conclusion:** AGP keeps secret values out of the signed journal and the channel
+**by construction** (it records tool names + decisions + secret names, never args /
+values / stdout). The gap vs CCSC is the absence of a **fail-closed assertion** that
+*enforces* this invariant — so a future change that adds a value-bearing field to a
+journaled or posted payload could silently regress it. For a governance plane whose
+signed journal is the core trust artifact, making the invariant fail-closed code
+(not merely convention) is worth doing. **Implemented in this epic's follow-on**
+(`assertNoSecretValues` wired at the journal-append and channel-emit boundaries; see
+References) — framed as defense-in-depth / regression-proofing, not an active-leak
+fix.
 
 ## Consequences
 

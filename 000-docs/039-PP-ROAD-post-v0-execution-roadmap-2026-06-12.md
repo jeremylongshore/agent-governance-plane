@@ -79,15 +79,16 @@ on the second harness), corrects the `NOTICE`, and reframes `substrate/UPSTREAM.
 pin + drift-review record. **A real security gap surfaced** in that review (see below)
 and becomes the immediate next build item.
 
-### 1b. Secret-value exfiltration guard — IMMEDIATE NEXT (surfaced by `040-AT-ADR`)
+### 1b. Secret-value exfiltration guard — DONE (surfaced by `040-AT-ADR`)
 
-A fail-closed guard (CCSC `assertNoSecretValues()` equivalent) at the
-journal-append and channel-emit boundaries. AGP's placeholder model keeps injected
-secrets out of the data plane, but the live/Topology-B path journals harness tool
-args verbatim — an inlined credential could reach the **permanent signed journal**
-with no guard. `redactSecrets` today is silent-mask, single-site. Defense-in-depth,
-not a v0 blocker, but the signed-journal exposure makes it the next thing to build.
-Tracked as its own security bead + GitHub issue.
+A fail-closed guard (CCSC `assertNoSecretValues()` equivalent) wired at the
+journal-append and channel-emit boundaries. AGP already keeps secret values out of
+the journal and channel **by construction** (it records tool names + decisions +
+secret names, never args/values/stdout) — the drift review confirmed this against
+`daemon.ts` and corrected an earlier overstated "reaches the signed journal" claim.
+The guard makes that invariant **fail-closed code** so a future change adding a
+value-bearing field can't silently regress it (defense-in-depth, not an active-leak
+fix). Shipped as its own security bead + GitHub issue.
 
 ### 2. Runtime hardening — `agp-4na.2`, `agp-4na.3` / under `#52`
 

@@ -58,11 +58,25 @@ export class Journal {
   private readonly path: string;
   private readonly privateKey: KeyObject;
   private readonly now: () => string;
+  private readonly screen?: (event: JournalEvent) => void;
 
-  constructor(path: string, privateKey: KeyObject, now: () => string = () => new Date().toISOString()) {
+  /**
+   * @param screen optional fail-closed pre-write guard. Runs on the sealed event
+   *   just before it is written; if it throws (e.g. a secret value would be
+   *   recorded), the append throws and NOTHING is written — not the event, not the
+   *   head. Wire `assertNoSecretValues` here so a credential can never reach the
+   *   permanent signed journal (including the live path's verbatim tool args).
+   */
+  constructor(
+    path: string,
+    privateKey: KeyObject,
+    now: () => string = () => new Date().toISOString(),
+    screen?: (event: JournalEvent) => void,
+  ) {
     this.path = path;
     this.privateKey = privateKey;
     this.now = now;
+    this.screen = screen;
   }
 
   append(input: AppendInput): JournalEvent {
@@ -89,6 +103,10 @@ export class Journal {
     const hash = sha256Hex(bytes);
     const signature = signEd25519(bytes, this.privateKey);
     const event = JournalEvent.parse({ ...unsealed, hash, signature });
+
+    // Fail-closed boundary: if the guard rejects (e.g. a secret value would be
+    // recorded), throw BEFORE any write — neither the event nor the head lands.
+    this.screen?.(event);
 
     appendFileSync(this.path, JSON.stringify(event) + "\n");
     this.writeHead(seq, hash);

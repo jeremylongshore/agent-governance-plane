@@ -27,6 +27,12 @@
 export interface SecretVault {
   /** The secret value for a name, or undefined if not held. */
   get(name: string): string | undefined;
+  /**
+   * Every secret value the vault holds. The exfiltration guard screens against
+   * this set, so it must cover secrets a placeholder never referenced (e.g. a
+   * value the model inlined directly on the live path).
+   */
+  values(): readonly string[];
 }
 
 /** Env prefix a secret name is read under, e.g. AGP_SECRET_GITHUB_TOKEN. */
@@ -46,6 +52,13 @@ export class EnvSecretVault implements SecretVault {
   }
   get(name: string): string | undefined {
     return this.env[SECRET_ENV_PREFIX + name];
+  }
+  values(): readonly string[] {
+    const vals: string[] = [];
+    for (const [k, v] of Object.entries(this.env)) {
+      if (k.startsWith(SECRET_ENV_PREFIX) && v !== undefined && v.length > 0) vals.push(v);
+    }
+    return vals;
   }
 }
 
@@ -140,4 +153,44 @@ export function redactSecrets(value: unknown, secretValues: readonly string[]): 
     return v;
   };
   return walk(value);
+}
+
+/**
+ * Thrown when a known secret value is about to cross an outbound boundary
+ * (the signed journal, a channel post). The message NEVER contains the secret
+ * value — only the boundary — so the guard itself cannot become the leak.
+ */
+export class SecretExfiltrationError extends Error {
+  constructor(public readonly boundary: string) {
+    super(`secret-value exfiltration blocked at boundary: ${boundary}`);
+    this.name = "SecretExfiltrationError";
+  }
+}
+
+/**
+ * FAIL-CLOSED value-exfiltration guard (the companion to redactSecrets). Walks a
+ * JSON value and THROWS SecretExfiltrationError if any known secret value appears
+ * as a substring of any string. Unlike redactSecrets (silent mask), this refuses
+ * the operation — used at the journal-append and channel-emit boundaries so a
+ * credential can never reach the permanent signed record or an outbound post,
+ * including on the live path where harness tool args are recorded verbatim.
+ *
+ * Inherent limit: it can only screen for secrets it KNOWS (the passed set); a
+ * value AGP never held cannot be detected. That is the honest boundary.
+ */
+export function assertNoSecretValues(value: unknown, secretValues: readonly string[], boundary: string): void {
+  const nonEmpty = secretValues.filter((s) => s.length > 0);
+  if (nonEmpty.length === 0) return;
+  const scan = (v: unknown): void => {
+    if (typeof v === "string") {
+      for (const secret of nonEmpty) {
+        if (v.includes(secret)) throw new SecretExfiltrationError(boundary);
+      }
+    } else if (Array.isArray(v)) {
+      for (const item of v) scan(item);
+    } else if (v !== null && typeof v === "object") {
+      for (const item of Object.values(v)) scan(item);
+    }
+  };
+  scan(value);
 }

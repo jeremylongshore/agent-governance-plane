@@ -22,6 +22,14 @@ export interface SlackChannelOptions {
   interactions: InteractionSource;
   channelId: string;
   nonceStore?: NonceStore;
+  /**
+   * Optional fail-closed outbound guard. Runs on a payload before it is posted to
+   * Slack; if it throws (e.g. a known secret value would be posted) the gating
+   * post (postApprovalRequest) refuses fail-closed, and the best-effort
+   * projection (projectEvent) silently declines rather than leak. Wire
+   * `assertNoSecretValues` here.
+   */
+  screen?: (payload: unknown) => void;
 }
 
 export class SlackChannel implements ChannelAdapter {
@@ -29,6 +37,7 @@ export class SlackChannel implements ChannelAdapter {
   private readonly interactions: InteractionSource;
   private readonly channelId: string;
   private readonly nonces: NonceStore;
+  private readonly screen?: (payload: unknown) => void;
   private readonly pending = new Map<string, { nonce: string; ts: string }>();
 
   constructor(opts: SlackChannelOptions) {
@@ -36,9 +45,13 @@ export class SlackChannel implements ChannelAdapter {
     this.interactions = opts.interactions;
     this.channelId = opts.channelId;
     this.nonces = opts.nonceStore ?? new NonceStore();
+    this.screen = opts.screen;
   }
 
   async postApprovalRequest(request: ApprovalRequest): Promise<ApprovalHandle> {
+    // Fail-closed: refuse to post a prompt that would leak a secret value. The
+    // daemon then fails the call closed (deny) rather than exposing the credential.
+    this.screen?.(request);
     const nonce = this.nonces.mint({ messageId: request.messageId, sessionId: request.sessionId });
     const { ts } = await this.transport.postMessage(
       this.channelId,
@@ -71,9 +84,11 @@ export class SlackChannel implements ChannelAdapter {
     return { messageId: handle.messageId, approved, decidedBy: interaction.userId };
   }
 
-  /** Best-effort projection: a Slack failure returns false and never throws. */
+  /** Best-effort projection: a Slack failure returns false and never throws. A
+   *  payload that would leak a secret is declined (returns false), never posted. */
   async projectEvent(eventKind: string, summary: string): Promise<boolean> {
     try {
+      this.screen?.({ eventKind, summary });
       await this.transport.postMessage(this.channelId, projectionBlocks(eventKind, summary), `${eventKind}: ${summary}`);
       return true;
     } catch {

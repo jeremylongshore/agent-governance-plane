@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.69] - 2026-06-21
+
+### Added
+
+- feat(intendants): CodexIntendant + deterministic reference proving the contract is generic (agp-cln.1) (#97) (38c42b6)
+
 ## [0.1.68] - 2026-06-21
 
 ### Added
@@ -488,7 +494,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.68...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.69...HEAD
+[0.1.69]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.68...v0.1.69
 [0.1.68]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.67...v0.1.68
 [0.1.67]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.66...v0.1.67
 [0.1.66]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.65...v0.1.66

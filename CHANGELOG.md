@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.62] - 2026-06-21
+
+### Added
+
+- feat(security): fail-closed secret-value exfiltration guard at journal + channel boundaries (#90) (65e68eb)
+
 ## [0.1.61] - 2026-06-21
 
 ### Changed
@@ -446,7 +452,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.61...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.62...HEAD
+[0.1.62]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.61...v0.1.62
 [0.1.61]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.60...v0.1.61
 [0.1.60]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.59...v0.1.60
 [0.1.59]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.58...v0.1.59

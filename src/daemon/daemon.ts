@@ -13,7 +13,9 @@ import type { ToolCallRequest } from "../contracts/gateway-message.ts";
 import { PolicyVerdict } from "../contracts/policy-verdict.ts";
 import type { SandboxHandle, SandboxProvider } from "../contracts/sandbox-provider.ts";
 import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
-import type { IntendantAdapter } from "../contracts/intendant-adapter.ts";
+import type { IntendantAdapter, IntendantIdentity } from "../contracts/intendant-adapter.ts";
+import type { IntendantManifest } from "../contracts/intendant-manifest.ts";
+import type { Verifier } from "../contracts/verifier.ts";
 import type { Journal } from "../journal/journal.ts";
 import type { PolicyEngine } from "../policy/engine.ts";
 import type { ScriptedIntendant } from "../runtime/intendant.ts";
@@ -54,6 +56,32 @@ export interface DaemonDeps {
   nowMs?: () => number;
   /** Lease TTL in ms; a session whose heartbeat is older than this is reapable. */
   leaseTtlMs?: number;
+  /**
+   * Optional supply-chain verifier (agp-z26 / 043-AT-ADR). Used in the
+   * `warn`/`enforce` identity modes to verify the intendant's signed manifest
+   * before a session starts. The daemon depends only on the Verifier interface;
+   * the concrete backend (Ed25519 v0, Sigstore v0.6) is injected by the CLI.
+   */
+  verifier?: Verifier;
+  /**
+   * Intendant identity policy. `off` (default v0) does not verify and records
+   * `intendant_identity_uri: null`. `warn` verifies and journals an
+   * `intendant.verify.failed` event on failure but still runs. `enforce` refuses
+   * to start a session whose manifest does not verify.
+   */
+  identityMode?: IdentityMode;
+}
+
+export type IdentityMode = "off" | "warn" | "enforce";
+
+/** Per-session run options, including the supply-chain material to verify. */
+export interface SessionRunOptions {
+  sessionId?: string;
+  image?: string;
+  /** The intendant's signed manifest (warn/enforce modes). */
+  manifest?: IntendantManifest;
+  /** Detached base64 Ed25519 signature over canonicalJson(manifest). */
+  signatureB64?: string;
 }
 
 /** A vault that holds nothing — used when no `vault` dep is supplied so an
@@ -83,6 +111,8 @@ export interface MediationOutcome {
 export interface SessionResult {
   sessionId: string;
   outcomes: MediationOutcome[];
+  /** True when the identity gate refused to start the session (enforce mode). */
+  refused?: boolean;
 }
 
 export class Daemon {
@@ -90,12 +120,49 @@ export class Daemon {
   private readonly instanceId: string;
   private readonly nowMs: () => number;
   private readonly leaseTtlMs: number;
+  private readonly identityMode: IdentityMode;
 
   constructor(deps: DaemonDeps) {
     this.deps = deps;
     this.instanceId = deps.instanceId ?? randomUUID();
     this.nowMs = deps.nowMs ?? (() => Date.now());
     this.leaseTtlMs = deps.leaseTtlMs ?? 300_000; // 5 min; refreshed per gated call
+    this.identityMode = deps.identityMode ?? "off";
+  }
+
+  /**
+   * Supply-chain identity gate (agp-z26.4 / 043-AT-ADR), run before a session
+   * starts. Returns whether to proceed and the identity URI to record on
+   * session.started:
+   *   - off     → proceed; URI = the adapter's self-asserted identity.uri (null v0).
+   *   - warn    → verify; on failure journal intendant.verify.failed and proceed
+   *               UNVERIFIED (URI null); on success record the verifier-minted URI.
+   *   - enforce → verify; on failure journal intendant.verify.failed and REFUSE
+   *               (no lease, no session.started, no sandbox spawn).
+   */
+  private async gateIdentity(
+    identity: IntendantIdentity,
+    sessionId: string,
+    opts: SessionRunOptions,
+  ): Promise<{ proceed: boolean; identityUri: string | null }> {
+    if (this.identityMode === "off") return { proceed: true, identityUri: identity.uri };
+
+    const fail = (reason: string): { proceed: boolean; identityUri: string | null } => {
+      this.deps.journal.append({
+        kind: "intendant.verify.failed",
+        actor: "session_owner",
+        payload: { sessionId, reason, mode: this.identityMode },
+      });
+      // enforce refuses; warn records the failure but runs unverified (URI null).
+      return { proceed: this.identityMode !== "enforce", identityUri: null };
+    };
+
+    const { verifier } = this.deps;
+    if (!verifier || opts.manifest === undefined || opts.signatureB64 === undefined) {
+      return fail("no-verification-material");
+    }
+    const res = await verifier.verify(opts.manifest, opts.signatureB64);
+    return res.ok ? { proceed: true, identityUri: res.identity.uri } : fail(res.reason);
   }
 
   /**
@@ -278,18 +345,23 @@ export class Daemon {
    * gates settle in emission order; `await Promise.all` is a belt-and-suspenders
    * barrier in case a intendant ever emits concurrently.
    */
-  async runLive(intendant: RunnableIntendant, opts: { sessionId?: string; image?: string } = {}): Promise<SessionResult> {
+  async runLive(intendant: RunnableIntendant, opts: SessionRunOptions = {}): Promise<SessionResult> {
     const sessionId = opts.sessionId ?? randomUUID();
     const { journal, sandbox, sessionStore } = this.deps;
+
+    // Supply-chain gate (agp-z26.4): refuse an unverified intendant in enforce mode
+    // BEFORE acquiring a lease, journaling session.started, or spawning a sandbox.
+    const gate = await this.gateIdentity(intendant.identity, sessionId, opts);
+    if (!gate.proceed) return { sessionId, outcomes: [], refused: true };
 
     let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
     journal.append({
       kind: "session.started",
       actor: "session_owner",
       payload: { sessionId, intendant: intendant.identity },
-      // Provenance column (agp-z26 / 043-AT-ADR): which intendant ran this session.
-      // null at v0 (both adapters set uri:null); lights up once a verifier mints it.
-      intendant_identity_uri: intendant.identity.uri,
+      // Provenance column (agp-z26 / 043-AT-ADR): the verifier-minted URI in
+      // warn/enforce, the adapter's self-asserted uri in off (null at v0).
+      intendant_identity_uri: gate.identityUri,
     });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({
@@ -323,18 +395,23 @@ export class Daemon {
   }
 
   /** Reference driver: run a scripted intendant's whole script through the loop. */
-  async runScripted(intendant: ScriptedIntendant, opts: { sessionId?: string; image?: string } = {}): Promise<SessionResult> {
+  async runScripted(intendant: ScriptedIntendant, opts: SessionRunOptions = {}): Promise<SessionResult> {
     const sessionId = opts.sessionId ?? randomUUID();
     const { journal, sandbox, sessionStore } = this.deps;
+
+    // Supply-chain gate (agp-z26.4): refuse an unverified intendant in enforce mode
+    // BEFORE acquiring a lease, journaling session.started, or spawning a sandbox.
+    const gate = await this.gateIdentity(intendant.identity, sessionId, opts);
+    if (!gate.proceed) return { sessionId, outcomes: [], refused: true };
 
     let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
     journal.append({
       kind: "session.started",
       actor: "session_owner",
       payload: { sessionId, intendant: intendant.identity },
-      // Provenance column (agp-z26 / 043-AT-ADR): which intendant ran this session.
-      // null at v0 (both adapters set uri:null); lights up once a verifier mints it.
-      intendant_identity_uri: intendant.identity.uri,
+      // Provenance column (agp-z26 / 043-AT-ADR): the verifier-minted URI in
+      // warn/enforce, the adapter's self-asserted uri in off (null at v0).
+      intendant_identity_uri: gate.identityUri,
     });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({

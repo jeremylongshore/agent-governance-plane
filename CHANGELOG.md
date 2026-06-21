@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.72] - 2026-06-21
+
+### Added
+
+- feat(claims): unlock the multi-harness claim, gated on the green contract + concurrent tests (agp-cln.4) (#101) (b15efbd)
+
 ## [0.1.71] - 2026-06-21
 
 ### Added
@@ -506,7 +512,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...HEAD
+[0.1.72]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...v0.1.72
 [0.1.71]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.70...v0.1.71
 [0.1.70]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.69...v0.1.70
 [0.1.69]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.68...v0.1.69

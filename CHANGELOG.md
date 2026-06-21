@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.71] - 2026-06-21
+
+### Added
+
+- feat(intendants): gated live Codex path (LiveCodexProcess) — provisional interception (agp-cln.2) (#99) (fc741aa)
+
 ## [0.1.70] - 2026-06-21
 
 ### Changed
@@ -500,7 +506,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.70...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...HEAD
+[0.1.71]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.70...v0.1.71
 [0.1.70]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.69...v0.1.70
 [0.1.69]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.68...v0.1.69
 [0.1.68]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.67...v0.1.68

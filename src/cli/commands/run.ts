@@ -16,7 +16,7 @@ import { loadPolicyEngine } from "../../policy/engine.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedIntendant } from "../../runtime/intendant.ts";
-import { CodexIntendant, InMemoryCodexProcess } from "../../intendants/codex/index.ts";
+import { CodexIntendant, InMemoryCodexProcess, LiveCodexProcess } from "../../intendants/codex/index.ts";
 import { Daemon } from "../../daemon/daemon.ts";
 import { FileSessionStore } from "../../daemon/session-store.ts";
 import { FileOutboxStore } from "../../daemon/outbox-store.ts";
@@ -254,12 +254,30 @@ export async function runCommand(
   if (intendant === "codex") {
     // Second harness (agp-cln / 044-AT-ADR): the deterministic Codex reference
     // drives the SAME gate loop the Claude intendant does — proving the
-    // IntendantAdapter contract is generic. The live `codex` path (AGP_CODEX_LIVE)
-    // lands in agp-cln.2.
-    out(
-      "agp run: CODEX intendant — reference harness (InMemoryCodexProcess), gate-only mediation (the harness executes its own tools).",
-    );
-    const cx = new CodexIntendant(new InMemoryCodexProcess());
+    // IntendantAdapter contract is generic.
+    let cx: CodexIntendant;
+    if (env.AGP_CODEX_LIVE === "1") {
+      // Live path (agp-cln.2 / 045-AT-ADR): spawn real `codex`. PROVISIONAL —
+      // codex's interception is unmeasured (no binary in CI); operator-validated.
+      const task = opts.task ?? env.AGP_TASK;
+      const repo = opts.repo ?? env.AGP_REPO;
+      if (!task || !repo) {
+        out("agp run: AGP_CODEX_LIVE=1 requires --task <prompt> and --repo <path> (or AGP_TASK / AGP_REPO). (fail-closed)");
+        return 1;
+      }
+      const socketDir = join(tmpdir(), `agp-${randomUUID()}`);
+      mkdirSync(socketDir, { recursive: true });
+      const socketPath = join(socketDir, "gate.sock");
+      out(
+        `agp run: CODEX LIVE — spawning real codex on ${repo}; tool calls gated via ${socketPath}. NOTE: codex interception is PROVISIONAL / operator-validated (045-AT-ADR).`,
+      );
+      cx = new CodexIntendant(new LiveCodexProcess({ task, repoPath: repo, bridgeSocket: socketPath, env }));
+    } else {
+      out(
+        "agp run: CODEX intendant — reference harness (InMemoryCodexProcess), gate-only mediation (the harness executes its own tools).",
+      );
+      cx = new CodexIntendant(new InMemoryCodexProcess());
+    }
     const result = await daemon.runLive(cx, image ? { image } : {});
     await outbox.project("session.ended", `session ${result.sessionId}: ${result.outcomes.length} gated tool call(s)`);
     await receiver?.stop();

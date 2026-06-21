@@ -18,6 +18,8 @@ import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedIntendant } from "../../runtime/intendant.ts";
 import { Daemon } from "../../daemon/daemon.ts";
 import { FileSessionStore } from "../../daemon/session-store.ts";
+import { FileOutboxStore } from "../../daemon/outbox-store.ts";
+import { OutboxRelay } from "../../daemon/outbox-relay.ts";
 import { assertNoSecretValues, EnvSecretVault } from "../../sandbox/credentials.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeIntendant } from "../../intendants/claude-code/claude-code-intendant.ts";
@@ -179,6 +181,15 @@ export async function runCommand(
     out(`agp run: recovered — reaped ${reaped.length} orphaned session(s) from a prior crash (journaled).`);
   }
 
+  // Durable channel delivery (agp-4na.3): a transactional outbox so best-effort
+  // projections survive a restart. Drain redelivers obligations enqueued before a
+  // prior crash; projection stays non-authoritative (the journal is the truth).
+  const outbox = new OutboxRelay(channel, new FileOutboxStore(join(paths.home, "outbox.json")));
+  const drained = await outbox.drain();
+  if (drained.delivered > 0) {
+    out(`agp run: outbox — redelivered ${drained.delivered} channel projection(s) held over a restart.`);
+  }
+
   if (intendant === "claude-code") {
     // Live path (AGP_CLAUDE_LIVE=1): spawn the real `claude` on a task + repo and
     // gate every tool call via the PreToolUse hook bridge → session socket →
@@ -218,6 +229,7 @@ export async function runCommand(
       cc = new ClaudeCodeIntendant(new InMemoryClaudeProcess());
     }
     const result = await daemon.runLive(cc, image ? { image } : {});
+    await outbox.project("session.ended", `session ${result.sessionId}: ${result.outcomes.length} gated tool call(s)`);
     await receiver?.stop();
     out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s) gated:`);
     for (const o of result.outcomes) {
@@ -230,6 +242,7 @@ export async function runCommand(
   }
 
   const result = await daemon.runScripted(new ScriptedIntendant(), image ? { image } : {});
+  await outbox.project("session.ended", `session ${result.sessionId}: ${result.outcomes.length} tool call(s)`);
   await receiver?.stop();
 
   out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s):`);

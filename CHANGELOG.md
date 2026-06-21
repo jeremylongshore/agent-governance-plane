@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.64] - 2026-06-21
+
+### Added
+
+- feat(daemon): transactional outbox for at-least-once channel delivery (agp-4na.3) (#92) (d203f2f)
+
 ## [0.1.63] - 2026-06-21
 
 ### Added
@@ -458,7 +464,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.63...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.64...HEAD
+[0.1.64]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.63...v0.1.64
 [0.1.63]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.62...v0.1.63
 [0.1.62]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.61...v0.1.62
 [0.1.61]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.60...v0.1.61

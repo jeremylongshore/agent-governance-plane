@@ -14,7 +14,10 @@ it, a human approval in Slack — and writes each decision to a signed, hash-cha
 audit log you can verify offline. It is OSS (Apache-2.0) and single-operator by
 default: one `agp run` spawns the agent, governs it through the harness's own hook
 interface, and **fails closed** on anything unverified. AGP holds no model
-credentials and gates the agent rather than impersonating it.
+credentials and gates the agent rather than impersonating it. It is multi-harness
+by contract: Claude Code and Codex run through the same `IntendantAdapter`, policy
+gate, and signed journal with no harness-specific path — proven by a conformance
+test that asserts identical governance for both.
 
 > **Status:** Phase B, pre-1.0. The operator CLI is live — `agp init`, `keygen`,
 > `doctor`, `run`, `verify`, `sessions` — over a contract-first daemon with real

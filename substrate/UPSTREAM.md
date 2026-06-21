@@ -1,10 +1,15 @@
-# CCSC substrate — upstream pin and vendor record
+# CCSC substrate — upstream pin, provenance, and drift review
 
-Per ADR [`000-docs/009-AT-ADR-ccsc-substrate-extraction-strategy.md`](../000-docs/009-AT-ADR-ccsc-substrate-extraction-strategy.md)
-(Accepted 2026-06-01, Option A), AGP consumes the CCSC governance kernel by
-**vendoring a pinned subset** into `substrate/ccsc/`. This file is the binding
-record of *what* is vendored and *from where*. It is authoritative until the
-physical copy lands (see "Status" below).
+Per ADR [`000-docs/040-AT-ADR-substrate-boundary-reconciliation-2026-06-12.md`](../000-docs/040-AT-ADR-substrate-boundary-reconciliation-2026-06-12.md)
+(Accepted 2026-06-12), AGP consumes the CCSC governance kernel by
+**independent reimplementation** ("adapt-and-harden") under AGP's own typed
+contracts — **not** by vendoring a copy. This supersedes the vendor mechanism in
+[`009-AT-ADR`](../000-docs/009-AT-ADR-ccsc-substrate-extraction-strategy.md)
+(Option A) for v0; 009's Option-D shared-package end-state is retained,
+trigger-gated on a second consumer (the second harness, `agp-cln`).
+
+This file records *what AGP reimplemented*, *from which upstream pin*, and the
+*drift-review process* that keeps the reimplementation honest against upstream.
 
 ## Pin
 
@@ -17,67 +22,53 @@ physical copy lands (see "Status" below).
 | Pinned commit | `023cab3` |
 | Upstream license | Apache-2.0 (relicensed from MIT in CCSC PR #194) |
 
-The pin is exact: vendored files are copied from this commit and not edited
-in-place. Upstream fixes are pulled by re-syncing to a new pin (below), never by
-divergent local edits.
+The pin is the commit AGP's reimplementation is **level with** for drift review —
+the baseline a periodic diff against CCSC `HEAD` is measured from. It is not a
+vendored-copy source (nothing is copied byte-for-byte).
 
-## Vendored module subset
+## Reimplemented primitives + provenance
 
-The kernel subset AGP composes (the gate, the signed journal, and the Slack HITL
-relay). All paths are repo-root files in CCSC at the pinned commit:
+The kernel subset AGP composes — reimplemented in `src/`, each module carrying an
+"Adapted from CCSC ..." provenance header, hardened beyond the reference:
 
-| Module | Purpose in AGP |
-|--------|----------------|
-| `policy.ts`, `policy-dispatch.ts` | `gate()` policy evaluation (fail-closed decision) |
-| `journal.ts`, `crypto.ts`, `audit-key-loader.ts` | hash-chained, Ed25519-signed audit journal + key loading |
-| `nonce-hitl.ts` | nonce-bound human-in-the-loop approval |
-| `stream-reply.ts` | Slack thread / Block-Kit relay |
-| `manifest.ts` | manifest / config surface the above depend on |
+| AGP module | Adapted from (CCSC) | Hardening over reference |
+|------------|---------------------|--------------------------|
+| `src/policy/engine.ts` | `policy.ts` / `policy-dispatch.ts` | strictest-wins (deny > require > allow) vs first-match |
+| `src/journal/journal.ts` + `src/runtime/crypto.ts` | `journal.ts` + `crypto.ts` + `audit-key-loader.ts` | signed HEAD checkpoint (truncation detection) |
+| `src/channels/slack/nonce-store.ts` + `slack-channel.ts` | `nonce-hitl.ts` + `stream-reply.ts` | same one-shot invariant, AGP contract layer |
+| `src/sandbox/docker/*` | (AGP-original; no CCSC counterpart) | `--cap-drop ALL`, no-new-privileges, network preflight |
 
-`server.ts` (3250 LoC) and `lib.ts` (1894 LoC) are **not** vendored wholesale —
-they mix app wiring with kernel logic. The specific helpers AGP needs from them
-are carved out when Epic 04 wires the daemon, and recorded here at that time.
+The boundary is the typed contracts in `src/contracts/` plus these provenance
+headers; there is no `substrate/ccsc/` tree and no import from one.
 
-## Re-sync procedure
+## Drift-review process
 
-1. Choose a new upstream pin (tag + commit) in the CCSC clone.
-2. Re-copy the module subset above from that commit into `substrate/ccsc/`,
-   preserving CCSC's Apache-2.0 headers.
-3. Update the **Pin** table here (tag + commit) and note the bump in the AGP
-   bead + the changelog.
-4. Run the CCSC→AGP substrate-compatibility tests (Epic 04+) and fix any drift
-   before merging.
+Because AGP reimplemented rather than vendored, there is no automatic re-sync.
+Drift is tracked deliberately:
+
+1. Periodically — and before each minor release — diff AGP's reimplemented
+   primitives against CCSC `HEAD` for **security-relevant** changes.
+2. Record findings in "Upstream changes since pin" below.
+3. For each material gap, file a bead + GitHub issue; decide adopt / decline with
+   rationale. Bump the **Pin** when AGP's reimplementation is brought level.
 
 ## License
 
-Vendored files retain CCSC's copyright and Apache-2.0 license; AGP is also
-Apache-2.0. Attribution is recorded in the top-level [`NOTICE`](../NOTICE).
+AGP's governance modules are an Apache-2.0 derivative of CCSC's Apache-2.0 source
+(design + semantics adapted). Attribution is recorded in the top-level
+[`NOTICE`](../NOTICE). No relicensing is required (Apache-2.0 ↔ Apache-2.0).
 
-## Status
+## Upstream changes since pin (drift review)
 
-- **Decision:** recorded (ADR Accepted, Option A).
-- **Boundary contract:** this file + `NOTICE` — established.
-- **Physical copy of `substrate/ccsc/`:** deferred to **Epic 04**, when the AGP
-  CLI/daemon first imports the kernel. Vendoring ~5k LoC before any consumer
-  exists would only invite drift; this record is the binding commitment until
-  then.
-- **Substrate-compatibility tests:** Epic 04 (need the Bun/TS test harness it
-  introduces).
+Security-relevant CCSC changes landed after the `v0.10.0` pin, assessed against
+AGP's as-built reality (full analysis in `040-AT-ADR`):
 
-## Upstream changes since pin (pending re-sync)
+| Upstream change | CCSC PR | AGP posture | Action |
+|-----------------|---------|-------------|--------|
+| `SECRET_DECLARATIONS` table + helpers (`lib.ts`) | #216 | AGP uses a stronger model — `{{secret:NAME}}` placeholders resolved only post-gate; journal records names, never values | No adoption needed |
+| `assertNoSecretValues()` fail-closed value-exfiltration guard (`lib.ts`) | #217 | **Gap.** AGP's `redactSecrets` is silent-mask, single-site (proxy-exec stdout). The live/Topology-B path journals harness tool args verbatim, so an inlined credential could reach the signed journal | **Adopt** — fail-closed guard at journal-append + channel-emit; tracked as a follow-on security bead (see `040-AT-ADR` References / the `agp-7ii` epic) |
 
-Tracked here so the Epic-04 carve-out picks them up. These are upstream-only
-(landed in CCSC `main` after the `v0.10.0` pin); AGP has not physically vendored
-`lib.ts` yet, so nothing is broken — this is a forward record, not a drift fix.
-
-| Upstream change | CCSC bead / PR | Why AGP wants it |
-|-----------------|----------------|------------------|
-| `SECRET_DECLARATIONS` table + `secretPlaceholder` / `buildSecretValueSet` / `allowedSinkFor` in `lib.ts` — one declaration is the source of placeholder, guard, and routing | `ccsc-z0n.1`, CCSC PR #216 | The declaration-as-enforcement source the value-exfiltration guard below derives from. |
-| `assertNoSecretValues()` in `lib.ts` — value-exfiltration guard, **additive companion** to `assertSendable` (signature unchanged) | `ccsc-z0n.3`, CCSC PR #217 | Blocks a live credential value leaving in any outbound payload (message text / file body / attachment), not just secret *files* by path. AGP's sandbox sprite handles real credentials, so it wants the stronger guard. |
-
-**Re-sync note:** this is a deliberate kernel strengthening, not a divergence —
-when Epic 04 carves the `lib.ts` helpers into `substrate/ccsc/`, include both
-`SECRET_DECLARATIONS` (+ its derivation helpers) and `assertNoSecretValues`, and
-bump the **Pin** table to the CCSC commit that carries them. The additive shape
-(`assertSendable` untouched) is intentional so this re-sync is a pure add, never
-a signature migration.
+**Note:** these are drift-review findings, not vendored-copy re-sync items. The
+`assertNoSecretValues` gap is defense-in-depth (the proxy-exec data plane is clean
+by construction) but is slated as the immediate next hardening item because of the
+signed-journal exposure on the live path.

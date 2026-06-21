@@ -17,6 +17,8 @@ import type { IntendantAdapter } from "../contracts/intendant-adapter.ts";
 import type { Journal } from "../journal/journal.ts";
 import type { PolicyEngine } from "../policy/engine.ts";
 import type { ScriptedIntendant } from "../runtime/intendant.ts";
+import type { SessionLease } from "../contracts/session-lease.ts";
+import type { SessionStore } from "./session-store.ts";
 import {
   type SecretVault,
   findPlaceholders,
@@ -38,6 +40,20 @@ export interface DaemonDeps {
    * rather than passing the literal placeholder to exec.
    */
   vault?: SecretVault;
+  /**
+   * Optional durable session store (agp-4na.2). When present, each session runs
+   * under a fenced lease so a daemon crash does not orphan it: a restart's
+   * `recoverSessions()` reaps expired leases, and a new owner supersedes a stale
+   * one via a higher fencing token. When absent, sessions run unleased (the
+   * reference behavior) — the signed journal is crash-durable either way.
+   */
+  sessionStore?: SessionStore;
+  /** This daemon process's identity (lease owner). Default: a fresh uuid. */
+  instanceId?: string;
+  /** Clock (epoch ms), injectable for deterministic tests. Default: Date.now. */
+  nowMs?: () => number;
+  /** Lease TTL in ms; a session whose heartbeat is older than this is reapable. */
+  leaseTtlMs?: number;
 }
 
 /** A vault that holds nothing — used when no `vault` dep is supplied so an
@@ -71,9 +87,36 @@ export interface SessionResult {
 
 export class Daemon {
   private readonly deps: DaemonDeps;
+  private readonly instanceId: string;
+  private readonly nowMs: () => number;
+  private readonly leaseTtlMs: number;
 
   constructor(deps: DaemonDeps) {
     this.deps = deps;
+    this.instanceId = deps.instanceId ?? randomUUID();
+    this.nowMs = deps.nowMs ?? (() => Date.now());
+    this.leaseTtlMs = deps.leaseTtlMs ?? 300_000; // 5 min; refreshed per gated call
+  }
+
+  /**
+   * Crash recovery (agp-4na.2). Sweep the session store and reap every lease
+   * whose heartbeat has expired — a session whose owning daemon crashed without
+   * releasing it. Each reap is journaled (`session.reaped`) so the audit trail
+   * records the recovery. Call once on daemon startup, before driving sessions.
+   * No store ⇒ no-op. Returns the reaped leases.
+   */
+  recoverSessions(): SessionLease[] {
+    const store = this.deps.sessionStore;
+    if (!store) return [];
+    const reaped = store.reapExpired(this.nowMs());
+    for (const lease of reaped) {
+      this.deps.journal.append({
+        kind: "session.reaped",
+        actor: "session_owner",
+        payload: { sessionId: lease.sessionId, fencingToken: lease.fencingToken, reapedBy: this.instanceId },
+      });
+    }
+    return reaped;
   }
 
   private toCommand(req: ToolCallRequest): string[] {
@@ -237,8 +280,9 @@ export class Daemon {
    */
   async runLive(intendant: RunnableIntendant, opts: { sessionId?: string; image?: string } = {}): Promise<SessionResult> {
     const sessionId = opts.sessionId ?? randomUUID();
-    const { journal, sandbox } = this.deps;
+    const { journal, sandbox, sessionStore } = this.deps;
 
+    let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
     journal.append({ kind: "session.started", actor: "session_owner", payload: { sessionId, intendant: intendant.identity } });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({
@@ -250,7 +294,14 @@ export class Daemon {
     const outcomes: MediationOutcome[] = [];
     const inflight: Promise<void>[] = [];
     intendant.onToolCall((req) => {
-      inflight.push(this.gate(req, intendant).then((o) => void outcomes.push(o)));
+      inflight.push(
+        this.gate(req, intendant).then((o) => {
+          outcomes.push(o);
+          // Heartbeat per gated call. Calls are serialized by PreToolUse
+          // back-pressure, so this read-modify-write does not race in practice.
+          if (lease && sessionStore) lease = sessionStore.heartbeat(lease, this.nowMs(), this.leaseTtlMs);
+        }),
+      );
     });
 
     await intendant.run(sessionId);
@@ -259,6 +310,7 @@ export class Daemon {
     await sandbox.teardown(handle);
     await intendant.stop();
     journal.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId, calls: outcomes.length } });
+    if (lease && sessionStore) sessionStore.release(lease, this.nowMs());
 
     return { sessionId, outcomes };
   }
@@ -266,8 +318,9 @@ export class Daemon {
   /** Reference driver: run a scripted intendant's whole script through the loop. */
   async runScripted(intendant: ScriptedIntendant, opts: { sessionId?: string; image?: string } = {}): Promise<SessionResult> {
     const sessionId = opts.sessionId ?? randomUUID();
-    const { journal, sandbox } = this.deps;
+    const { journal, sandbox, sessionStore } = this.deps;
 
+    let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
     journal.append({ kind: "session.started", actor: "session_owner", payload: { sessionId, intendant: intendant.identity } });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({
@@ -283,11 +336,15 @@ export class Daemon {
     const outcomes: MediationOutcome[] = [];
     for (const req of collected) {
       outcomes.push(await this.mediate(req, handle, intendant));
+      if (lease && sessionStore) lease = sessionStore.heartbeat(lease, this.nowMs(), this.leaseTtlMs);
     }
 
     await sandbox.teardown(handle);
     await intendant.stop();
     journal.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId, calls: outcomes.length } });
+    // Clean end releases the lease. On a throw above we deliberately do NOT
+    // release — the lease expires and a future recoverSessions() reaps it.
+    if (lease && sessionStore) sessionStore.release(lease, this.nowMs());
 
     return { sessionId, outcomes };
   }

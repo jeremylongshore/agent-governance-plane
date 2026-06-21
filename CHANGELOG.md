@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.67] - 2026-06-21
+
+### Added
+
+- feat(verify): Ed25519 v0 verification backend that mints the verified identity URI (agp-z26.3) (#95) (37aae9a)
+
 ## [0.1.66] - 2026-06-21
 
 ### Added
@@ -476,7 +482,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.66...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.67...HEAD
+[0.1.67]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.66...v0.1.67
 [0.1.66]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.65...v0.1.66
 [0.1.65]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.64...v0.1.65
 [0.1.64]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.63...v0.1.64

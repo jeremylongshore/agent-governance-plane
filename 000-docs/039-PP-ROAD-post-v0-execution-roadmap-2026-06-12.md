@@ -68,15 +68,26 @@ Ordering principle: v0 is shipped, so spend next on what makes the foundation **
 and extensible** before chasing **breadth**. Foundational/unblocking → production-real →
 breadth → deferred.
 
-### 1. CCSC substrate boundary ADR — `agp-7ii` / `#5` (Epic 02)
+### 1. CCSC substrate boundary — `agp-7ii` / `#5` (Epic 02) — RECONCILED (`040-AT-ADR`)
 
-**Why first.** The v0 CLI consumed CCSC primitives pragmatically; the formal
-substrate-extraction decision (vendor / git submodule / path dep / shared package) was
-deferred. The blueprint names this ADR as the prerequisite for clean downstream work
-(`agp-002` is annotated "substrate-extraction TBD per Epic 02 ADR"), and it is what
-unblocks the second harness. Design-first, contained, highest leverage. Build it
-ACS-ready per the gate above. **Deliverable:** an `AT-ADR` in `000-docs/` + the boundary
-made real in `src/`.
+**Correction:** the substrate decision was *not* deferred. `009-AT-ADR` accepted
+"Option A — vendor a pinned CCSC subset" (2026-06-01) but deferred the physical copy to
+Epic 04; Epic 04 then shipped a **native reimplementation** ("adapt-and-harden"), not a
+vendor copy. `040-AT-ADR` (2026-06-12) ratifies that as-built reality, supersedes 009's
+vendor *mechanism* for v0, keeps 009's Option-D shared-package end-state (trigger-gated
+on the second harness), corrects the `NOTICE`, and reframes `substrate/UPSTREAM.md` to a
+pin + drift-review record. **A real security gap surfaced** in that review (see below)
+and becomes the immediate next build item.
+
+### 1b. Secret-value exfiltration guard — IMMEDIATE NEXT (surfaced by `040-AT-ADR`)
+
+A fail-closed guard (CCSC `assertNoSecretValues()` equivalent) at the
+journal-append and channel-emit boundaries. AGP's placeholder model keeps injected
+secrets out of the data plane, but the live/Topology-B path journals harness tool
+args verbatim — an inlined credential could reach the **permanent signed journal**
+with no guard. `redactSecrets` today is silent-mask, single-site. Defense-in-depth,
+not a v0 blocker, but the signed-journal exposure makes it the next thing to build.
+Tracked as its own security bead + GitHub issue.
 
 ### 2. Runtime hardening — `agp-4na.2`, `agp-4na.3` / under `#52`
 

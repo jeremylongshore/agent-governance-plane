@@ -9,16 +9,21 @@ the License is provided in the LICENSE file and is also available at:
 
 ----------------------------------------------------------------------
 
-This product is built on, and vendors a pinned subset of, the CCSC governance
-kernel:
+This product's governance modules are independently reimplemented from, and
+adapted from, the CCSC governance kernel:
 
     claude-code-slack-channel
     Copyright 2026 Jeremy Longshore / Intent Solutions
     https://github.com/jeremylongshore/claude-code-slack-channel
     Licensed under the Apache License, Version 2.0.
 
-The vendored kernel modules (when present under substrate/ccsc/) retain CCSC's
-copyright and Apache-2.0 license. The exact upstream commit pin and the module
-subset are recorded in substrate/UPSTREAM.md. Per ADR
-000-docs/009-AT-ADR-ccsc-substrate-extraction-strategy.md, AGP consumes CCSC by
-vendoring a pinned subset (Option A) at v0.
+AGP's policy gate, signed journal, and nonce-HITL relay derive their design and
+semantics from CCSC's Apache-2.0 source (see the "Adapted from CCSC ..."
+provenance headers in src/), reimplemented under AGP's own typed contracts and
+hardened beyond the reference. As an Apache-2.0 derivative the attribution above
+is retained. The upstream commit pin (CCSC v0.10.0 / 023cab3) and the
+drift-review process are recorded in substrate/UPSTREAM.md. Per ADR
+000-docs/040-AT-ADR-substrate-boundary-reconciliation-2026-06-12.md, AGP consumes
+CCSC by reimplementation ("adapt-and-harden") at v0; the earlier vendor decision
+(009-AT-ADR Option A) is superseded for v0, with the shared-package end-state
+(009 Option D) retained, trigger-gated on a second consumer.

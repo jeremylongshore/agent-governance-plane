@@ -17,6 +17,7 @@ import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedIntendant } from "../../runtime/intendant.ts";
 import { Daemon } from "../../daemon/daemon.ts";
+import { FileSessionStore } from "../../daemon/session-store.ts";
 import { assertNoSecretValues, EnvSecretVault } from "../../sandbox/credentials.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeIntendant } from "../../intendants/claude-code/claude-code-intendant.ts";
@@ -169,7 +170,14 @@ export async function runCommand(
     channel = new ConsoleChannel(env, out);
   }
 
-  const daemon = new Daemon({ policy, journal, sandbox, channel });
+  // Durable session ownership (agp-4na.2): a fenced lease per session + a
+  // startup recovery sweep that reaps sessions orphaned by a daemon crash.
+  const sessionStore = new FileSessionStore(join(paths.home, "sessions.json"));
+  const daemon = new Daemon({ policy, journal, sandbox, channel, sessionStore });
+  const reaped = daemon.recoverSessions();
+  if (reaped.length > 0) {
+    out(`agp run: recovered — reaped ${reaped.length} orphaned session(s) from a prior crash (journaled).`);
+  }
 
   if (intendant === "claude-code") {
     // Live path (AGP_CLAUDE_LIVE=1): spawn the real `claude` on a task + repo and

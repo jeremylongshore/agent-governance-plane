@@ -18,6 +18,12 @@ export interface AppendInput {
   kind: string;
   actor: Actor;
   payload: Record<string, unknown>;
+  /**
+   * Verified intendant identity URI for this event (agp-z26 / 043-AT-ADR). The
+   * locked top-level column — distinct from anything in `payload`. Null when
+   * provenance is unasserted (v0 default); populated once a verifier mints a URI.
+   */
+  intendant_identity_uri?: string | null;
 }
 
 export interface HeadCheckpoint {
@@ -96,7 +102,7 @@ export class Journal {
       tenant_id: null,
       signing_key_id: null,
       approval_binding_type: null,
-      intendant_identity_uri: null,
+      intendant_identity_uri: input.intendant_identity_uri ?? null,
     };
 
     const bytes = eventCanonicalBytes(unsealed, prevHash);

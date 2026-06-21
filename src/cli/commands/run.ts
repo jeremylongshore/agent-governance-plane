@@ -16,6 +16,7 @@ import { loadPolicyEngine } from "../../policy/engine.ts";
 import { RecordingSandbox } from "../../runtime/sandbox.ts";
 import { ConsoleChannel } from "../../runtime/channel.ts";
 import { ScriptedIntendant } from "../../runtime/intendant.ts";
+import { CodexIntendant, InMemoryCodexProcess } from "../../intendants/codex/index.ts";
 import { Daemon } from "../../daemon/daemon.ts";
 import { FileSessionStore } from "../../daemon/session-store.ts";
 import { FileOutboxStore } from "../../daemon/outbox-store.ts";
@@ -238,6 +239,28 @@ export async function runCommand(
       cc = new ClaudeCodeIntendant(new InMemoryClaudeProcess());
     }
     const result = await daemon.runLive(cc, image ? { image } : {});
+    await outbox.project("session.ended", `session ${result.sessionId}: ${result.outcomes.length} gated tool call(s)`);
+    await receiver?.stop();
+    out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s) gated:`);
+    for (const o of result.outcomes) {
+      const approval = o.approved === null ? "" : ` → approval ${o.approved ? "granted" : "denied"}`;
+      const effective = o.verdict.decision === "allow" || o.approved === true ? "allow" : "deny";
+      out(`  ${o.request.tool}: ${o.verdict.decision}${approval} → gate ${effective}`);
+    }
+    out(`\njournal: ${paths.journal} — verify with \`agp verify\`.`);
+    return 0;
+  }
+
+  if (intendant === "codex") {
+    // Second harness (agp-cln / 044-AT-ADR): the deterministic Codex reference
+    // drives the SAME gate loop the Claude intendant does — proving the
+    // IntendantAdapter contract is generic. The live `codex` path (AGP_CODEX_LIVE)
+    // lands in agp-cln.2.
+    out(
+      "agp run: CODEX intendant — reference harness (InMemoryCodexProcess), gate-only mediation (the harness executes its own tools).",
+    );
+    const cx = new CodexIntendant(new InMemoryCodexProcess());
+    const result = await daemon.runLive(cx, image ? { image } : {});
     await outbox.project("session.ended", `session ${result.sessionId}: ${result.outcomes.length} gated tool call(s)`);
     await receiver?.stop();
     out(`\nsession ${result.sessionId} — ${result.outcomes.length} tool call(s) gated:`);

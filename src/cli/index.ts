@@ -26,7 +26,7 @@ Commands:
   doctor      Validate prerequisites (Docker, Slack, signing key, policy) — fail-closed
               --check <name>   run only one check (e.g. --check policy)
   run         Drive a session through the governance loop (v0: reference mode) — fail-closed
-              --intendant <name>   harness to drive: scripted (default) | claude-code
+              --intendant <name>   harness to drive: scripted (default) | claude-code | codex
               --task <prompt>   (live claude) the task to fix; needs AGP_CLAUDE_LIVE=1
               --repo <path>     (live claude) the repo to run in
   bridge      PreToolUse hook bridge (internal; Claude runs this per tool call)

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.68] - 2026-06-21
+
+### Added
+
+- feat(daemon): off/warn/enforce identity gate that refuses unverified intendants (agp-z26.4) (#96) (50b7f8a)
+
 ## [0.1.67] - 2026-06-21
 
 ### Added
@@ -482,7 +488,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.67...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.68...HEAD
+[0.1.68]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.67...v0.1.68
 [0.1.67]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.66...v0.1.67
 [0.1.66]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.65...v0.1.66
 [0.1.65]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.64...v0.1.65

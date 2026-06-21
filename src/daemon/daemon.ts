@@ -42,7 +42,7 @@ export interface DaemonDeps {
 
 /** A vault that holds nothing — used when no `vault` dep is supplied so an
  *  unexpected placeholder fails closed instead of reaching exec verbatim. */
-const EMPTY_VAULT: SecretVault = { get: () => undefined };
+const EMPTY_VAULT: SecretVault = { get: () => undefined, values: () => [] };
 
 /**
  * A intendant the live driver (`runLive`) can drive to completion. It EXTENDS the

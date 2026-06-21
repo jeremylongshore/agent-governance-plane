@@ -5,6 +5,8 @@ import { join } from "node:path";
 import {
   EnvSecretVault,
   type SecretVault,
+  SecretExfiltrationError,
+  assertNoSecretValues,
   findPlaceholders,
   redactSecrets,
   resolvePlaceholders,
@@ -28,6 +30,9 @@ class FakeVault implements SecretVault {
   constructor(private readonly map: Record<string, string>) {}
   get(name: string): string | undefined {
     return this.map[name];
+  }
+  values(): readonly string[] {
+    return Object.values(this.map);
   }
 }
 
@@ -105,6 +110,45 @@ test("EnvSecretVault reads AGP_SECRET_* from an injected env map", () => {
   expect(vault.get("GITHUB_TOKEN")).toBe("ghp_env");
   expect(vault.get("MISSING")).toBeUndefined();
   expect(vault.get("OTHER")).toBeUndefined(); // not under the prefix
+});
+
+test("EnvSecretVault.values() returns only non-empty AGP_SECRET_* values", () => {
+  const vault = new EnvSecretVault({
+    AGP_SECRET_GITHUB_TOKEN: "ghp_env",
+    AGP_SECRET_DB_PASS: "hunter2",
+    AGP_SECRET_EMPTY: "",
+    OTHER: "ignored",
+  });
+  expect(vault.values().slice().sort()).toEqual(["ghp_env", "hunter2"]);
+});
+
+// --- assertNoSecretValues (fail-closed exfiltration guard) -------------------
+
+test("assertNoSecretValues throws SecretExfiltrationError when a secret value is present", () => {
+  const payload = { kind: "tool_call.allow", payload: { command: "curl -H 'Bearer ghp_supersecret'" } };
+  expect(() => assertNoSecretValues(payload, ["ghp_supersecret"], "journal")).toThrow(SecretExfiltrationError);
+  // The error message names the boundary but NEVER the secret value (no self-leak).
+  try {
+    assertNoSecretValues(payload, ["ghp_supersecret"], "journal");
+  } catch (err) {
+    expect((err as Error).message).toContain("journal");
+    expect((err as Error).message).not.toContain("ghp_supersecret");
+    expect((err as SecretExfiltrationError).boundary).toBe("journal");
+  }
+});
+
+test("assertNoSecretValues walks nested arrays/objects and is a no-op when clean", () => {
+  const clean = { a: ["safe", { b: "also safe" }], n: 1, z: null };
+  expect(() => assertNoSecretValues(clean, ["ghp_supersecret"], "slack")).not.toThrow();
+  // Nested hit is caught.
+  expect(() => assertNoSecretValues({ deep: { v: ["x", "pre-hunter2-post"] } }, ["hunter2"], "slack")).toThrow(
+    SecretExfiltrationError,
+  );
+});
+
+test("assertNoSecretValues ignores empty secret values (no spurious throw)", () => {
+  expect(() => assertNoSecretValues({ a: "anything" }, ["", ""], "journal")).not.toThrow();
+  expect(() => assertNoSecretValues("anything", [], "journal")).not.toThrow();
 });
 
 // --- Boundary proof: no raw secret crosses the sandbox boundary --------------

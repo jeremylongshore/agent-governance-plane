@@ -3,8 +3,9 @@ import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { KeyObject } from "node:crypto";
-import { Journal, headPath } from "./journal.ts";
+import { Journal, headPath, readEvents } from "./journal.ts";
 import { verifyJournalFile } from "./verify.ts";
+import { assertNoSecretValues, SecretExfiltrationError } from "../sandbox/credentials.ts";
 import {
   generateSigningKeyPem,
   loadPrivateKey,
@@ -122,5 +123,30 @@ test("catches a FORGED HEAD checkpoint (signature invalid)", () => {
   const r = verifyJournalFile(path, pub);
   expect(r.ok).toBe(false);
   expect(r.errors.join(" ")).toContain("head checkpoint signature invalid");
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("the fail-closed screen refuses an append carrying a secret value — nothing is written", () => {
+  const dir = mkdtempSync(join(tmpdir(), "agp-journal-"));
+  const path = join(dir, "audit.log");
+  const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
+  const SECRET = "ghp_supersecret";
+  const j = new Journal(path, priv, FIXED, (e) => assertNoSecretValues(e, [SECRET], "journal"));
+
+  // A clean event lands.
+  j.append({ kind: "tool_call.allow", actor: "session_owner", payload: { tool: "Read" } });
+
+  // An event whose payload would record the secret VALUE is refused fail-closed
+  // (this is the defense against a future change that journals raw tool args).
+  expect(() =>
+    j.append({ kind: "tool_call.allow", actor: "claude_process", payload: { command: `curl ${SECRET}` } }),
+  ).toThrow(SecretExfiltrationError);
+
+  // Exactly one event persisted; the chain + signed head still verify (the
+  // rejected append left no partial write, no head advance).
+  const evs = readEvents(path);
+  expect(evs).toHaveLength(1);
+  expect(evs[0]!.seq).toBe(1);
+  expect(verifyJournalFile(path, publicKeyFromPrivate(priv)).ok).toBe(true);
   rmSync(dir, { recursive: true, force: true });
 });

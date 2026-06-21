@@ -66,9 +66,9 @@ AGP's as-built reality (full analysis in `040-AT-ADR`):
 | Upstream change | CCSC PR | AGP posture | Action |
 |-----------------|---------|-------------|--------|
 | `SECRET_DECLARATIONS` table + helpers (`lib.ts`) | #216 | AGP uses a stronger model — `{{secret:NAME}}` placeholders resolved only post-gate; journal records names, never values | No adoption needed |
-| `assertNoSecretValues()` fail-closed value-exfiltration guard (`lib.ts`) | #217 | **Gap.** AGP's `redactSecrets` is silent-mask, single-site (proxy-exec stdout). The live/Topology-B path journals harness tool args verbatim, so an inlined credential could reach the signed journal | **Adopt** — fail-closed guard at journal-append + channel-emit; tracked as a follow-on security bead (see `040-AT-ADR` References / the `agp-7ii` epic) |
+| `assertNoSecretValues()` fail-closed value-exfiltration guard (`lib.ts`) | #217 | AGP records only tool **names** + decisions (never args/values/stdout) in the journal, and posts `{tool, verdict}` to Slack — so no value leaks today, but the invariant was convention, not enforced | **Adopted** — `assertNoSecretValues` wired fail-closed at journal-append + channel-emit so the invariant cannot silently regress (defense-in-depth, not an active-leak fix) |
 
 **Note:** these are drift-review findings, not vendored-copy re-sync items. The
-`assertNoSecretValues` gap is defense-in-depth (the proxy-exec data plane is clean
-by construction) but is slated as the immediate next hardening item because of the
-signed-journal exposure on the live path.
+`assertNoSecretValues` adoption is defense-in-depth — AGP's journal/channel are
+already value-free by construction; the guard makes that property fail-closed code
+so a future change adding a value-bearing field can't regress it silently.

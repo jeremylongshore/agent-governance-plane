@@ -23,9 +23,12 @@ version tag (or an earlier one).
 | Version | Allowed claim | Backing primitive |
 |---------|---------------|-------------------|
 | v0 | "signed audit log of every tool call" | Ed25519-signed, hash-chained journal (CCSC `journal.ts` substrate) — local authoritative log |
+| v0 | "governs multiple agent harnesses (Claude Code and Codex) identically through one policy gate and signed journal" | The `IntendantAdapter` contract + the contract-conformance test (`agp-cln.1`) and the concurrent-session test (`agp-cln.3`): both harnesses produce identical governance with **no harness-specific path** in the gate. Scope: a *contract-genericity* claim proven deterministically; it does **not** assert the live Codex path is validated (that path is operator-validated / provisional per `045-AT-ADR`). |
 
 Nothing else is an approved security claim at v0. When a new primitive ships, add
-its claim here in the same PR that ships the primitive — never before.
+its claim here in the same PR that ships the primitive — never before. (The
+multi-harness row was added only after `agp-cln.1` + `agp-cln.3` shipped green —
+claims-as-code, never ahead of the primitive.)
 
 ## Banned terms (v0)
 

@@ -283,7 +283,14 @@ export class Daemon {
     const { journal, sandbox, sessionStore } = this.deps;
 
     let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
-    journal.append({ kind: "session.started", actor: "session_owner", payload: { sessionId, intendant: intendant.identity } });
+    journal.append({
+      kind: "session.started",
+      actor: "session_owner",
+      payload: { sessionId, intendant: intendant.identity },
+      // Provenance column (agp-z26 / 043-AT-ADR): which intendant ran this session.
+      // null at v0 (both adapters set uri:null); lights up once a verifier mints it.
+      intendant_identity_uri: intendant.identity.uri,
+    });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({
       image: opts.image ?? "agp-sandbox:v0",
@@ -321,7 +328,14 @@ export class Daemon {
     const { journal, sandbox, sessionStore } = this.deps;
 
     let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
-    journal.append({ kind: "session.started", actor: "session_owner", payload: { sessionId, intendant: intendant.identity } });
+    journal.append({
+      kind: "session.started",
+      actor: "session_owner",
+      payload: { sessionId, intendant: intendant.identity },
+      // Provenance column (agp-z26 / 043-AT-ADR): which intendant ran this session.
+      // null at v0 (both adapters set uri:null); lights up once a verifier mints it.
+      intendant_identity_uri: intendant.identity.uri,
+    });
     await intendant.start(sessionId);
     const handle = await sandbox.spawn({
       image: opts.image ?? "agp-sandbox:v0",

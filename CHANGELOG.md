@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.61] - 2026-06-21
+
+### Changed
+
+- docs(substrate): reconcile CCSC substrate boundary (adapt-and-harden) + surface secret-value guard (#89) (8abbb9e)
+
 ## [0.1.60] - 2026-06-21
 
 ### Changed
@@ -440,7 +446,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.60...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.61...HEAD
+[0.1.61]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.60...v0.1.61
 [0.1.60]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.59...v0.1.60
 [0.1.59]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.58...v0.1.59
 [0.1.58]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.57...v0.1.58

@@ -25,8 +25,14 @@ on:
         default: "https://github.com/jeremylongshore/claude-code-slack-channel.git"
         required: true
       task:
-        description: "Task for the intendant"
-        default: "Investigate the intermittent 2-test flake under 'bun test --coverage' (ccsc-2oy). Read the test files, identify the cause, and give the minimal fix in your final message. Do not run shell commands."
+        # Budget-scoped (agp-0m3): the broad "read the test files / investigate"
+        # task let real Claude survey the whole 162 MB target on a 2-core runner and
+        # blow the timeout (exit 124). This default is bounded — a few targeted reads,
+        # NO repo survey, NO shell — so the witnessed run finishes within budget while
+        # still proving the governance loop (gate + signed journal). Widen it manually
+        # for a deeper run.
+        description: "Task for the intendant (keep it tightly scoped — see the budget note in this file)"
+        default: "Investigate the intermittent 2-test flake under 'bun test --coverage' (ccsc-2oy). Read ONLY the failing test file and the single module it exercises — do NOT browse the wider repo, list directories, or run shell commands. Keep it to a few targeted reads, not a repo survey. In your final message, name the cause and the minimal fix."
         required: true
       bead:
         description: "Bead this run evidences"

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.76] - 2026-06-22
+
+### Changed
+
+- docs(tenants): multi-tenant readiness ARCH + single-tenant gate ADR (agp-pne.3) (#106) (92b2aaa)
+
 ## [0.1.75] - 2026-06-22
 
 ### Changed
@@ -530,7 +536,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.75...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.76...HEAD
+[0.1.76]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.75...v0.1.76
 [0.1.75]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.74...v0.1.75
 [0.1.74]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...v0.1.74
 [0.1.73]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...v0.1.73

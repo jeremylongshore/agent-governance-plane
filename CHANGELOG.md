@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.77] - 2026-06-22
+
+### Changed
+
+- ci(dogfood): budget-scope the witnessed real-Claude run's default task (agp-0m3) (#107) (e40d200)
+
 ## [0.1.76] - 2026-06-22
 
 ### Changed
@@ -536,7 +542,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.76...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.77...HEAD
+[0.1.77]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.76...v0.1.77
 [0.1.76]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.75...v0.1.76
 [0.1.75]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.74...v0.1.75
 [0.1.74]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...v0.1.74

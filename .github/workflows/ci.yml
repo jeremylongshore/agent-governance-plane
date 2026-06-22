@@ -24,7 +24,7 @@ jobs:
     name: Markdown lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: |
@@ -37,7 +37,7 @@ jobs:
     name: Banned-claim scan (public surfaces)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Scan public surfaces for v0-banned security claims
@@ -54,7 +54,7 @@ jobs:
     name: Doc drift check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Check for forbidden path / numbering drift
         run: bash scripts/doc-drift.sh
 
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run Epic 00 contradiction-fix validation greps
         run: bash scripts/bead-validate.sh
 
@@ -75,7 +75,7 @@ jobs:
     name: Code (typecheck + tests)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.2.23"
@@ -109,7 +109,7 @@ jobs:
     name: Audit-harness (hash-pin + escape-scan)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Verify hash-pinned policy surfaces
@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.2.23"

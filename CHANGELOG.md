@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.80] - 2026-06-22
+
+### Changed
+
+- docs(decr): ISEDC council ruling on ACS conformance + the Q5 revisit (agp-ed4) (#110) (185c624)
+
 ## [0.1.79] - 2026-06-22
 
 ### Changed
@@ -554,7 +560,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.79...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.80...HEAD
+[0.1.80]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.79...v0.1.80
 [0.1.79]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.78...v0.1.79
 [0.1.78]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.77...v0.1.78
 [0.1.77]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.76...v0.1.77

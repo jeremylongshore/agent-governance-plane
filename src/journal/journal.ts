@@ -24,6 +24,13 @@ export interface AppendInput {
    * provenance is unasserted (v0 default); populated once a verifier mints a URI.
    */
   intendant_identity_uri?: string | null;
+  /**
+   * Tenant this event belongs to (agp-pne / 047-AT-ADR). The locked top-level
+   * column. Null at v0 (single-tenant); the daemon does NOT thread it — this seam
+   * exists only to prove later per-tenant population is non-breaking. Reserve,
+   * do not enable.
+   */
+  tenant_id?: string | null;
 }
 
 export interface HeadCheckpoint {
@@ -99,7 +106,7 @@ export class Journal {
       kind: input.kind,
       actor: input.actor,
       payload: input.payload,
-      tenant_id: null,
+      tenant_id: input.tenant_id ?? null,
       signing_key_id: null,
       approval_binding_type: null,
       intendant_identity_uri: input.intendant_identity_uri ?? null,

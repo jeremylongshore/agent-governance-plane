@@ -16,15 +16,16 @@ function bannedRegex(): RegExp {
 
 test("the banned denylist still catches every v0-banned assurance term", () => {
   const re = bannedRegex();
-  // Forms the regex actually catches today. NOTE (tracked as a follow-up security
-  // bead): the `nonrepudiat` stem under-covers what the registry's prose claims —
-  // it misses "nonrepudiable" (-iable, not -iat) and hyphenated "non-repudiation".
-  // This claim-unlock change does NOT widen the hash-pinned regex; it documents the
-  // real coverage so the gap is visible and fixed deliberately.
+  // agp-g68: the `non.?repudia[bt]` stem now covers BOTH spellings (hyphenated or
+  // not) and BOTH word endings (-iable / -iation), closing the gap the old
+  // `nonrepudiat` stem left.
   for (const banned of [
     "tamper-evident",
     "tamper proof",
+    "nonrepudiable",
+    "non-repudiable",
     "nonrepudiation",
+    "non-repudiation",
     "forensic-grade",
     "audit-grade",
     "compliance-grade",

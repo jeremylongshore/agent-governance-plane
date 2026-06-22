@@ -42,11 +42,12 @@ The scanner consumes the regex between the markers below. Edit the registry here
 do **not** hardcode the list anywhere else.
 
 <!-- CLAIM-SCAN:BANNED-REGEX:V0:START -->
-<!-- regex: tamper.?evident|tamper.?proof|nonrepudiat|forensic.?grade|audit.?grade|compliance.?grade -->
+<!-- regex: tamper.?evident|tamper.?proof|non.?repudia[bt]|forensic.?grade|audit.?grade|compliance.?grade -->
 <!-- CLAIM-SCAN:BANNED-REGEX:V0:END -->
 
 In human-readable form, the banned terms are: tamper&#8203;-evident,
-tamper&#8203;-proof, non&#8203;repudiable / non&#8203;repudiation,
+tamper&#8203;-proof, non&#8203;repudiable / non&#8203;repudiation (hyphenated or
+not — the `non.?repudia[bt]` stem covers both spellings and both word endings),
 forensic&#8203;-grade, audit&#8203;-grade, and compliance&#8203;-grade. (The
 zero-width breaks keep this list from tripping the scanner against this registry
 itself; the authoritative pattern is the regex in the marked block above.)

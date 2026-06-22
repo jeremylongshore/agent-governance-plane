@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.74] - 2026-06-22
+
+### Added
+
+- feat(tenants): single-tenant model + fail-closed guard + static no-toggle test (agp-pne.1) (#104) (d0ee5ea)
+
 ## [0.1.73] - 2026-06-22
 
 ### Fixed
@@ -518,7 +524,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.74...HEAD
+[0.1.74]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...v0.1.74
 [0.1.73]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...v0.1.73
 [0.1.72]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...v0.1.72
 [0.1.71]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.70...v0.1.71

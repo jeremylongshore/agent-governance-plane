@@ -22,6 +22,7 @@ import { FileSessionStore } from "../../daemon/session-store.ts";
 import { FileOutboxStore } from "../../daemon/outbox-store.ts";
 import { OutboxRelay } from "../../daemon/outbox-relay.ts";
 import { loadEd25519Verifier } from "../../verify/ed25519-verifier.ts";
+import { defaultTenantContext } from "../../tenants/tenant.ts";
 import { assertNoSecretValues, EnvSecretVault } from "../../sandbox/credentials.ts";
 import { DockerSandbox } from "../../sandbox/docker/docker-sandbox.ts";
 import { ClaudeCodeIntendant } from "../../intendants/claude-code/claude-code-intendant.ts";
@@ -185,7 +186,16 @@ export async function runCommand(
   const identityMode =
     env.AGP_IDENTITY_MODE === "warn" || env.AGP_IDENTITY_MODE === "enforce" ? env.AGP_IDENTITY_MODE : "off";
   const verifier = loadEd25519Verifier(join(paths.home, "intendants", "ed25519.pub"));
-  const daemon = new Daemon({ policy, journal, sandbox, channel, sessionStore, verifier, identityMode });
+  const daemon = new Daemon({
+    policy,
+    journal,
+    sandbox,
+    channel,
+    sessionStore,
+    verifier,
+    identityMode,
+    tenantContext: defaultTenantContext(), // v0 single-tenant (agp-pne / 047-AT-ADR)
+  });
   const reaped = daemon.recoverSessions();
   if (reaped.length > 0) {
     out(`agp run: recovered — reaped ${reaped.length} orphaned session(s) from a prior crash (journaled).`);

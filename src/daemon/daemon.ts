@@ -16,6 +16,7 @@ import type { ChannelAdapter } from "../contracts/channel-adapter.ts";
 import type { IntendantAdapter, IntendantIdentity } from "../contracts/intendant-adapter.ts";
 import type { IntendantManifest } from "../contracts/intendant-manifest.ts";
 import type { Verifier } from "../contracts/verifier.ts";
+import { assertTenantContext, defaultTenantContext, type TenantContext } from "../tenants/tenant.ts";
 import type { Journal } from "../journal/journal.ts";
 import type { PolicyEngine } from "../policy/engine.ts";
 import type { ScriptedIntendant } from "../runtime/intendant.ts";
@@ -70,6 +71,13 @@ export interface DaemonDeps {
    * to start a session whose manifest does not verify.
    */
   identityMode?: IdentityMode;
+  /**
+   * The tenant this daemon serves (agp-pne / 047-AT-ADR). Optional; defaults to the
+   * v0 single-operator sentinel. A non-sentinel context fails closed at every
+   * governance entry point — v0 is single-tenant ONLY; hosted multi-tenant is a
+   * future epic + security gates. RESERVE, do not enable.
+   */
+  tenantContext?: TenantContext;
 }
 
 export type IdentityMode = "off" | "warn" | "enforce";
@@ -121,6 +129,7 @@ export class Daemon {
   private readonly nowMs: () => number;
   private readonly leaseTtlMs: number;
   private readonly identityMode: IdentityMode;
+  private readonly tenantContext: TenantContext;
 
   constructor(deps: DaemonDeps) {
     this.deps = deps;
@@ -128,6 +137,7 @@ export class Daemon {
     this.nowMs = deps.nowMs ?? (() => Date.now());
     this.leaseTtlMs = deps.leaseTtlMs ?? 300_000; // 5 min; refreshed per gated call
     this.identityMode = deps.identityMode ?? "off";
+    this.tenantContext = deps.tenantContext ?? defaultTenantContext();
   }
 
   /**
@@ -194,6 +204,7 @@ export class Daemon {
 
   /** Mediate a single tool call through the full governance loop. */
   async mediate(req: ToolCallRequest, handle: SandboxHandle, intendant: IntendantAdapter): Promise<MediationOutcome> {
+    assertTenantContext(this.tenantContext); // v0 single-tenant fail-closed (agp-pne)
     const { policy, journal, sandbox, channel } = this.deps;
     const vault = this.deps.vault ?? EMPTY_VAULT;
 
@@ -346,6 +357,7 @@ export class Daemon {
    * barrier in case a intendant ever emits concurrently.
    */
   async runLive(intendant: RunnableIntendant, opts: SessionRunOptions = {}): Promise<SessionResult> {
+    assertTenantContext(this.tenantContext); // v0 single-tenant fail-closed (agp-pne)
     const sessionId = opts.sessionId ?? randomUUID();
     const { journal, sandbox, sessionStore } = this.deps;
 
@@ -396,6 +408,7 @@ export class Daemon {
 
   /** Reference driver: run a scripted intendant's whole script through the loop. */
   async runScripted(intendant: ScriptedIntendant, opts: SessionRunOptions = {}): Promise<SessionResult> {
+    assertTenantContext(this.tenantContext); // v0 single-tenant fail-closed (agp-pne)
     const sessionId = opts.sessionId ?? randomUUID();
     const { journal, sandbox, sessionStore } = this.deps;
 

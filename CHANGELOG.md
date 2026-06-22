@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.73] - 2026-06-22
+
+### Fixed
+
+- fix(claims): broaden the banned-claim regex to cover missed repudiation variants (agp-g68) (#103) (5e59082)
+
 ## [0.1.72] - 2026-06-21
 
 ### Added
@@ -512,7 +518,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...HEAD
+[0.1.73]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...v0.1.73
 [0.1.72]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...v0.1.72
 [0.1.71]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.70...v0.1.71
 [0.1.70]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.69...v0.1.70

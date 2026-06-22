@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.75] - 2026-06-22
+
+### Changed
+
+- test(journal): non-breaking tenant_id round-trip migration test (agp-pne.2) (#105) (c95505d)
+
 ## [0.1.74] - 2026-06-22
 
 ### Added
@@ -524,7 +530,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.74...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.75...HEAD
+[0.1.75]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.74...v0.1.75
 [0.1.74]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.73...v0.1.74
 [0.1.73]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.72...v0.1.73
 [0.1.72]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.71...v0.1.72

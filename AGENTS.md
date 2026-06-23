@@ -80,6 +80,7 @@ bd doctor                             # Health check
 - NEVER say "ready to push when you are" — YOU must push
 - Always close beads when work is done
 - Always start sessions with `bd prime` or `/beads`
+- **ACS conformance is DECIDED but GATED + DEFERRED** (ISEDC ruling, `000-docs/050-AT-DECR`). Do **not** make a public "ACS-conformant" claim or build ACS conformance speculatively. The council ruled: conform to the **ACS policy-verdict profile** at the `gate()` boundary *only when there is real pull* (single-operator v0 has none); **Q5 stays locked** — conformance ≠ authoring, so no AGP spec/RFC at v0; any public conformance claim is gated on passing tests + trademark/mark-use clearance + the CISO veto and must be registered in `MARKETING_CLAIMS.md` (policy-verdict-profile scope only, no `claim-scan`-denylisted assurance terms); the policy manifest is **export-only** (import deferred behind Ed25519 signing — it is a governance-bypass surface). Gated path: `050-AT-DECR`.
 
 ## Creating Tasks
 

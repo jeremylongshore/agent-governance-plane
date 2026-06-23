@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.81] - 2026-06-23
+
+### Changed
+
+- docs: record the ACS conformance decision in CLAUDE.md + AGENTS.md (#111) (7ef309e)
+- chore(beads): sync agp-ed4 closed state (aa834d9)
+
 ## [0.1.80] - 2026-06-22
 
 ### Changed
@@ -560,7 +567,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.80...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.81...HEAD
+[0.1.81]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.80...v0.1.81
 [0.1.80]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.79...v0.1.80
 [0.1.79]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.78...v0.1.79
 [0.1.78]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.77...v0.1.78

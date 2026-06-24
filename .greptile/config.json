@@ -2,6 +2,8 @@
   "strictness": 2,
   "commentTypes": ["logic", "syntax", "style"],
   "ignorePatterns": ".beads/**\nCHANGELOG.md\nversion.txt\nbun.lock\n**/*.lock",
+  "fixWithAI": true,
+  "context": { "repos": ["jeremylongshore/claude-code-slack-channel"] },
   "instructions": "AGP is a Slack-native governance plane (Bun + TypeScript) that gates every tool call and writes a signed, hash-chained audit journal. Prioritize fail-closed correctness, no regression to the signed-journal invariants, and the repo's claim-control discipline. The required CI gates (typecheck, Biome lint, coverage floor, claim-scan, doc-drift, audit-harness verify/escape-scan, dependency-cruiser arch) are the deterministic gate — don't re-litigate nits those already catch; focus on logic, security, and invariant regressions.",
   "rules": [
     {

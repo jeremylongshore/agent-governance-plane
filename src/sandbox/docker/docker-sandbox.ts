@@ -21,6 +21,7 @@ import type {
 } from "../../contracts/sandbox-provider.ts";
 import { BunDockerRunner, type DockerRunner } from "./runner.ts";
 import { verifyNetworkIsolation } from "./network-preflight.ts";
+import type { EgressPolicy } from "./egress-policy.ts";
 
 export interface Mount {
   source: string;
@@ -46,6 +47,15 @@ export interface DockerSandboxOptions {
   verifyIsolation?: boolean;
   /** Sink for the loud skip warning when the netcheck is bypassed. Default: console.warn. */
   warn?: (message: string) => void;
+  /**
+   * Optional egress policy (agp-3s4.2). When set, its mode OVERRIDES the
+   * spec.networkEnabled flag: "none" ⇒ no network (preflight verifies),
+   * "full" ⇒ bridge (Topology B), "allowlist" ⇒ model-only (Topology C).
+   * Allowlist enforcement is not wired until agp-3s4.3, so selecting it fails
+   * CLOSED at spawn rather than falling back to full egress. Absent ⇒ the
+   * legacy networkEnabled behavior, byte-for-byte unchanged.
+   */
+  egress?: EgressPolicy;
 }
 
 // The moving tag is assembled from parts so the literal never appears in source
@@ -74,6 +84,7 @@ export class DockerSandbox implements SandboxProvider {
   private readonly keepAlive: string[];
   private readonly verifyIsolation: boolean;
   private readonly warn: (message: string) => void;
+  private readonly egress?: EgressPolicy;
 
   constructor(options: DockerSandboxOptions = {}) {
     this.runner = options.runner ?? new BunDockerRunner();
@@ -87,6 +98,7 @@ export class DockerSandbox implements SandboxProvider {
     this.keepAlive = options.keepAlive ?? ["sleep", "infinity"];
     this.verifyIsolation = options.verifyIsolation ?? true;
     this.warn = options.warn ?? ((m) => console.warn(m));
+    this.egress = options.egress;
   }
 
   isolation(): IsolationGuarantees {
@@ -126,6 +138,20 @@ export class DockerSandbox implements SandboxProvider {
   }
 
   async spawn(spec: SandboxSpec): Promise<SandboxHandle> {
+    // Topology C ("allowlist") enforcement — the egress-allowlist proxy + internal
+    // Docker network — is not wired until agp-3s4.3. Selecting it now must NOT
+    // silently fall back to full egress (that would be false isolation), so we
+    // fail CLOSED here, before any container is created.
+    if (this.egress?.mode === "allowlist") {
+      throw new Error(
+        "egress mode 'allowlist' (Topology C) selected but model-only egress enforcement is not yet wired (agp-3s4.3) — " +
+          "refusing to run rather than fall back to full egress",
+      );
+    }
+    // An explicit egress policy overrides the legacy spec.networkEnabled flag;
+    // absent, behavior is unchanged. "full" ⇒ bridge, "none" ⇒ no network.
+    const networkEnabled = this.egress ? this.egress.mode === "full" : spec.networkEnabled;
+
     this.assertPinnedImage(spec.image);
     for (const m of this.mounts) this.assertMountAllowed(m);
 
@@ -133,7 +159,7 @@ export class DockerSandbox implements SandboxProvider {
       "run",
       "-d",
       "--network",
-      spec.networkEnabled ? "bridge" : "none",
+      networkEnabled ? "bridge" : "none",
       "--cap-drop",
       "ALL",
       "--security-opt",
@@ -164,7 +190,7 @@ export class DockerSandbox implements SandboxProvider {
     // Network-isolation preflight: when network is OFF, PROVE the container
     // cannot egress rather than trust the flag. Fail closed — a container that
     // can reach the network is torn down and the spawn rejects, never returns.
-    if (spec.networkEnabled === false && this.verifyIsolation) {
+    if (networkEnabled === false && this.verifyIsolation) {
       const skip = process.env.AGP_SANDBOX_SKIP_NETCHECK === "1";
       if (skip) {
         // Honest dev escape hatch: never skip silently.

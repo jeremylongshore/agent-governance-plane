@@ -1,6 +1,6 @@
 {
   "name": "agent-governance-plane",
-  "version": "0.1.81",
+  "version": "0.1.82",
   "description": "Slack-native, OSS governance for AI coding agents: sandboxed execution, human-in-the-loop approval on every tool call, and a signed audit log of each.",
   "type": "module",
   "license": "Apache-2.0",

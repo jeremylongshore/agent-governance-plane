@@ -164,6 +164,42 @@ test("the preflight does not run when network is explicitly enabled", async () =
   expect(runner.calls.every((c) => c[0] !== "exec")).toBe(true);
 });
 
+test("egress policy 'allowlist' fails CLOSED at spawn — no container created (enforcement pending agp-3s4.3)", async () => {
+  const runner = new FakeDockerRunner();
+  const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+  await expect(sandbox.spawn({ image: PINNED, sessionId: "s", networkEnabled: false })).rejects.toThrow(
+    "enforcement is not yet wired",
+  );
+  // Fail-closed BEFORE any docker call — never leave an unrestricted-egress container running.
+  expect(runner.calls).toHaveLength(0);
+});
+
+test("egress policy 'full' ⇒ bridge network and no isolation preflight (overrides spec.networkEnabled)", async () => {
+  const runner = new FakeDockerRunner();
+  const sandbox = new DockerSandbox({ runner, egress: { mode: "full", allowlist: [] } });
+  // Even with networkEnabled:false on the spec, the policy wins ⇒ bridge.
+  await sandbox.spawn({ image: PINNED, sessionId: "s", networkEnabled: false });
+  const args = runner.calls[0]!;
+  expect(args[args.indexOf("--network") + 1]).toBe("bridge");
+  expect(runner.calls.every((c) => c[0] !== "exec")).toBe(true);
+});
+
+test("egress policy 'none' ⇒ no network and the isolation preflight runs (overrides spec.networkEnabled)", async () => {
+  const runner = new FakeDockerRunner();
+  const sandbox = new DockerSandbox({ runner, egress: { mode: "none", allowlist: [] } });
+  // Even with networkEnabled:true on the spec, the policy wins ⇒ none + preflight.
+  await sandbox.spawn({ image: PINNED, sessionId: "s", networkEnabled: true });
+  const args = runner.calls[0]!;
+  expect(args[args.indexOf("--network") + 1]).toBe("none");
+  expect(runner.calls[1]!.slice(0, 2)).toEqual(["exec", "container-abc"]);
+});
+
+test("no egress policy ⇒ behavior is byte-for-byte unchanged (legacy networkEnabled flag)", async () => {
+  const runner = new FakeDockerRunner();
+  await new DockerSandbox({ runner }).spawn({ image: PINNED, sessionId: "s", networkEnabled: true });
+  expect(runner.calls[0]![runner.calls[0]!.indexOf("--network") + 1]).toBe("bridge");
+});
+
 test("isolation() is honest: not vm-grade", () => {
   const iso = new DockerSandbox({ runner: new FakeDockerRunner() }).isolation();
   expect(iso.kind).toBe("docker-container");

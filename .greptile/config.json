@@ -1,0 +1,32 @@
+{
+  "strictness": 2,
+  "commentTypes": ["logic", "syntax", "style"],
+  "ignorePatterns": ".beads/**\nCHANGELOG.md\nversion.txt\nbun.lock\n**/*.lock",
+  "instructions": "AGP is a Slack-native governance plane (Bun + TypeScript) that gates every tool call and writes a signed, hash-chained audit journal. Prioritize fail-closed correctness, no regression to the signed-journal invariants, and the repo's claim-control discipline. The required CI gates (typecheck, Biome lint, coverage floor, claim-scan, doc-drift, audit-harness verify/escape-scan, dependency-cruiser arch) are the deterministic gate — don't re-litigate nits those already catch; focus on logic, security, and invariant regressions.",
+  "rules": [
+    {
+      "id": "claim-control",
+      "rule": "Public surfaces (README.md, AGENTS.md, CLAUDE.md, CONTRIBUTING.md, SECURITY.md, SUPPORT.md, .github/**) may make exactly ONE security claim: 'signed audit log of every tool call'. Do NOT propose adding any stronger assurance wording (the claim-scan denylist); flag any change that introduces one.",
+      "scope": ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md", ".github/**"],
+      "severity": "high"
+    },
+    {
+      "id": "bun-not-npm",
+      "rule": "This is a Bun + TypeScript repo, not Node/npm. Do NOT suggest npm/pnpm/yarn commands or Node-only APIs; use bun install / bun test / bun run.",
+      "scope": ["**/*.ts", "package.json"],
+      "severity": "medium"
+    },
+    {
+      "id": "leaf-no-daemon-import",
+      "rule": "Leaf layers must not import the daemon: src/contracts/, src/policy/, and src/journal/ must NOT import from src/daemon/ (enforced by dependency-cruiser). Flag any such import.",
+      "scope": ["src/contracts/**", "src/policy/**", "src/journal/**"],
+      "severity": "high"
+    },
+    {
+      "id": "fail-closed-invariants",
+      "rule": "Governance boundaries are fail-closed: gate, journal-append, and secret/credential checks must reject on ambiguity, never default-allow. The frozen Actor enum and the JournalEvent schema must not change shape without an ADR.",
+      "scope": ["src/**"],
+      "severity": "high"
+    }
+  ]
+}

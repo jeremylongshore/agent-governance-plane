@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **agent-governance-plane (AGP)** — a Slack-native, OSS-first governance plane that runs any agent harness (Claude Code first, Codex next) in a sandbox, gates every tool call through Slack human-in-the-loop approvals, and records each event in a signed, hash-chained audit journal. License Apache-2.0.
 
-**Phase B, v0 — implementation in flight.** The `agp` CLI + governance kernel now exist: a **Bun + TypeScript** codebase under `src/` (`package.json`, `bunfig.toml`, strict `tsc --noEmit`, `bun test`). Epics 04–10 shipped the contract-first daemon and its real subsystems (Docker sandbox, Slack HITL, signed journal, policy engine) and Epic 06's Claude Code intendant (the per-harness adapter, renamed from "sprite" — see `000-docs/038-AT-ADR`); the foundation docs in `000-docs/` + the bead-tracked 16-epic plan remain the design source of truth. **This is a Bun toolchain, not Node/npm** — do not add `npm ci`/`pnpm`; use `bun install`, `bun test`, `bun run typecheck`. (Historical note: the original `/repo-dress` CI assumed a Node project before any code existed and failed every PR — hence the Bun-native CI.)
+**Phase B, v0 — implementation in flight.** The `agp` CLI + governance kernel now exist: a **Bun + TypeScript** codebase under `src/` (`package.json`, `bunfig.toml`, strict `tsc --noEmit`, `bun test`). The contract-first daemon and its real subsystems are in-tree — Docker sandbox, Slack HITL (Socket Mode), signed hash-chained journal, policy engine, Unix-socket gateway, durable session leases, transactional outbox, and a multi-tenant context gate — alongside **two** per-harness intendants (the adapter renamed from "sprite", `000-docs/038-AT-ADR`): **Claude Code** first and **Codex** second (`044-AT-ADR`). Foundation docs `001`–`004` lock the strategy; the live design source of truth is the bead-tracked epic plan (`002-PP-PLAN`) plus the post-v0 roadmap (`039-PP-ROAD`) and the ADR/contract stream now running to `051`. **This is a Bun toolchain, not Node/npm** — do not add `npm ci`/`pnpm`; use `bun install`, `bun test`, `bun run typecheck`. (Historical note: the original `/repo-dress` CI assumed a Node project before any code existed and failed every PR — hence the Bun-native CI.)
 
 ## The CCSC substrate (most important orienting fact)
 
@@ -22,6 +22,33 @@ AGP does not build its governance kernel from scratch. It **composes the product
 | `002-PP-PLAN` | Master blueprint — the 16-epic Phase B plan (Epics 00–15) is the live source of truth for scheduled work; the old "v0→v0.1→v0.2 demo" narrative is superseded |
 | `003-AA-AUDT` | Operator audit — CCSC substrate + AGP composition, threat boundaries |
 | `004-AR-CANN` / `005`–`007` | Adversarial review + structural/crossref/contradiction audits |
+
+## Architecture — the governance loop (read before touching `src/`)
+
+The design is **contract-first**: `src/contracts/` holds the six interfaces frozen by Epic 03 (`journal-event`, `policy-verdict`, `gateway-message`, `intendant-adapter`, `sandbox-provider`, `channel-adapter` — each a Zod schema + TS type, each with a matching `000-docs/0NN-AT-CONT-*.md`). They are **internal/unstable, no public RFC**; change one only via a Bead + an ADR. The daemon's core is generic over these interfaces, so a subsystem epic swaps in a production impl without touching the loop. **Invariant Greptile enforces:** leaf layers must not import the daemon, and contracts stay frozen.
+
+The heavily-tested heart is `src/daemon/daemon.ts` `mediate()` — for each tool call an intendant attempts:
+
+> policy gate → (if verdict is `require`) channel HITL approval → signed journal entry → sandbox exec → journal the result → deliver result/verdict back to the intendant.
+
+It is **fail-closed** end to end (malformed input, a missing prereq, or an unverifiable frame is rejected, never partially processed). Subsystem layout under `src/`:
+
+| Dir | Role |
+|-----|------|
+| `cli/` | The `agp` operator surface (entry `cli/index.ts`): `init`, `keygen`, `doctor` (fail-closed prereq checks), `run` (drive a session — `--intendant scripted\|claude-code\|codex`), `bridge` (the PreToolUse hook Claude runs per tool call), `verify` (offline journal check), `sessions`. |
+| `contracts/` | The six frozen contracts (above) + later additions (`session-lease`, `verifier`, `intendant-manifest`, `outbox-delivery`). |
+| `daemon/` | Control plane: `mediate()` loop, `outbox-*` (transactional channel delivery, `042-AT-ADR`), `session-store` (durable leases, `041-AT-ADR`). |
+| `gateway/` | Wire protocol between a **sandboxed** intendant and the control plane. v0 transport is a **Unix domain socket only** — network is forbidden until sender-constrained auth lands (`029-AT-ADR`, confused-deputy rationale). Strict newline-delimited JSON framing, 1 MiB max frame. |
+| `intendants/` | Per-harness adapters: `claude-code/` (reuses your existing Claude Code login — **AGP holds no Anthropic API key**) and `codex/` (`044`/`045-AT-ADR`). |
+| `channels/slack/` | Slack HITL channel over Socket Mode; `nonce-store` for replay protection (`048-AT-DECR`). |
+| `journal/` | Signed, hash-chained audit journal + offline `verify`. |
+| `policy/` | The gate engine (`allow`/`deny`/`require`) + dangerous-pattern detection. |
+| `sandbox/docker/` | Docker sandbox provider + network preflight; `credentials.ts` resolves `{{secret:NAME}}` placeholders to real values **only in the post-gate argv** (`034-AT-ARCH`). |
+| `tenants/` | Multi-tenant context guard — single-tenant v0, gate decided in `047-AT-ADR`. |
+| `verify/` | Ed25519 + noop verifiers for intendant identity / supply-chain (`043-AT-ADR`). |
+| `runtime/` | Reference glue impls (scripted intendant, in-memory channel/sandbox/crypto) for `agp run` reference mode + tests. |
+
+Tests live next to source (`*.test.ts`); live/E2E paths are gated behind `AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE` / `AGP_CODEX_LIVE` env flags so the default `bun test` stays hermetic.
 
 ## Build & Test
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.87] - 2026-06-24
+
+### Added
+
+- feat(journal): reserve on_behalf_of principal field + record thinker-canon board verdict (#116) (4d97c21)
+
+### Changed
+
+- chore(beads): file the multi-tenant authority-model decision (agp-dxp / #115) (4b7c09c)
+- chore(beads): file a task to refresh the stale AGP one-pager/operator-audit gist (29e1fad)
+
 ## [0.1.86] - 2026-06-24
 
 ### Changed
@@ -603,7 +614,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.86...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.87...HEAD
+[0.1.87]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.86...v0.1.87
 [0.1.86]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...v0.1.86
 [0.1.85]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...v0.1.85
 [0.1.84]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...v0.1.84

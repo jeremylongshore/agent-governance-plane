@@ -31,6 +31,13 @@ test("parseModelAllowlist: rejects a host with a scheme, port, or path (fail clo
   expect(() => parseModelAllowlist("-bad.test")).toThrow("invalid egress allowlist host");
 });
 
+test("parseModelAllowlist: rejects a bare IPv4 address (049 §1: allowlist by HOST, not IP)", () => {
+  expect(() => parseModelAllowlist("1.2.3.4")).toThrow("invalid egress allowlist host");
+  expect(() => parseModelAllowlist("192.168.1.1")).toThrow("invalid egress allowlist host");
+  // A hostname that merely contains digits is still fine.
+  expect(parseModelAllowlist("api2.model.test")).toEqual(["api2.model.test"]);
+});
+
 test("resolveEgressPolicy: absent switch ⇒ undefined (legacy networkEnabled behavior preserved)", () => {
   expect(resolveEgressPolicy({})).toBeUndefined();
 });

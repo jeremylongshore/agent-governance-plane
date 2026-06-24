@@ -63,10 +63,18 @@ test("non-model unrecognized failure ⇒ NOT enforced (cannot prove it was an al
   expect(verdict.detail).toContain("cannot prove enforcement");
 });
 
-test("recognized block phrasings (incl. proxy-deny) read as blocked", () => {
+test("recognized block phrasings (incl. tight proxy-deny) read as blocked", () => {
   for (const stderr of ["connection refused", "operation timed out", "bad address", "403 Forbidden", "proxy: denied"]) {
     expect(v({ exitCode: 1, stdout: "", stderr }, ok).enforced).toBe(true);
   }
   // Non-zero with empty stderr is treated as a block (nc -z is silent on refuse).
   expect(v({ exitCode: 1, stdout: "", stderr: "" }, ok).enforced).toBe(true);
+});
+
+test("a LOCAL 'nc: Permission denied' is ambiguous ⇒ NOT enforced (not a remote block — fail closed)", () => {
+  // A container socket-permission failure must NOT be mistaken for an allowlist
+  // block; egress reachability is unknown, so the verdict stays not-enforced.
+  const verdict = v({ exitCode: 1, stdout: "", stderr: "nc: Permission denied" }, ok);
+  expect(verdict.enforced).toBe(false);
+  expect(verdict.detail).toContain("cannot prove enforcement");
 });

@@ -46,10 +46,13 @@ export function allowlistProbeArgv(host: string, port: string): string[] {
 }
 
 // Recognized network/allowlist-block failure modes — mirrors network-preflight's
-// REACHABILITY_STDERR, plus proxy-deny phrasing (a CONNECT proxy refusing a
-// non-allowlisted host, 049 section 1 Option A).
+// REACHABILITY_STDERR, plus CONNECT-proxy deny phrasing (a proxy refusing a
+// non-allowlisted host, 049 section 1 Option A). The proxy-deny terms are scoped
+// tightly ("403 forbidden", "proxy: denied") so a LOCAL "nc: Permission denied"
+// (a container socket-permission failure, NOT a remote block) stays ambiguous
+// and reads as not-enforced — preserving the fail-closed invariant.
 const BLOCKED_STDERR =
-  /(connection refused|no route|network is unreachable|bad address|name does not resolve|timed out|timeout|forbidden|denied|403)/i;
+  /(connection refused|no route|network is unreachable|bad address|name does not resolve|timed out|timeout|403 forbidden|proxy[: ]+denied)/i;
 
 /**
  * PURE verdict over the two probe results. Fail-closed by construction:

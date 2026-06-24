@@ -33,6 +33,10 @@ const HOSTNAME = /^(?=.{1,253}$)[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:
 
 function isPlausibleHost(host: string): boolean {
   if (host.includes("/") || host.includes(":") || /\s/.test(host)) return false;
+  // Reject a bare IPv4 address: 049 §1 allowlists by HOST not IP (CDN IPs rotate),
+  // and the egress proxy in agp-3s4.3 will match by SNI/hostname. The HOSTNAME
+  // regex alone treats "1.2.3.4" as four single-char labels, so guard explicitly.
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false;
   return HOSTNAME.test(host);
 }
 

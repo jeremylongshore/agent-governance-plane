@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.85] - 2026-06-24
+
+### Added
+
+- feat(sandbox): Topology C egress-allowlist core (preflight verdict + egress policy) (#114) (e4b44e8)
+
+### Changed
+
+- chore(beads): scope the Topology C egress-allowlist epic into four child beads (f3445bf)
+
 ## [0.1.84] - 2026-06-24
 
 ### Changed
@@ -585,7 +595,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...HEAD
+[0.1.85]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...v0.1.85
 [0.1.84]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...v0.1.84
 [0.1.83]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.82...v0.1.83
 [0.1.82]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.81...v0.1.82

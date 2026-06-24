@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.83] - 2026-06-24
+
+### Changed
+
+- chore(review): Greptile utilization map + wire 3 high-value levers (#113) (2d25d96)
+
 ## [0.1.82] - 2026-06-24
 
 ### Changed
@@ -573,7 +579,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.82...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...HEAD
+[0.1.83]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.82...v0.1.83
 [0.1.82]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.81...v0.1.82
 [0.1.81]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.80...v0.1.81
 [0.1.80]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.79...v0.1.80

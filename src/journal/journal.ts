@@ -110,6 +110,9 @@ export class Journal {
       signing_key_id: null,
       approval_binding_type: null,
       intendant_identity_uri: input.intendant_identity_uri ?? null,
+      // Reserved principal slot — null at v0 (board review 052-AR-BORD / agp-dxp).
+      // Must be in the hashed bytes so write↔verify canonicalization matches.
+      on_behalf_of: null,
     };
 
     const bytes = eventCanonicalBytes(unsealed, prevHash);

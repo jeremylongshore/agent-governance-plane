@@ -4,10 +4,14 @@
 // JournalEvent — one record in AGP's authoritative, hash-chained, Ed25519-signed
 // audit journal. Aligned with the CCSC `journal.ts` substrate (v2 signed events).
 //
-// COUNCIL NON-NEGOTIABLE (AT-DECR Q4, CISO-locked): the four future fields
-// (tenant_id, signing_key_id, approval_binding_type, intendant_identity_uri) are
-// reserved in the schema from the first commit and are `null` at v0. Reserving
-// them now means populating them later is NOT a breaking change.
+// COUNCIL NON-NEGOTIABLE (AT-DECR Q4, CISO-locked): the future fields
+// (tenant_id, signing_key_id, approval_binding_type, intendant_identity_uri,
+// on_behalf_of) are reserved in the schema from the first commit and are `null`
+// at v0. Reserving them now means populating them later is NOT a breaking change.
+// `on_behalf_of` was added per the thinker-canon board review of the authority
+// model (agp-dxp / issue #115, 000-docs/052-AR-BORD): the signed journal is the
+// only irreversible artifact, so the principal slot is reserved before the
+// multi-tenant authority model lands.
 
 import { z } from "zod";
 import { Actor, Ed25519SignatureB64, IsoTimestamp, Sha256Hex } from "./_common.ts";
@@ -25,6 +29,14 @@ export const ReservedFutureFields = z.object({
   approval_binding_type: z.string().nullable().default(null),
   /** Intendant identity URI (Sigstore) — null until intendant identity lands (v0.6). */
   intendant_identity_uri: z.string().nullable().default(null),
+  /**
+   * The human principal on whose authority this action runs — "Claude acting on
+   * behalf of <human>". Null until the multi-tenant authority model lands
+   * (agp-dxp). ACCOUNTABILITY DATA ONLY: this records *who*, and MUST NOT be
+   * read to make an authorization decision (doing so re-complects accountability
+   * with authority — Hickey's guardrail, board review 000-docs/052-AR-BORD).
+   */
+  on_behalf_of: z.string().nullable().default(null),
 });
 
 export const JournalEvent = z
@@ -50,10 +62,11 @@ export const JournalEvent = z
 
 export type JournalEvent = z.infer<typeof JournalEvent>;
 
-/** The four reserved field names, for tests/tools that assert the lock. */
+/** The reserved field names, for tests/tools that assert the lock. */
 export const RESERVED_FIELD_NAMES = [
   "tenant_id",
   "signing_key_id",
   "approval_binding_type",
   "intendant_identity_uri",
+  "on_behalf_of",
 ] as const;

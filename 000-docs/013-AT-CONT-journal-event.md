@@ -33,11 +33,21 @@ per ADR [`009-AT-ADR`](009-AT-ADR-ccsc-substrate-extraction-strategy.md).
 
 ## Reserved future fields (council non-negotiable — CISO-locked, AT-DECR Q4)
 
-`tenant_id`, `signing_key_id`, `approval_binding_type`, `intendant_identity_uri` are
-present in the schema from the first commit and are **`null` at v0**. Reserving
-them now means populating them later (multi-tenant, per-tenant KMS, approval
-binding, Sigstore intendant identity) is **not** a breaking change. The contract
-test asserts all four are present and null.
+`tenant_id`, `signing_key_id`, `approval_binding_type`, `intendant_identity_uri`,
+`on_behalf_of` are present in the schema from the first commit and are **`null` at
+v0**. Reserving them now means populating them later (multi-tenant, per-tenant
+KMS, approval binding, Sigstore intendant identity, and the human accountability
+principal) is **not** a breaking change. The contract test asserts all five are
+present and null.
+
+`on_behalf_of` records the **human principal** on whose authority an action runs
+— "Claude acting on behalf of `<human>`". It was reserved per the thinker-canon
+board review of the authority model (`agp-dxp` / issue #115, recorded in
+`052-AR-BORD`): the signed, hash-chained journal is the only **irreversible**
+artifact, so the principal slot must exist before the multi-tenant authority
+model lands. **Accountability data only — it records *who*, and MUST NOT be read
+to make an authorization decision** (that re-complects accountability with
+authority).
 
 ## Invariants
 

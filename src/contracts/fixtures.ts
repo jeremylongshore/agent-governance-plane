@@ -30,6 +30,7 @@ export const validJournalEvent: JournalEvent = {
   signing_key_id: null,
   approval_binding_type: null,
   intendant_identity_uri: null,
+  on_behalf_of: null,
 };
 
 export const validAllowVerdict: PolicyVerdict = {

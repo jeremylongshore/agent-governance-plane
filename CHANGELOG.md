@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.86] - 2026-06-24
+
+### Changed
+
+- chore(deps): bump actions/upload-artifact from 4 to 7 (#82) (016de06)
+- chore(deps): bump actions/checkout from 6 to 7 (#102) (eb51e12)
+- chore(beads): close Topology C PR-1 children (allowlist verdict + egress policy) (72eb012)
+
 ## [0.1.85] - 2026-06-24
 
 ### Added
@@ -595,7 +603,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.86...HEAD
+[0.1.86]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...v0.1.86
 [0.1.85]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...v0.1.85
 [0.1.84]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...v0.1.84
 [0.1.83]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.82...v0.1.83

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.84] - 2026-06-24
+
+### Changed
+
+- docs(claude-md): add architecture map + refresh stale status line (77aaa96)
+
 ## [0.1.83] - 2026-06-24
 
 ### Changed
@@ -579,7 +585,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...HEAD
+[0.1.84]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.83...v0.1.84
 [0.1.83]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.82...v0.1.83
 [0.1.82]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.81...v0.1.82
 [0.1.81]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.80...v0.1.81

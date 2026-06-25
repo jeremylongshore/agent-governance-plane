@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.88] - 2026-06-25
+
+### Changed
+
+- docs(aar): release report for v0.1.87 (on_behalf_of reservation + board verdict) (68a8c22)
+- chore(beads): close agp-dxp.1 (on_behalf_of reserved + board verdict recorded, PR #116) (c187fc0)
+
 ## [0.1.87] - 2026-06-24
 
 ### Added
@@ -614,7 +621,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.87...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.88...HEAD
+[0.1.88]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.87...v0.1.88
 [0.1.87]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.86...v0.1.87
 [0.1.86]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...v0.1.86
 [0.1.85]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.84...v0.1.85

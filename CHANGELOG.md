@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.89] - 2026-06-25
+
+### Changed
+
+- docs(readme): comprehensive rewrite to current architecture (73e525a)
+- chore(beads): close agp-g1h (AGP one-pager/operator-audit gist refreshed to v0.1.87) (6339d32)
+
 ## [0.1.88] - 2026-06-25
 
 ### Changed
@@ -621,7 +628,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.88...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.89...HEAD
+[0.1.89]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.88...v0.1.89
 [0.1.88]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.87...v0.1.88
 [0.1.87]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.86...v0.1.87
 [0.1.86]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.85...v0.1.86

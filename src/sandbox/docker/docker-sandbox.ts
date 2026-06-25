@@ -21,7 +21,10 @@ import type {
 } from "../../contracts/sandbox-provider.ts";
 import { BunDockerRunner, type DockerRunner } from "./runner.ts";
 import { verifyNetworkIsolation } from "./network-preflight.ts";
+import { verifyEgressAllowlist } from "./allowlist-preflight.ts";
 import type { EgressPolicy } from "./egress-policy.ts";
+import { assertPinnedImage } from "./image-pin.ts";
+import { spawnTopologyC, teardownTopologyC } from "./topology-c.ts";
 
 export interface Mount {
   source: string;
@@ -57,10 +60,6 @@ export interface DockerSandboxOptions {
    */
   egress?: EgressPolicy;
 }
-
-// The moving tag is assembled from parts so the literal never appears in source
-// (the epic's acceptance greps src/sandbox/ for it).
-const MOVING_TAG = "lat" + "est";
 
 function defaultDeniedPrefixes(): string[] {
   const home = homedir();
@@ -112,21 +111,6 @@ export class DockerSandbox implements SandboxProvider {
     };
   }
 
-  /** Reject moving/unpinned images — reproducibility + supply-chain hygiene. */
-  private assertPinnedImage(image: string): void {
-    if (image.includes("@sha256:")) return; // digest-pinned: best
-    const lastColon = image.lastIndexOf(":");
-    const lastSlash = image.lastIndexOf("/");
-    const hasTag = lastColon > lastSlash; // a ':' after any registry-port '/'
-    if (!hasTag) {
-      throw new Error(`image '${image}' is unpinned (no tag or digest); pin it for reproducibility`);
-    }
-    const tag = image.slice(lastColon + 1);
-    if (tag === MOVING_TAG) {
-      throw new Error(`image '${image}' uses the moving '${MOVING_TAG}' tag; pin a specific version or digest`);
-    }
-  }
-
   /** Reject mounts whose host source is under a denied (secret) prefix. */
   private assertMountAllowed(mount: Mount): void {
     const src = resolve(mount.source);
@@ -138,21 +122,20 @@ export class DockerSandbox implements SandboxProvider {
   }
 
   async spawn(spec: SandboxSpec): Promise<SandboxHandle> {
-    // Topology C ("allowlist") enforcement — the egress-allowlist proxy + internal
-    // Docker network — is not wired until agp-3s4.3. Selecting it now must NOT
-    // silently fall back to full egress (that would be false isolation), so we
-    // fail CLOSED here, before any container is created.
+    // Topology C ("allowlist") — model-only egress via the egress-allowlist proxy
+    // + internal Docker network (agp-3s4.3). The proxy image + the live preflight
+    // can only be validated against real containers + real network (agp-3s4.3.2 /
+    // .4.2), so this path is GATED behind AGP_TOPOLOGY_C_E2E. Selecting allowlist
+    // mode must NEVER silently fall back to full egress (false isolation), and
+    // must NEVER return an unverified handle.
     if (this.egress?.mode === "allowlist") {
-      throw new Error(
-        "egress mode 'allowlist' (Topology C) selected but model-only egress enforcement is not yet wired (agp-3s4.3) — " +
-          "refusing to run rather than fall back to full egress",
-      );
+      return this.spawnTopologyCGated(spec);
     }
     // An explicit egress policy overrides the legacy spec.networkEnabled flag;
     // absent, behavior is unchanged. "full" ⇒ bridge, "none" ⇒ no network.
     const networkEnabled = this.egress ? this.egress.mode === "full" : spec.networkEnabled;
 
-    this.assertPinnedImage(spec.image);
+    assertPinnedImage(spec.image);
     for (const m of this.mounts) this.assertMountAllowed(m);
 
     const args: string[] = [
@@ -209,6 +192,82 @@ export class DockerSandbox implements SandboxProvider {
     }
 
     return handle;
+  }
+
+  /**
+   * Topology C spawn-gate (agp-3s4.4) — fail-closed by construction.
+   *
+   *   1. NOT AGP_TOPOLOGY_C_E2E ⇒ THROW. This is the CI / normal-use default:
+   *      Topology C requires a validated proxy (agp-3s4.3.2/.4.2) that does not
+   *      exist yet, so allowlist mode REFUSES rather than run unverified. No
+   *      docker call is made — identical fail-closed posture to before the wiring.
+   *   2. AGP_TOPOLOGY_C_SKIP=1 ⇒ loud-warn + spawn the topology WITHOUT the
+   *      preflight (dev escape hatch, mirrors AGP_SANDBOX_SKIP_NETCHECK). Returns
+   *      an UNVERIFIED handle — dev only, never silent.
+   *   3. AGP_TOPOLOGY_C_E2E set ⇒ spawn the topology, run the live allowlist
+   *      preflight, and on a not-enforced verdict tear EVERYTHING down and THROW
+   *      (never return an unverified handle); on enforced, return the handle.
+   */
+  private async spawnTopologyCGated(spec: SandboxSpec): Promise<SandboxHandle> {
+    const egress = this.egress;
+    /* istanbul ignore next — guarded by the caller; defensive only. */
+    if (egress === undefined || egress.mode !== "allowlist") {
+      throw new Error("spawnTopologyCGated called without an allowlist egress policy");
+    }
+
+    if (!process.env.AGP_TOPOLOGY_C_E2E) {
+      // Fail closed: no validated proxy yet. No container is created.
+      throw new Error(
+        "egress mode 'allowlist' (Topology C) requires AGP_TOPOLOGY_C_E2E + a validated proxy " +
+          "(agp-3s4.3.2/.4.2) — refusing to run rather than fall back to full egress",
+      );
+    }
+
+    assertPinnedImage(spec.image);
+    for (const m of this.mounts) this.assertMountAllowed(m);
+
+    const skip = process.env.AGP_TOPOLOGY_C_SKIP === "1";
+    if (skip) {
+      // Honest dev escape hatch: spawn the topology but DO NOT verify it.
+      const built = await spawnTopologyC(this.runner, {
+        image: spec.image,
+        sessionId: spec.sessionId,
+        egress,
+        keepAlive: this.keepAlive,
+      });
+      this.warn(
+        `[agp] WARNING: Topology C allowlist preflight SKIPPED for container ${built.handle.id} ` +
+          "(AGP_TOPOLOGY_C_SKIP=1) — model-only egress enforcement is UNVERIFIED. Dev only.",
+      );
+      return built.handle;
+    }
+
+    const built = await spawnTopologyC(this.runner, {
+      image: spec.image,
+      sessionId: spec.sessionId,
+      egress,
+      keepAlive: this.keepAlive,
+    });
+    try {
+      // The model host is the first entry of the resolved allowlist (the probe needs
+      // a single reachable target; multi-host allowlists probe the primary).
+      const modelHost = egress.allowlist[0]!;
+      const verdict = await verifyEgressAllowlist(this.runner, built.handle, { modelHost });
+      if (!verdict.enforced) {
+        throw new Error(`Topology C egress allowlist not enforced: ${verdict.detail}`);
+      }
+      return built.handle;
+    } catch (err) {
+      // Any failure once the topology is up — a not-enforced verdict OR an
+      // unexpected probe/daemon error — must tear the whole topology down so a
+      // half-built, possibly-unrestricted sandbox is never leaked.
+      await teardownTopologyC(this.runner, {
+        names: built.names,
+        harnessId: built.handle.id,
+        proxyId: built.proxyId,
+      });
+      throw err;
+    }
   }
 
   async exec(handle: SandboxHandle, command: readonly string[]): Promise<ExecResult> {

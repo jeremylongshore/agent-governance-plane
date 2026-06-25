@@ -4,8 +4,10 @@ import {
   allowlistProbeArgv,
   classifyAllowlistProbe,
   DEFAULT_NON_MODEL_PROBE,
+  verifyEgressAllowlist,
 } from "./allowlist-preflight.ts";
-import type { RunResult } from "./runner.ts";
+import type { DockerRunner, RunResult } from "./runner.ts";
+import type { SandboxHandle } from "../../contracts/sandbox-provider.ts";
 
 const ok: RunResult = { exitCode: 0, stdout: "open", stderr: "" };
 const refused: RunResult = { exitCode: 1, stdout: "", stderr: "nc: connection refused" };
@@ -77,4 +79,63 @@ test("a LOCAL 'nc: Permission denied' is ambiguous ⇒ NOT enforced (not a remot
   const verdict = v({ exitCode: 1, stdout: "", stderr: "nc: Permission denied" }, ok);
   expect(verdict.enforced).toBe(false);
   expect(verdict.detail).toContain("cannot prove enforcement");
+});
+
+// --- verifyEgressAllowlist (the live seam, mirrors verifyNetworkIsolation) -----
+
+const handle: SandboxHandle = { id: "harness-abc", sessionId: "s1" };
+
+class FakeRunner implements DockerRunner {
+  readonly calls: string[][] = [];
+  constructor(private readonly respond: (args: readonly string[]) => RunResult) {}
+  run(args: readonly string[]): Promise<RunResult> {
+    this.calls.push([...args]);
+    return Promise.resolve(this.respond(args));
+  }
+}
+
+test("verifyEgressAllowlist: execs non-model THEN model probe via the runner, default non-model = example.com:443", async () => {
+  // non-model (example.com) blocked, model (api.model) reachable ⇒ enforced.
+  const runner = new FakeRunner((args) =>
+    args[6] === "example.com"
+      ? { exitCode: 1, stdout: "", stderr: "nc: connection refused" }
+      : { exitCode: 0, stdout: "open", stderr: "" },
+  );
+  const verdict = await verifyEgressAllowlist(runner, handle, { modelHost: "api.model" });
+  expect(verdict.enforced).toBe(true);
+  // Two execs, in order: non-model probe then model probe (classify arg order preserved).
+  expect(runner.calls[0]!).toEqual(["exec", "harness-abc", "nc", "-w", "3", "-z", "example.com", "443"]);
+  expect(runner.calls[1]!).toEqual(["exec", "harness-abc", "nc", "-w", "3", "-z", "api.model", "443"]);
+});
+
+test("verifyEgressAllowlist: non-model REACHABLE ⇒ NOT enforced (the silent-degrade breach)", async () => {
+  const runner = new FakeRunner(() => ({ exitCode: 0, stdout: "open", stderr: "" })); // both reachable
+  const verdict = await verifyEgressAllowlist(runner, handle, { modelHost: "api.model" });
+  expect(verdict.enforced).toBe(false);
+  expect(verdict.detail).toContain("NOT enforced");
+});
+
+test("verifyEgressAllowlist: model UNREACHABLE ⇒ NOT enforced (harness cannot reach the model)", async () => {
+  const runner = new FakeRunner((args) =>
+    args[6] === "example.com"
+      ? { exitCode: 1, stdout: "", stderr: "nc: connection refused" }
+      : { exitCode: 1, stdout: "", stderr: "no route to host" },
+  );
+  const verdict = await verifyEgressAllowlist(runner, handle, { modelHost: "api.model" });
+  expect(verdict.enforced).toBe(false);
+  expect(verdict.detail).toContain("harness cannot reach the model");
+});
+
+test("verifyEgressAllowlist: honors a custom non-model probe target", async () => {
+  const runner = new FakeRunner((args) =>
+    args[6] === "intranet.local"
+      ? { exitCode: 1, stdout: "", stderr: "nc: connection refused" }
+      : { exitCode: 0, stdout: "open", stderr: "" },
+  );
+  const verdict = await verifyEgressAllowlist(runner, handle, {
+    nonModel: { host: "intranet.local", port: "8080" },
+    modelHost: "api.model",
+  });
+  expect(verdict.enforced).toBe(true);
+  expect(runner.calls[0]!).toEqual(["exec", "harness-abc", "nc", "-w", "3", "-z", "intranet.local", "8080"]);
 });

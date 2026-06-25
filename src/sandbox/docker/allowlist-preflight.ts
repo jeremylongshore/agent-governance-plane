@@ -16,7 +16,8 @@
 //
 // Design: 000-docs/049-AT-ADR-topology-c-egress-allowlist-design section 2.
 
-import type { RunResult } from "./runner.ts";
+import type { SandboxHandle } from "../../contracts/sandbox-provider.ts";
+import type { DockerRunner, RunResult } from "./runner.ts";
 
 /** Verdict of an allowlist-egress check: is model-only egress actually enforced? */
 export interface AllowlistVerdict {
@@ -101,4 +102,49 @@ export function classifyAllowlistProbe(nonModel: RunResult, model: RunResult): A
     enforced: true,
     detail: `non-model endpoint blocked (exit ${nonModel.exitCode}) and model endpoint reachable — egress allowlist enforced`,
   };
+}
+
+// The model API is HTTPS; both probes default to the standard TLS port. Derived
+// from the shared default so the two probes stay consistent.
+const MODEL_PROBE_PORT = DEFAULT_NON_MODEL_PROBE.port;
+
+/**
+ * Actively verify a running Topology C container restricts egress to the model
+ * API only. Mirrors `verifyNetworkIsolation`: execs two real probes via the
+ * injected runner — a NON-MODEL host (which MUST be blocked) and the MODEL host
+ * (which MUST be reachable) — and delegates the verdict to `classifyAllowlistProbe`.
+ * The `runner.run` execs are the single live seam; the verdict is deterministic.
+ *
+ * Fail-closed by construction (the pure verdict refuses on any ambiguity). The
+ * caller (docker-sandbox.spawn, agp-3s4.4) tears the topology down and refuses
+ * the run on a not-enforced verdict — an unverified handle is never returned.
+ *
+ * agp-3s4.4.2 REAL-INFRA TODO (the live probe is deferred + E2E-gated, so this is
+ * not shipped behavior — but the .4.2 owner MUST fix it before any real run):
+ * `allowlistProbeArgv` is a raw `nc` connect and is NOT proxy-aware. Under the
+ * real Option A topology (internal network, no default route, egress only via the
+ * proxy's CONNECT tunnel) a direct `nc model:443` has no route and would
+ * false-negative ("model unreachable"). The model-reachability probe must become
+ * proxy-aware (CONNECT through HTTPS_PROXY), probe EVERY allowlisted host (not
+ * just the primary), and handle non-443 model ports. Surfaced by the agp-3s4
+ * design-conformance review.
+ */
+export async function verifyEgressAllowlist(
+  runner: DockerRunner,
+  handle: SandboxHandle,
+  opts: { nonModel?: { host: string; port: string }; modelHost: string },
+): Promise<AllowlistVerdict> {
+  const nonModel = opts.nonModel ?? DEFAULT_NON_MODEL_PROBE;
+  const nonModelRes = await runner.run([
+    "exec",
+    handle.id,
+    ...allowlistProbeArgv(nonModel.host, nonModel.port),
+  ]);
+  const modelRes = await runner.run([
+    "exec",
+    handle.id,
+    ...allowlistProbeArgv(opts.modelHost, MODEL_PROBE_PORT),
+  ]);
+  // classifyAllowlistProbe arg order is (nonModel, model) — preserved exactly.
+  return classifyAllowlistProbe(nonModelRes, modelRes);
 }

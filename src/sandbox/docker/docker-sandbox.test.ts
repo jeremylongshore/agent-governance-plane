@@ -164,14 +164,161 @@ test("the preflight does not run when network is explicitly enabled", async () =
   expect(runner.calls.every((c) => c[0] !== "exec")).toBe(true);
 });
 
-test("egress policy 'allowlist' fails CLOSED at spawn — no container created (enforcement pending agp-3s4.3)", async () => {
-  const runner = new FakeDockerRunner();
-  const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
-  await expect(sandbox.spawn({ image: PINNED, sessionId: "s", networkEnabled: false })).rejects.toThrow(
-    "enforcement is not yet wired",
-  );
-  // Fail-closed BEFORE any docker call — never leave an unrestricted-egress container running.
-  expect(runner.calls).toHaveLength(0);
+test("egress policy 'allowlist' fails CLOSED in CI/normal use — no AGP_TOPOLOGY_C_E2E ⇒ no container created", async () => {
+  // Default (no AGP_TOPOLOGY_C_E2E): Topology C has no validated proxy yet, so
+  // allowlist mode REFUSES rather than fall back to full egress. Preserves the
+  // pre-wiring fail-closed posture (invariants #1 + #5: default behavior intact).
+  const prev = process.env.AGP_TOPOLOGY_C_E2E;
+  delete process.env.AGP_TOPOLOGY_C_E2E;
+  try {
+    const runner = new FakeDockerRunner();
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    await expect(sandbox.spawn({ image: PINNED, sessionId: "s", networkEnabled: false })).rejects.toThrow(
+      "requires AGP_TOPOLOGY_C_E2E",
+    );
+    // Fail-closed BEFORE any docker call — never leave an unrestricted-egress container running.
+    expect(runner.calls).toHaveLength(0);
+  } finally {
+    if (prev === undefined) delete process.env.AGP_TOPOLOGY_C_E2E;
+    else process.env.AGP_TOPOLOGY_C_E2E = prev;
+  }
+});
+
+// --- Topology C spawn-gate (agp-3s4.4) ----------------------------------------
+
+// A responder for the Topology C orchestration sequence: network create, proxy
+// run (returns a proxy id), network connect, harness run (returns the harness id),
+// then the two preflight exec probes. By default the preflight reads as ENFORCED:
+// the non-model probe is refused (exit 1) and the model probe connects (exit 0).
+function topologyCRespond(args: readonly string[]): RunResult {
+  if (args[0] === "exec") {
+    // args: ["exec", <id>, "nc", "-w", "3", "-z", <host>, <port>]
+    const host = args[6];
+    if (host === "example.com") return { exitCode: 1, stdout: "", stderr: "nc: connection refused" }; // non-model BLOCKED
+    return { exitCode: 0, stdout: "open", stderr: "" }; // model REACHABLE
+  }
+  if (args[0] === "run") {
+    const isProxy = args.includes("agp.role=egress-proxy");
+    return { exitCode: 0, stdout: isProxy ? "proxy-xyz\n" : "harness-abc\n", stderr: "" };
+  }
+  // network create / network connect / rm / network rm
+  return { exitCode: 0, stdout: "", stderr: "" };
+}
+
+function withTopologyCEnv<T>(env: Record<string, string | undefined>, fn: () => Promise<T>): Promise<T> {
+  const keys = ["AGP_TOPOLOGY_C_E2E", "AGP_TOPOLOGY_C_SKIP"] as const;
+  const prev: Record<string, string | undefined> = {};
+  for (const k of keys) {
+    prev[k] = process.env[k];
+    const next = env[k];
+    if (next === undefined) delete process.env[k];
+    else process.env[k] = next;
+  }
+  const restore = () => {
+    for (const k of keys) {
+      if (prev[k] === undefined) delete process.env[k];
+      else process.env[k] = prev[k];
+    }
+  };
+  return fn().finally(restore);
+}
+
+test("Topology C with AGP_TOPOLOGY_C_E2E: spawns net+proxy+harness, runs the preflight, returns the verified handle", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: undefined }, async () => {
+    const runner = new FakeDockerRunner(topologyCRespond);
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    const handle = await sandbox.spawn({ image: PINNED, sessionId: "s1", networkEnabled: false });
+    expect(handle.id).toBe("harness-abc");
+
+    // Orchestration order: internal network create → proxy run → network connect → harness run.
+    expect(runner.calls[0]!).toEqual(["network", "create", "--internal", "agp-egress-s1"]);
+    const proxyRun = runner.calls[1]!;
+    expect(proxyRun.slice(0, 2)).toEqual(["run", "-d"]);
+    expect(proxyRun).toContain("agp.role=egress-proxy");
+    expect(proxyRun).toContain("AGP_EGRESS_ALLOWLIST=api.model.test");
+    expect(runner.calls[2]!).toEqual(["network", "connect", "agp-egress-s1", "agp-proxy-s1"]);
+    const harnessRun = runner.calls[3]!;
+    expect(harnessRun[harnessRun.indexOf("--network") + 1]).toBe("agp-egress-s1");
+    expect(harnessRun).toContain("--cap-drop");
+    expect(harnessRun[harnessRun.indexOf("--cap-drop") + 1]).toBe("ALL");
+    expect(harnessRun).toContain("HTTPS_PROXY=http://agp-proxy-s1:3128");
+
+    // Then the two preflight probes (non-model, then model).
+    expect(runner.calls[4]!.slice(0, 2)).toEqual(["exec", "harness-abc"]);
+    expect(runner.calls[4]!).toContain("example.com");
+    expect(runner.calls[5]!).toContain("api.model.test");
+  });
+});
+
+test("Topology C E2E: a NOT-enforced preflight verdict tears down EVERYTHING and throws (no unverified handle)", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: undefined }, async () => {
+    // The silent-degrade breach: the non-model host is REACHABLE ⇒ egress not restricted.
+    const runner = new FakeDockerRunner((args) => {
+      if (args[0] === "exec") return { exitCode: 0, stdout: "open", stderr: "" }; // both reachable ⇒ NOT enforced
+      if (args[0] === "run") {
+        const isProxy = args.includes("agp.role=egress-proxy");
+        return { exitCode: 0, stdout: isProxy ? "proxy-xyz\n" : "harness-abc\n", stderr: "" };
+      }
+      return { exitCode: 0, stdout: "", stderr: "" };
+    });
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    await expect(sandbox.spawn({ image: PINNED, sessionId: "s2", networkEnabled: false })).rejects.toThrow(
+      "egress allowlist not enforced",
+    );
+    // The harness, the proxy, and the internal network must all be removed.
+    const flat = runner.calls.map((c) => c.join(" "));
+    expect(flat).toContain("rm -f harness-abc");
+    expect(flat).toContain("rm -f agp-proxy-s2");
+    expect(flat).toContain("network rm agp-egress-s2");
+  });
+});
+
+test("Topology C E2E: a failed proxy run tears down the network and throws (no half-built topology leaks)", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: undefined }, async () => {
+    const runner = new FakeDockerRunner((args) => {
+      if (args[0] === "run" && args.includes("agp.role=egress-proxy")) {
+        return { exitCode: 125, stdout: "", stderr: "no such proxy image" };
+      }
+      if (args[0] === "exec") return { exitCode: 1, stdout: "", stderr: "nc: connection refused" };
+      return { exitCode: 0, stdout: "", stderr: "" };
+    });
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    await expect(sandbox.spawn({ image: PINNED, sessionId: "s3", networkEnabled: false })).rejects.toThrow(
+      "proxy sidecar run failed",
+    );
+    // No harness was ever spawned; the network we created must be torn down.
+    const flat = runner.calls.map((c) => c.join(" "));
+    expect(flat).toContain("network rm agp-egress-s3");
+    expect(flat.some((c) => c.startsWith("run -d") && c.includes("agp.session=s3"))).toBe(false);
+  });
+});
+
+test("Topology C SKIP=1: spawns the topology, skips the preflight, loud-warns, returns an UNVERIFIED handle", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: "1" }, async () => {
+    const runner = new FakeDockerRunner(topologyCRespond);
+    const warnings: string[] = [];
+    const sandbox = new DockerSandbox({
+      runner,
+      egress: { mode: "allowlist", allowlist: ["api.model.test"] },
+      warn: (m) => warnings.push(m),
+    });
+    const handle = await sandbox.spawn({ image: PINNED, sessionId: "s4", networkEnabled: false });
+    expect(handle.id).toBe("harness-abc");
+    // The topology was built, but NO preflight exec probe ran.
+    expect(runner.calls.every((c) => c[0] !== "exec")).toBe(true);
+    expect(warnings.some((w) => w.includes("SKIPPED") && w.includes("UNVERIFIED"))).toBe(true);
+  });
+});
+
+test("Topology C SKIP=1 still fails closed WITHOUT AGP_TOPOLOGY_C_E2E (skip does not bypass the E2E gate)", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: undefined, AGP_TOPOLOGY_C_SKIP: "1" }, async () => {
+    const runner = new FakeDockerRunner(topologyCRespond);
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    await expect(sandbox.spawn({ image: PINNED, sessionId: "s5", networkEnabled: false })).rejects.toThrow(
+      "requires AGP_TOPOLOGY_C_E2E",
+    );
+    expect(runner.calls).toHaveLength(0);
+  });
 });
 
 test("egress policy 'full' ⇒ bridge network and no isolation preflight (overrides spec.networkEnabled)", async () => {
@@ -236,4 +383,21 @@ test.skipIf(process.env.AGP_DOCKER_E2E !== "1")("real docker: preflight detects 
   const verdict = await verifyNetworkIsolation(runner, open, { networkRequested: false });
   await sandbox.teardown(open);
   expect(verdict.isolated).toBe(false);
+});
+
+// Real Docker Topology C — gated on AGP_TOPOLOGY_C_E2E (needs a real validated
+// egress proxy, agp-3s4.3.2/.4.2). The fake-runner tests above cover the gate +
+// orchestration; this exercises the real proxy/network plumbing end-to-end.
+test.skipIf(process.env.AGP_TOPOLOGY_C_E2E !== "1")("real docker: Topology C allowlist spawn → verified handle → teardown", async () => {
+  const { BunDockerRunner } = await import("./runner.ts");
+  // allowlist[0] is probed as the model host — supply a real reachable HTTPS host
+  // via AGP_TOPOLOGY_C_MODEL_HOST when validating against a real proxy.
+  const modelHost = process.env.AGP_TOPOLOGY_C_MODEL_HOST ?? "api.anthropic.com";
+  const sandbox = new DockerSandbox({
+    runner: new BunDockerRunner(),
+    egress: { mode: "allowlist", allowlist: [modelHost] },
+  });
+  const handle = await sandbox.spawn({ image: PINNED, sessionId: "e2e-topoc", networkEnabled: false });
+  expect(handle.id.length).toBeGreaterThan(0);
+  await sandbox.teardown(handle);
 });

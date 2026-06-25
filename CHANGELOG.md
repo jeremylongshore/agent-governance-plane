@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.91] - 2026-06-25
+
+### Changed
+
+- docs(pages): full-width single-column CSS override for the minimal theme (28e073a)
+
 ## [0.1.90] - 2026-06-25
 
 ### Changed
@@ -634,7 +640,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.90...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...HEAD
+[0.1.91]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.90...v0.1.91
 [0.1.90]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.89...v0.1.90
 [0.1.89]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.88...v0.1.89
 [0.1.88]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.87...v0.1.88

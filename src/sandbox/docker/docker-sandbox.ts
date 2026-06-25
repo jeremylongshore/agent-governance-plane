@@ -248,20 +248,26 @@ export class DockerSandbox implements SandboxProvider {
       egress,
       keepAlive: this.keepAlive,
     });
-    // The model host is the first entry of the resolved allowlist (the probe needs
-    // a single reachable target; multi-host allowlists probe the primary).
-    const modelHost = egress.allowlist[0]!;
-    const verdict = await verifyEgressAllowlist(this.runner, built.handle, { modelHost });
-    if (!verdict.enforced) {
-      // Never leak an unverified, possibly-unrestricted topology: tear it all down.
+    try {
+      // The model host is the first entry of the resolved allowlist (the probe needs
+      // a single reachable target; multi-host allowlists probe the primary).
+      const modelHost = egress.allowlist[0]!;
+      const verdict = await verifyEgressAllowlist(this.runner, built.handle, { modelHost });
+      if (!verdict.enforced) {
+        throw new Error(`Topology C egress allowlist not enforced: ${verdict.detail}`);
+      }
+      return built.handle;
+    } catch (err) {
+      // Any failure once the topology is up — a not-enforced verdict OR an
+      // unexpected probe/daemon error — must tear the whole topology down so a
+      // half-built, possibly-unrestricted sandbox is never leaked.
       await teardownTopologyC(this.runner, {
         names: built.names,
         harnessId: built.handle.id,
         proxyId: built.proxyId,
       });
-      throw new Error(`Topology C egress allowlist not enforced: ${verdict.detail}`);
+      throw err;
     }
-    return built.handle;
   }
 
   async exec(handle: SandboxHandle, command: readonly string[]): Promise<ExecResult> {

@@ -24,7 +24,7 @@
 
 import type { SandboxHandle } from "../../contracts/sandbox-provider.ts";
 import type { DockerRunner } from "./runner.ts";
-import type { EgressPolicy } from "./egress-policy.ts";
+import { type EgressPolicy, parseModelAllowlist } from "./egress-policy.ts";
 import { assertPinnedImage } from "./image-pin.ts";
 
 /**
@@ -194,9 +194,24 @@ export async function spawnTopologyC(
   if (opts.egress.allowlist.length === 0) {
     throw new Error("spawnTopologyC requires a non-empty model-host allowlist (fail closed)");
   }
+  // Defense-in-depth: re-validate every allowlist host even when the EgressPolicy
+  // was built programmatically (bypassing resolveEgressPolicy). A host carrying a
+  // newline/quote/semicolon could otherwise corrupt the proxy's rendered config
+  // via AGP_EGRESS_ALLOWLIST. Each entry must be EXACTLY one bare host: invalid
+  // chars make parseModelAllowlist throw, and an embedded separator (whitespace/
+  // comma) makes it split into != 1 token or not round-trip — both rejected.
+  for (const host of opts.egress.allowlist) {
+    const parsed = parseModelAllowlist(host);
+    if (parsed.length !== 1 || parsed[0] !== host) {
+      throw new Error(`invalid egress allowlist host '${host}' (must be a single bare hostname, no embedded whitespace)`);
+    }
+  }
   const names = topologyCNames(opts.sessionId);
   const proxyImage = opts.proxyImage ?? DEFAULT_EGRESS_PROXY_IMAGE;
   const proxyPort = opts.proxyPort ?? DEFAULT_PROXY_PORT;
+  if (!Number.isInteger(proxyPort) || proxyPort < 1 || proxyPort > 65535) {
+    throw new Error(`topology C: invalid proxy port ${String(proxyPort)} (must be an integer 1-65535)`);
+  }
 
   const net = await runner.run(internalNetworkCreateArgv(names.network));
   if (net.exitCode !== 0) {

@@ -273,6 +273,30 @@ test("Topology C E2E: a NOT-enforced preflight verdict tears down EVERYTHING and
   });
 });
 
+test("Topology C E2E: an UNEXPECTED preflight error tears down EVERYTHING and rethrows (no leak)", async () => {
+  await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: undefined }, async () => {
+    // The topology comes up, then the preflight exec THROWS (e.g. docker daemon
+    // disconnect) rather than returning a verdict. The gate must still tear down.
+    const runner = new FakeDockerRunner((args) => {
+      if (args[0] === "exec") throw new Error("docker daemon disconnected");
+      if (args[0] === "run") {
+        const isProxy = args.includes("agp.role=egress-proxy");
+        return { exitCode: 0, stdout: isProxy ? "proxy-xyz\n" : "harness-abc\n", stderr: "" };
+      }
+      return { exitCode: 0, stdout: "", stderr: "" };
+    });
+    const sandbox = new DockerSandbox({ runner, egress: { mode: "allowlist", allowlist: ["api.model.test"] } });
+    await expect(sandbox.spawn({ image: PINNED, sessionId: "s5", networkEnabled: false })).rejects.toThrow(
+      "docker daemon disconnected",
+    );
+    // Even on an unexpected throw (not a not-enforced verdict), the whole topology is removed.
+    const flat = runner.calls.map((c) => c.join(" "));
+    expect(flat).toContain("rm -f harness-abc");
+    expect(flat).toContain("rm -f agp-proxy-s5");
+    expect(flat).toContain("network rm agp-egress-s5");
+  });
+});
+
 test("Topology C E2E: a failed proxy run tears down the network and throws (no half-built topology leaks)", async () => {
   await withTopologyCEnv({ AGP_TOPOLOGY_C_E2E: "1", AGP_TOPOLOGY_C_SKIP: undefined }, async () => {
     const runner = new FakeDockerRunner((args) => {

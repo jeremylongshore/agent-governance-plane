@@ -149,6 +149,35 @@ test("spawnTopologyC: refuses an empty allowlist (fail closed)", async () => {
   expect(runner.calls).toHaveLength(0);
 });
 
+test("spawnTopologyC: refuses an allowlist host with injection chars (defense-in-depth, before any docker call)", async () => {
+  const runner = new FakeDockerRunner(buildRespond);
+  await expect(
+    spawnTopologyC(runner, {
+      image: PINNED,
+      sessionId: "s",
+      egress: { mode: "allowlist", allowlist: ["api.model\nevil directive"] },
+      keepAlive: [],
+    }),
+  ).rejects.toThrow("invalid egress allowlist host");
+  expect(runner.calls).toHaveLength(0);
+});
+
+test("spawnTopologyC: refuses an out-of-range proxy port (fail closed, before any docker call)", async () => {
+  const runner = new FakeDockerRunner(buildRespond);
+  for (const proxyPort of [0, 70000, 3128.5]) {
+    await expect(
+      spawnTopologyC(runner, {
+        image: PINNED,
+        sessionId: "s",
+        egress: { mode: "allowlist", allowlist: ["api.model"] },
+        keepAlive: [],
+        proxyPort,
+      }),
+    ).rejects.toThrow("invalid proxy port");
+  }
+  expect(runner.calls).toHaveLength(0);
+});
+
 test("spawnTopologyC: network create failure throws before any container is run", async () => {
   const runner = new FakeDockerRunner((args) =>
     args[0] === "network" && args[1] === "create"

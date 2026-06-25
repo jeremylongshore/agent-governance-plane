@@ -1,0 +1,54 @@
+---
+# Custom CSS override for GitHub Pages. The empty `---` front matter is REQUIRED
+# so Jekyll compiles this SCSS to /assets/css/style.css (replacing the theme's).
+---
+
+@import "{{ site.theme }}";
+
+// Full-width, single-column override of jekyll-theme-minimal.
+// Stock minimal pins a 270px `position: fixed` sidebar (mostly empty) and a
+// 500px content column — too narrow for AGP's table-heavy README and the wide
+// governance-loop diagram. This makes the header a top banner and lets content
+// span the page, while keeping the theme's typography and colors.
+
+.wrapper {
+  width: auto;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+header {
+  width: auto;
+  float: none;
+  position: static;
+  padding: 0 0 20px;
+  margin: 0 0 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+section {
+  width: auto;
+  float: none;
+  padding-bottom: 40px;
+}
+
+footer {
+  width: auto;
+  float: none;
+  position: static;
+  border-top: 1px solid #e5e5e5;
+  padding-top: 16px;
+}
+
+// Let wide tables and the ASCII diagram use the full content width.
+table { width: 100%; }
+pre { overflow-x: auto; }
+
+// The static header no longer needs the stock theme's 320px right reserve
+// (which existed to clear the old fixed sidebar) on narrower screens.
+@media print, screen and (max-width: 960px) {
+  header { padding-right: 0; }
+  header ul,
+  header p.view { position: static; }
+}

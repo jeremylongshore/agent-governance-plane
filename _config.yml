@@ -1,0 +1,35 @@
+# GitHub Pages config — renders README.md as the project landing page via the
+# minimal theme (Intent Solutions standard). Jekyll is scoped to the README
+# only: the source tree, 000-docs, and the other markdown surfaces are excluded
+# so Liquid never processes code or docs (some docs contain `{{...}}`-style
+# placeholders that would break the Jekyll build) and the build stays fast.
+theme: jekyll-theme-minimal
+title: agent-governance-plane
+description: "Slack-native, OSS governance for AI coding agents — sandboxed execution, human-in-the-loop approval on every tool call, and a signed audit log of each."
+exclude:
+  - src
+  - tests
+  - scripts
+  - docker
+  - substrate
+  - reports
+  - 000-docs
+  - node_modules
+  - .audit-harness
+  - .beads
+  - .github
+  - "*.ts"
+  - "*.json"
+  - "*.lock"
+  - "*.toml"
+  - "*.cjs"
+  - AGENTS.md
+  - CLAUDE.md
+  - CONTRIBUTING.md
+  - CODE_OF_CONDUCT.md
+  - SECURITY.md
+  - SUPPORT.md
+  - CHANGELOG.md
+  - TEST_AUDIT.md
+  - NOTICE
+  - version.txt

@@ -7,7 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/jeremylongshore/agent-governance-plane)](https://github.com/jeremylongshore/agent-governance-plane/releases)
 [![Toolchain](https://img.shields.io/badge/toolchain-Bun%20%2B%20TypeScript-black.svg)](https://bun.sh)
 
-**Links:** [Gist one-pager + operator audit](https://gist.github.com/jeremylongshore/523b9e5f58e5724854bdb234a4874a04) · [CCSC substrate](https://github.com/jeremylongshore/claude-code-slack-channel)
+**Links:** [GitHub Pages](https://jeremylongshore.github.io/agent-governance-plane/) · [Gist one-pager + operator audit](https://gist.github.com/jeremylongshore/523b9e5f58e5724854bdb234a4874a04) · [CCSC substrate](https://github.com/jeremylongshore/claude-code-slack-channel)
 
 ## Overview
 
@@ -59,7 +59,7 @@ than reinventing it.
 | Signed audit log | Every event is written to a hash-chained, Ed25519-signed journal, verifiable offline with `agp verify` against the public key — plus a signed head checkpoint so truncation is detectable |
 | Hardened sandbox | Docker with `--cap-drop ALL`, `--security-opt no-new-privileges`, pinned images, and an active network-isolation preflight that **proves** egress is blocked rather than trusting the flag |
 | Two harnesses, one contract | Claude Code and Codex via the same `IntendantAdapter`; the Claude Code intendant reuses your existing Claude Code login (no API key held by AGP) |
-| Credential injection | `{{secret:NAME}}` placeholders resolve to real values only in the post-gate argv; the journal records secret *names*, never values |
+| Credential injection | `secret:NAME` placeholders resolve to real values only in the post-gate argv; the journal records secret *names*, never values |
 | Durable execution | Lease-fenced session store + crash recovery, and a transactional outbox so channel deliveries survive restarts |
 | Offline verification | `agp verify` replays the hash chain + signatures with no private key and no network |
 

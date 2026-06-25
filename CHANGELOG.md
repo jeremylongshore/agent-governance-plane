@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.92] - 2026-06-25
+
+### Added
+
+- feat(sandbox): Topology C enforcement cores (.3.1 orchestration + .4.1 fail-closed gate) (#117) (bedcdaa)
+
+### Changed
+
+- chore(beads): scope Topology C .3 and .4 into CI-core + real-infra sub-beads (b791216)
+
 ## [0.1.91] - 2026-06-25
 
 ### Changed
@@ -640,7 +650,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...HEAD
+[0.1.92]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...v0.1.92
 [0.1.91]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.90...v0.1.91
 [0.1.90]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.89...v0.1.90
 [0.1.89]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.88...v0.1.89

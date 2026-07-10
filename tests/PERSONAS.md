@@ -34,6 +34,7 @@ Key flows:
   - verify-signed-journal      : `agp verify` checks the hash chain + signatures + signed head offline, with the public key only
   - list-sessions              : `agp sessions` reconstructs recorded sessions from the journal
   - live-dogfood-e2e           : real `claude` binary spawned in the Docker sandbox against a live CCSC bug, end to end
+  - run-governed-watch         : `agp watch run` fires one trigger tick — committed spec -> mediate() (read=allow, act=require+HITL) -> dedup state -> journal brackets; `status` = dead-man's-switch; `enable` = human reset (Slice 0, Intendants)
 ```
 
 <!-- BEGIN observational (agent-maintained) -->
@@ -59,10 +60,15 @@ Test coverage:
                                             command src/cli/commands/sessions.ts (no dedicated *.test.ts -- reconstruction asserted only through daemon events)
   - live-dogfood-e2e           : UNTESTED — gated off-CI behind AGP_CLAUDE_LIVE (src/cli/commands/run.ts fails closed when AGP_CLAUDE_LIVE=1;
                                             BunClaudeProcess live spawn not run in CI). Tracked open: bead agp-3g0 (Epic 06 final acceptance)
+  - run-governed-watch         : COVERED  — src/cli/commands/watch.test.ts (fail-closed spec/key/policy; honest reference failure + journal brackets;
+                                            restart-intensity refusal + human enable; status stale/broken exits); src/daemon/daemon-run-mediated.test.ts
+                                            (proxy-exec, require+HITL, crash teardown); templates/github-watcher/tests/{unit,policy,state,acceptance}.test.ts
+                                            (zero duplicate alerts across consecutive runs; deny->suppressed; offline verify + cross-chain pointer).
+                                            Live Docker+Slack leg gated off-CI (Slice-0 standing-gate dogfood, bead agp-eva.1.5)
 ```
 
 ```
-Coverage: 8/9 flows (88.9%) -- at/above 80% flow threshold; BELOW 100% critical-flow threshold (1 uncovered).
+Coverage: 9/10 flows (90.0%) -- at/above 80% flow threshold; BELOW 100% critical-flow threshold (1 uncovered: live-dogfood-e2e, off-CI by design).
 ```
 <!-- END observational (agent-maintained) -->
 

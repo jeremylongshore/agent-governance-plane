@@ -68,6 +68,18 @@ mutation.kill_rate: 0
 
 ## Traceability
 
-- `tests/RTM.md` — 41 requirements; 22 MUST all covered; 5 WON'T-at-v0 excluded.
+- `tests/RTM.md` — 47 requirements; 28 MUST all covered; 5 WON'T-at-v0 excluded.
 - `tests/PERSONAS.md` — operator persona 8/9 flows (live dogfood off-CI).
 - `tests/JOURNEYS.md` — 7-step governed-session journey; step-4 live leg off-CI.
+
+## Agent-template test packs (Slice 0, Intendants)
+
+Every agent template ships its OWN test pack under `templates/<name>/tests/`
+(picked up by `bun test`, so CI runs the packs): unit + **policy** (what the
+agent may never do — maps to AGP) + **state/memory** (non-spammy dedup — maps
+to GSB) + acceptance (the governed loop end to end, hermetic). The
+**evaluation** layer (judgment-quality scoring via JRig) is the Slice-2 IEP
+epic. Deploy rule enforced by construction: `Prompt → Spec → Tests → Policy →
+Deploy` — a spec refuses to load without a human commit, the pack must be
+green, the policy must gate, before a cron line ever calls `agp watch run`.
+Reference: `templates/github-watcher/` (REQ-042…047).

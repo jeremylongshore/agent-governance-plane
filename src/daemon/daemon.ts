@@ -90,6 +90,13 @@ export interface SessionRunOptions {
   manifest?: IntendantManifest;
   /** Detached base64 Ed25519 signature over canonicalJson(manifest). */
   signatureB64?: string;
+  /**
+   * Sandbox egress for THIS session (runMediated only; the other drivers stay
+   * hardcoded network-off). The Slice-0 watcher's proxy-executed `gh` calls need
+   * api.github.com in live Docker mode; reference (recording) mode ignores it.
+   * Default false — network stays off unless a driver asks for it explicitly.
+   */
+  networkEnabled?: boolean;
 }
 
 /** A vault that holds nothing — used when no `vault` dep is supplied so an
@@ -401,6 +408,66 @@ export class Daemon {
     await sandbox.teardown(handle);
     await intendant.stop();
     journal.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId, calls: outcomes.length } });
+    if (lease && sessionStore) sessionStore.release(lease, this.nowMs());
+
+    return { sessionId, outcomes };
+  }
+
+  /**
+   * Mediated driver (Slice 0, agp-eva.1.5): drive a RunnableIntendant whose tool
+   * calls AGP PROXY-EXECUTES through `mediate()` — policy gate → (require) HITL →
+   * signed journal → sandbox exec → result delivered back. This is the driver for
+   * trigger-woken agents (the GitHub watcher): unlike `runLive` (gate-only; a live
+   * harness executes its own tools) the agent here holds NO executor of its own —
+   * every effect it has on the world goes through the sandbox. Unlike
+   * `runScripted` (collect-then-mediate) the intendant sees each result before
+   * deciding its next call, so a watcher can read → diff → act in one session.
+   */
+  async runMediated(intendant: RunnableIntendant, opts: SessionRunOptions = {}): Promise<SessionResult> {
+    assertTenantContext(this.tenantContext); // v0 single-tenant fail-closed (agp-pne)
+    const sessionId = opts.sessionId ?? randomUUID();
+    const { journal, sandbox, sessionStore } = this.deps;
+
+    // Supply-chain gate (agp-z26.4): refuse an unverified intendant in enforce mode
+    // BEFORE acquiring a lease, journaling session.started, or spawning a sandbox.
+    const gate = await this.gateIdentity(intendant.identity, sessionId, opts);
+    if (!gate.proceed) return { sessionId, outcomes: [], refused: true };
+
+    let lease = sessionStore?.acquire(sessionId, this.instanceId, this.nowMs(), this.leaseTtlMs);
+    journal.append({
+      kind: "session.started",
+      actor: "session_owner",
+      payload: { sessionId, intendant: intendant.identity },
+      intendant_identity_uri: gate.identityUri,
+    });
+    await intendant.start(sessionId);
+    const handle = await sandbox.spawn({
+      image: opts.image ?? "agp-sandbox:v0",
+      sessionId,
+      networkEnabled: opts.networkEnabled ?? false,
+    });
+
+    const outcomes: MediationOutcome[] = [];
+    const inflight: Promise<void>[] = [];
+    intendant.onToolCall((req) => {
+      inflight.push(
+        this.mediate(req, handle, intendant).then((o) => {
+          outcomes.push(o);
+          // Heartbeat per mediated call. The watcher emits serially (it awaits
+          // each delivered result before the next call), so no read-modify race.
+          if (lease && sessionStore) lease = sessionStore.heartbeat(lease, this.nowMs(), this.leaseTtlMs);
+        }),
+      );
+    });
+
+    await intendant.run(sessionId);
+    await Promise.all(inflight);
+
+    await sandbox.teardown(handle);
+    await intendant.stop();
+    journal.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId, calls: outcomes.length } });
+    // Clean end releases the lease. On a throw above we deliberately do NOT
+    // release — the lease expires and a future recoverSessions() reaps it.
     if (lease && sessionStore) sessionStore.release(lease, this.nowMs());
 
     return { sessionId, outcomes };

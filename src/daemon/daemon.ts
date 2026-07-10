@@ -460,14 +460,20 @@ export class Daemon {
       );
     });
 
-    await intendant.run(sessionId);
-    await Promise.all(inflight);
-
-    await sandbox.teardown(handle);
-    await intendant.stop();
+    try {
+      await intendant.run(sessionId);
+      await Promise.all(inflight);
+    } finally {
+      // A throwing intendant (or a mediation crash) must never leak the sandbox
+      // container or leave the harness running — teardown/stop ALWAYS run. The
+      // lease is deliberately NOT released on the throw path: it expires and a
+      // future recoverSessions() reaps + journals it (session.reaped), so the
+      // audit trail records the crash instead of a fabricated clean end.
+      await sandbox.teardown(handle);
+      await intendant.stop();
+    }
     journal.append({ kind: "session.ended", actor: "session_owner", payload: { sessionId, calls: outcomes.length } });
-    // Clean end releases the lease. On a throw above we deliberately do NOT
-    // release — the lease expires and a future recoverSessions() reaps it.
+    // Clean end releases the lease.
     if (lease && sessionStore) sessionStore.release(lease, this.nowMs());
 
     return { sessionId, outcomes };

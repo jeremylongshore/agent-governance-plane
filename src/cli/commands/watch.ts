@@ -317,46 +317,82 @@ export async function watchCommand(
   });
 
   const intendant = new GithubWatcherIntendant(spec, state, event.correlationId);
-  const result = await daemon.runMediated(intendant, { ...(image ? { image } : {}), networkEnabled });
   const s = intendant.summary;
+  let sessionId = "crashed-before-session";
+  try {
+    // A crash below (sandbox error, transient runtime failure) must still be
+    // ACCOUNTED: the catch records a failed run in the knowledge chain (so the
+    // restart-intensity bound counts crashes, not just clean failures) and
+    // settles the journal bracket; the finally always stops the Slack receiver.
+    const result = await daemon.runMediated(intendant, { ...(image ? { image } : {}), networkEnabled });
+    sessionId = result.sessionId;
 
-  // Record the run in the knowledge chain (heartbeat + failure accounting) and
-  // close the journal bracket with the post-run tip.
-  state.append("run", {
-    correlationId: event.correlationId,
-    ok: s.readOk,
-    reason: s.failureReason,
-    candidates: s.candidates,
-    newCount: s.newKeys.length,
-    actioned: s.actioned.length,
-    suppressed: s.suppressed.length,
-  });
-  journal.append({
-    kind: "trigger.settled",
-    actor: "session_owner",
-    payload: {
+    // Record the run in the knowledge chain (heartbeat + failure accounting)
+    // and close the journal bracket with the post-run tip.
+    state.append("run", {
       correlationId: event.correlationId,
-      sessionId: result.sessionId,
       ok: s.readOk,
       reason: s.failureReason,
       candidates: s.candidates,
-      newKeys: s.newKeys,
-      actioned: s.actioned,
-      suppressed: s.suppressed,
-      knowledgeTipHash: state.tipHash(),
-    },
-  });
-  await outbox.project(
-    "trigger.settled",
-    `watch ${spec.id}: ${s.readOk ? `${s.newKeys.length} new / ${s.actioned.length} actioned / ${s.suppressed.length} suppressed` : `FAILED — ${s.failureReason}`}`,
-  );
-  await receiver?.stop();
+      newCount: s.newKeys.length,
+      actioned: s.actioned.length,
+      suppressed: s.suppressed.length,
+    });
+    journal.append({
+      kind: "trigger.settled",
+      actor: "session_owner",
+      payload: {
+        correlationId: event.correlationId,
+        sessionId,
+        ok: s.readOk,
+        reason: s.failureReason,
+        candidates: s.candidates,
+        newKeys: s.newKeys,
+        actioned: s.actioned,
+        suppressed: s.suppressed,
+        knowledgeTipHash: state.tipHash(),
+      },
+    });
+    await outbox.project(
+      "trigger.settled",
+      `watch ${spec.id}: ${s.readOk ? `${s.newKeys.length} new / ${s.actioned.length} actioned / ${s.suppressed.length} suppressed` : `FAILED — ${s.failureReason}`}`,
+    );
 
-  out(`\nwatch ${spec.id} — session ${result.sessionId} (correlation ${event.correlationId}):`);
-  for (const o of result.outcomes) {
-    const approval = o.approved === null ? "" : ` → approval ${o.approved ? "granted" : "denied"}`;
-    out(`  ${o.request.tool}: ${o.verdict.decision}${approval}${o.executed ? " → executed" : ""}`);
+    out(`\nwatch ${spec.id} — session ${sessionId} (correlation ${event.correlationId}):`);
+    for (const o of result.outcomes) {
+      const approval = o.approved === null ? "" : ` → approval ${o.approved ? "granted" : "denied"}`;
+      out(`  ${o.request.tool}: ${o.verdict.decision}${approval}${o.executed ? " → executed" : ""}`);
+    }
+  } catch (err) {
+    const reason = `run crashed: ${(err as Error).message}`;
+    state.append("run", {
+      correlationId: event.correlationId,
+      ok: false,
+      reason,
+      candidates: 0,
+      newCount: 0,
+      actioned: 0,
+      suppressed: 0,
+    });
+    journal.append({
+      kind: "trigger.settled",
+      actor: "session_owner",
+      payload: {
+        correlationId: event.correlationId,
+        sessionId,
+        ok: false,
+        reason,
+        knowledgeTipHash: state.tipHash(),
+      },
+    });
+    await outbox.project("trigger.settled", `watch ${spec.id}: CRASHED — ${(err as Error).message}`);
+    out(`run CRASHED (${(err as Error).message}) — recorded as a failure; consecutive failures ${state.consecutiveFailures()}/${spec.maxConsecutiveFailures}.`);
+    out(`journal: ${paths.journal} — verify with \`agp verify\`. state: ${statePath}`);
+    return 2;
+  } finally {
+    await receiver?.stop();
   }
+
   if (s.readOk) {
     out(`read ok — ${s.candidates} candidate(s), ${s.newKeys.length} new, ${s.actioned.length} actioned, ${s.suppressed.length} suppressed.`);
   } else {

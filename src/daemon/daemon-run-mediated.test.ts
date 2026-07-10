@@ -136,6 +136,64 @@ test("an unknown tool default-denies (fail-closed) and nothing executes", async 
   rmSync(h.dir, { recursive: true, force: true });
 });
 
+test("a THROWING intendant never leaks the sandbox: teardown + stop always run, the error propagates", async () => {
+  // The Gemini-review finding on PR #123: a crash mid-run must not leave a
+  // container running or the harness attached. No session.ended is journaled
+  // (the run did NOT end cleanly) — the lease path reaps it later instead.
+  let toreDown = 0;
+  class CountingSandbox implements SandboxProvider {
+    isolation(): IsolationGuarantees {
+      return { kind: "spy", boundary: "none — test double", vmGrade: false };
+    }
+    spawn(spec: SandboxSpec): Promise<SandboxHandle> {
+      return Promise.resolve({ id: "c-1", sessionId: spec.sessionId });
+    }
+    exec(): Promise<ExecResult> {
+      return Promise.resolve({ exitCode: 0, stdout: "ok", stderr: "" });
+    }
+    teardown(): Promise<void> {
+      toreDown++;
+      return Promise.resolve();
+    }
+  }
+  class CrashingIntendant implements RunnableIntendant {
+    readonly identity: IntendantIdentity = { name: "crasher", version: "0.0.0", uri: null };
+    stopped = 0;
+    start(): Promise<void> {
+      return Promise.resolve();
+    }
+    onToolCall(): void {}
+    deliver(): Promise<void> {
+      return Promise.resolve();
+    }
+    stop(): Promise<void> {
+      this.stopped++;
+      return Promise.resolve();
+    }
+    run(): Promise<void> {
+      return Promise.reject(new Error("harness exploded mid-run"));
+    }
+  }
+  const dir = mkdtempSync(join(tmpdir(), "agp-dmr-"));
+  const path = join(dir, "audit.log");
+  const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
+  const journal = new Journal(path, priv, () => "2026-07-10T00:00:00.000Z");
+  const daemon = new Daemon({
+    policy: new PolicyEngine([{ id: "allow-all", effect: "allow", tool: "*" }]),
+    journal,
+    sandbox: new CountingSandbox(),
+    channel: new ConsoleChannel({}, () => {}),
+  });
+  const crasher = new CrashingIntendant();
+  await expect(daemon.runMediated(crasher, { sessionId: "s-crash" })).rejects.toThrow("harness exploded mid-run");
+  expect(toreDown).toBe(1); // the container did NOT leak
+  expect(crasher.stopped).toBe(1); // the harness was detached
+  const kinds = readEvents(path).map((e) => e.kind);
+  expect(kinds).toContain("session.started");
+  expect(kinds).not.toContain("session.ended"); // no fabricated clean end
+  rmSync(dir, { recursive: true, force: true });
+});
+
 test("session lifecycle is journaled and networkEnabled passes through to the sandbox spawn", async () => {
   const spawns: SandboxSpec[] = [];
   class SpyingSandbox implements SandboxProvider {

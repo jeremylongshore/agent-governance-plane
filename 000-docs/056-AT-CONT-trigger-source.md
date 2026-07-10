@@ -4,7 +4,7 @@ date: 2026-07-09
 author: Jeremy Longshore
 type: Contract (CONT)
 stability: INTERNAL — unstable — no public RFC
-epic: agp-eva.1 — Slice 0 of the Governed Agent OS (bead agp-eva.1.1)
+epic: agp-eva.1 — Slice 0 of Intendants, the governed-background-agents plane (bead agp-eva.1.1)
 source: src/contracts/trigger-source.ts
 authorized-by: 055-AT-ADR-build-vs-compose-and-trigger-source-contract.md
 ---
@@ -15,8 +15,9 @@ authorized-by: 055-AT-ADR-build-vs-compose-and-trigger-source-contract.md
 
 The contract for a source that **wakes a governed agent**. Every existing agent in the
 estate (intentvision, perception, intent-mail's watch daemon) already lacks a common
-trigger; `TriggerSource` is the one genuinely net-new AGP primitive for Slice 0 of the
-Governed Agent OS (`054-PP-ROAD`). A source emits `TriggerEvent`s; the daemon threads
+trigger; `TriggerSource` is the one genuinely net-new AGP primitive for Slice 0 of
+Intendants, the governed-background-agents plane (`054-PP-ROAD`; naming per intent-os
+`030-AT-DECR`). A source emits `TriggerEvent`s; the daemon threads
 each through `mediate()` (policy gate → HITL → signed journal → sandbox exec) exactly
 like an intendant tool call. This is a **leaf**: it defines the port and its data shapes
 only and MUST NOT import the daemon (the leaf-layer invariant Greptile enforces).

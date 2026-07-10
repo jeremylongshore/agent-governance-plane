@@ -1,7 +1,10 @@
-# 054 — Governed Agent OS: composition-plane execution roadmap
+# 054 — Intendants (governed background agents): composition-plane execution roadmap
 
-**Status:** Active (roadmap landing, 2026-07-09). Execution-ordering doc for the
-11-epic Governed Agent OS vision. It changes **no** locked decision in `001-AT-DECR`
+**Status:** Active (roadmap landing, 2026-07-09; renamed + Slice-0 agent superseded
+2026-07-10 per intent-os `030-AT-DECR` — the platform is **Intendants**, always
+presented with the tagline "governed background agents"; the prior working name is
+retired on all surfaces by all-seat ISEDC veto). Execution-ordering doc for the
+11-epic Intendants vision. It changes **no** locked decision in `001-AT-DECR`
 and composes with the Phase B plan (`002-PP-PLAN`) and the post-v0 roadmap
 (`039-PP-ROAD`) rather than superseding them. The Build-vs-Compose decision that
 authorizes the first net-new artifact is `055-AT-ADR`.
@@ -88,13 +91,19 @@ already owned (**AGP / IEP / GSB**). That is the differentiator.
 ## Build order — vertical slices, each a usable platform
 
 - **Slice 0 — deploy rail + test/eval harness + one real agent, end to end.** A thin
-  vertical through Epics 1,2,3,4,6,7,8. First agent = **intentvision (LOCKED, ~80–90%
-  built)**: re-enable its disabled trigger via the new trigger layer → route each
-  anomaly through AGP `mediate()` (HITL on any action beyond alerting) → JRig scores
-  "is this anomaly worth a human?" → deliver via intentvision's existing
-  Slack/PagerDuty/Email. **Home:** spike the trigger inside AGP flag-gated (kernel
-  stays clean), then extract the composition to a new `governed-agents` repo; write the
-  Build-vs-Compose ADR (`055`) at the extract point. Epic bead `agp-eva.1`.
+  vertical through Epics 1,2,3,4,6,7,8. First agent = **the owned-parts GitHub watcher**
+  (SUPERSEDES intentvision, which lost its staging path in the 2026-07-09 GCP teardown —
+  recorded supersession: intent-os `030-AT-DECR`): notify-lib cron spine + the
+  trigger-source contract + `gh` polling, whose consequential action is a
+  **require-verdict `gh issue create`, HITL-approved in Slack, against a repo we own** —
+  exercising the contract's required, fail-closed `correlationId` end to end, with zero
+  paid third-party dependencies on the proof path. intentvision is deferred, not killed:
+  its detector core (`packages/pipeline` — ensemble anomaly + Nixtla TimeGPT, libsql,
+  zero GCP refs) returns in a later slice as a governed tool. x-bug-triage is the
+  committed Slice-1 product story (X-token verified first). **Home:** spike the trigger
+  inside AGP flag-gated (kernel stays clean), then extract the composition to
+  `jeremylongshore/intendants` — extraction is an EVENT gated on the five conditions in
+  `030-AT-DECR`, never a date. Epic bead `agp-eva.1`.
 - **Slice 1 — widen triggers & tools (Epics 3 full, 5).** More event sources, more MCP
   adapters. Usable platform: agents watching many systems.
 - **Slice 2 — evaluation productized + the IEP epic (Epics 7 full, 8, 10-core).**
@@ -126,4 +135,5 @@ The net-new AGP entry point — the **`trigger-source` contract** (`src/contract
 frozen leaf, flag-gated) — is landed with `055-AT-ADR` (authorization) and `056-AT-CONT`
 (the contract doc). Remaining Slice-0 beads: cross-chain pointer (`agp-eva.1.2`),
 liveness supervisor (`agp-eva.1.3`), human commit gate (`agp-eva.1.4`), plus the
-harness install, the agent-template + test-pack artifact, and the intentvision wiring.
+harness install, the agent-template + test-pack artifact, and the Slice-0 GitHub-watcher
+wiring (first agent per intent-os `030-AT-DECR`).

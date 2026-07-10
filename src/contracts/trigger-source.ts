@@ -6,7 +6,8 @@
 // TriggerSource — the contract for a source that WAKES a governed agent. Every
 // existing agent in the estate (intentvision, perception, intent-mail's watch
 // daemon) already lacks a common trigger; this is the one genuinely net-new AGP
-// primitive for Slice 0 of the Governed Agent OS (000-docs/054-PP-ROAD).
+// primitive for Slice 0 of Intendants, the governed-background-agents plane
+// (000-docs/054-PP-ROAD; naming per intent-os 030-AT-DECR).
 //
 // A TriggerSource emits `TriggerEvent`s. Each event is handed to the daemon,
 // which threads it through `mediate()` (policy gate → HITL → signed journal →

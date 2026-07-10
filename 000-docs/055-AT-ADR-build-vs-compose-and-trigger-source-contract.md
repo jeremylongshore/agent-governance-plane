@@ -16,6 +16,17 @@ decision: Compose owned assets over rebuild; authorize a frozen trigger-source l
 > roadmap `054-PP-ROAD` calls for and (b) the frozen-contract ADR that authorizes a
 > new `src/contracts/` type — adding one requires a Bead + an ADR.
 
+> **AMENDED 2026-07-10 (recorded supersession — intent-os `030-AT-DECR`; body below
+> preserved verbatim as accepted).** (1) The working name "Governed Agent OS" is
+> retired on all surfaces (all-seat ISEDC veto); the platform is **Intendants**
+> ("governed background agents"). (2) The extraction target `governed-agents` is
+> superseded by `jeremylongshore/intendants`, gated on the five extraction conditions
+> in `030-AT-DECR` — an event, never a date. (3) The Slice-0 first agent (intentvision)
+> is superseded by the owned-parts GitHub watcher (require-verdict `gh issue create`
+> HITL); intentvision's GCP staging path died in the 2026-07-09 teardown. Everything
+> this ADR *decides* — compose-over-rebuild and the frozen trigger-source leaf
+> contract — stands unchanged.
+
 ## Context
 
 The Governed Agent OS (`054-PP-ROAD`) is built by **composing** subsystems the estate

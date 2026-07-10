@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.93] - 2026-07-10
+
+### Added
+
+- feat(contracts): trigger-source contract — Slice 0 of Intendants (governed background agents) (#122) (2ddb66d)
+
+### Changed
+
+- chore(beads): add agp-ugk (cost-aware policy lane) linked to #118 (c3f23d1)
+- chore(beads): close Topology C cores agp-3s4.3.1 + .4.1 (PR #117) (ca3320d)
+
 ## [0.1.92] - 2026-06-25
 
 ### Added
@@ -650,7 +661,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...HEAD
+[0.1.93]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...v0.1.93
 [0.1.92]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...v0.1.92
 [0.1.91]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.90...v0.1.91
 [0.1.90]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.89...v0.1.90

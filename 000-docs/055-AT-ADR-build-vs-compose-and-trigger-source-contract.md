@@ -15,7 +15,7 @@ decision: Compose owned assets over rebuild; authorize a frozen trigger-source l
 > Slice 0 (`agp-eva.1`). This is (a) the strategic Build-vs-Compose decision the
 > roadmap `054-PP-ROAD` calls for and (b) the frozen-contract ADR that authorizes a
 > new `src/contracts/` type — adding one requires a Bead + an ADR.
-
+>
 > **AMENDED 2026-07-10 (recorded supersession — intent-os `030-AT-DECR`; body below
 > preserved verbatim as accepted).** (1) The working name "Governed Agent OS" is
 > retired on all surfaces (all-seat ISEDC veto); the platform is **Intendants**

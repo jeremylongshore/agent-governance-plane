@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.94] - 2026-07-11
+
+### Added
+
+- feat(triggers): Slice-0 governed GitHub watcher — agp watch through runMediated with all three invariants (#123) (064f000)
+
 ## [0.1.93] - 2026-07-10
 
 ### Added
@@ -661,7 +667,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...HEAD
+[0.1.94]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...v0.1.94
 [0.1.93]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...v0.1.93
 [0.1.92]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...v0.1.92
 [0.1.91]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.90...v0.1.91

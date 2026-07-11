@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.95] - 2026-07-11
+
+### Added
+
+- feat(triggers): watcher notify-mode — one-way webhook delivery, no HITL needed, safe to cron (#124) (6c136cb)
+
+### Changed
+
+- chore(beads): sync interactions log alongside the Slice-0 close-out JSONL (bf23261)
+- chore(beads): close agp-eva.1.5 with live-dogfood evidence; file .1.6 (Slack HITL) + .1.7 (cron, dep .1.6) + harness-bump bead (0ec97d6)
+
 ## [0.1.94] - 2026-07-11
 
 ### Added
@@ -667,7 +678,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...HEAD
+[0.1.95]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...v0.1.95
 [0.1.94]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...v0.1.94
 [0.1.93]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...v0.1.93
 [0.1.92]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.91...v0.1.92

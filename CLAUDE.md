@@ -45,8 +45,11 @@ It is **fail-closed** end to end (malformed input, a missing prereq, or an unver
 | `policy/` | The gate engine (`allow`/`deny`/`require`) + dangerous-pattern detection. |
 | `sandbox/docker/` | Docker sandbox provider + network preflight; `credentials.ts` resolves `{{secret:NAME}}` placeholders to real values **only in the post-gate argv** (`034-AT-ARCH`). |
 | `tenants/` | Multi-tenant context guard — single-tenant v0, gate decided in `047-AT-ADR`. |
+| `triggers/` | Trigger-woken agents (Slice 0 of **Intendants**, the governed-background-agents plane — intent-os `030-AT-DECR`): `github-watcher/` = committed spec (human-commit gate) + hash-chained knowledge state log + one-shot poll source + the watcher intendant, driven by `daemon.runMediated()` via `agp watch run` / `status` / `enable`. |
 | `verify/` | Ed25519 + noop verifiers for intendant identity / supply-chain (`043-AT-ADR`). |
 | `runtime/` | Reference glue impls (scripted intendant, in-memory channel/sandbox/crypto) for `agp run` reference mode + tests. |
+
+Agent templates live in `templates/<name>/` at the repo root, each shipping its OWN test pack (`templates/<name>/tests/` — unit/policy/state/acceptance, run by the default `bun test` so CI gates the packs). Reference template: `templates/github-watcher/`.
 
 Tests live next to source (`*.test.ts`); live/E2E paths are gated behind `AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE` / `AGP_CODEX_LIVE` env flags so the default `bun test` stays hermetic.
 

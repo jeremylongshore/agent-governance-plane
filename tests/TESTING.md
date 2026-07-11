@@ -62,12 +62,32 @@ mutation.kill_rate: 0
 
 ## Last audit
 
+- 2026-07-10 — `/audit-tests` (post-Slice-0, branch `feat/slice-0-github-watcher`,
+  PR #123). **Grade A− (90/100)**, up from B−. Coverage 94.39% lines / 91.81%
+  funcs vs floors 90/88. RTM: 28/28 MUST covered (REQ-042…047 added). New
+  journey J2 (trigger-woken governed agent) 7/7 ✓; operator persona 9/10 flows.
+  Zero P0/P1 → **no implement-tests handoff**. Advisories: vendored harness
+  v1.1.5 → 1.3.0 drift (run `/sync-testing-harness`); mutation still blocked
+  (`agp-7r4`); live dogfood legs off-CI by design (`agp-3g0`, `agp-eva.1.5`);
+  eval layer = Slice 2 per intent-os `030-AT-DECR`.
 - 2026-06-03 — `/audit-tests`. Grade B− (78/100). Coverage 93.2% lines / 91.2%
   funcs (aggregate). RTM: 22/22 MUST covered (0 uncovered → no P0). 2 P1s
   (`agp sessions` untested → fixed this pass; live-dogfood off-CI = agp-3g0).
 
 ## Traceability
 
-- `tests/RTM.md` — 41 requirements; 22 MUST all covered; 5 WON'T-at-v0 excluded.
+- `tests/RTM.md` — 47 requirements; 28 MUST all covered; 5 WON'T-at-v0 excluded.
 - `tests/PERSONAS.md` — operator persona 8/9 flows (live dogfood off-CI).
 - `tests/JOURNEYS.md` — 7-step governed-session journey; step-4 live leg off-CI.
+
+## Agent-template test packs (Slice 0, Intendants)
+
+Every agent template ships its OWN test pack under `templates/<name>/tests/`
+(picked up by `bun test`, so CI runs the packs): unit + **policy** (what the
+agent may never do — maps to AGP) + **state/memory** (non-spammy dedup — maps
+to GSB) + acceptance (the governed loop end to end, hermetic). The
+**evaluation** layer (judgment-quality scoring via JRig) is the Slice-2 IEP
+epic. Deploy rule enforced by construction: `Prompt → Spec → Tests → Policy →
+Deploy` — a spec refuses to load without a human commit, the pack must be
+green, the policy must gate, before a cron line ever calls `agp watch run`.
+Reference: `templates/github-watcher/` (REQ-042…047).

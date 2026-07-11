@@ -132,8 +132,16 @@ already owned (**AGP / IEP / GSB**). That is the differentiator.
 ## Slice-0 status (this doc's companion work)
 
 The net-new AGP entry point — the **`trigger-source` contract** (`src/contracts/`,
-frozen leaf, flag-gated) — is landed with `055-AT-ADR` (authorization) and `056-AT-CONT`
-(the contract doc). Remaining Slice-0 beads: cross-chain pointer (`agp-eva.1.2`),
-liveness supervisor (`agp-eva.1.3`), human commit gate (`agp-eva.1.4`), plus the
-harness install, the agent-template + test-pack artifact, and the Slice-0 GitHub-watcher
-wiring (first agent per intent-os `030-AT-DECR`).
+frozen leaf, flag-gated) — landed with `055-AT-ADR` (authorization) and `056-AT-CONT`
+(the contract doc). The **Slice-0 build landed 2026-07-10** (`agp-eva.1.5`): the
+governed GitHub watcher (`src/triggers/github-watcher/` + `agp watch run|status|enable`),
+driven by `daemon.runMediated()` (proxy-execution with per-call feedback), with all
+three invariants wired — cross-chain causal pointer (`trigger.fired`/`trigger.settled`
+journal brackets carrying `correlationId` + the hash-chained knowledge log's tip,
+`agp-eva.1.2` substrate), liveness dead-man's-switch + restart-intensity bound
+(`agp-eva.1.3`), and the human commit gate on specs (`agp-eva.1.4` validator core) —
+plus the **agent-template + test-pack artifact** (`templates/github-watcher/` with
+unit/policy/state/acceptance packs; RTM REQ-042…047). Remaining under `agp-eva.1`:
+the GSB backend swap behind the state-log shape (full `.1.2`), the LLM-propose→
+human-commit authoring flow (full `.1.4`), and the live operator dogfood run
+(Docker sandbox + Slack HITL + a real repo).

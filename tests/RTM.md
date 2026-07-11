@@ -26,11 +26,11 @@
 
 | Tier | Total | Covered | Uncovered | Excluded |
 |---|---|---|---|---|
-| **MUST** | 22 | 22 | **0** | — |
+| **MUST** | 28 | 28 | **0** | — |
 | **SHOULD** | 11 | 11 | 0 | — |
 | **COULD** | 3 | 3 | 0 | — |
 | **WON'T (v0)** | 5 | — | — | 5 |
-| **Total** | 41 | 36 | 0 | 5 |
+| **Total** | 47 | 42 | 0 | 5 |
 
 - **Uncovered MUSTs (P0):** none.
 - **Orphaned tests:** none (every test file maps to ≥1 REQ).
@@ -137,6 +137,36 @@ None. All 16 test files map to ≥1 REQ:
 | `src/contracts/gateway-message.test.ts` | REQ-028 |
 
 ---
+
+## MUST — Slice 0: the governed trigger + first agent (Intendants)
+
+Added 2026-07-10 with the Slice-0 build (epic `agp-eva.1`; sources `054-PP-ROAD`,
+`055-AT-ADR`, `056-AT-CONT`, intent-os `030-AT-DECR`). Source default for an
+ADR Decision / contract invariant is MUST. REQ IDs continue the stable sequence.
+
+| REQ ID | Requirement | Tier | Source | Covering test(s) | Status |
+|---|---|---|---|---|---|
+| REQ-042 | **Trigger-woken runs are fully mediated:** every tool call a trigger-woken agent attempts (reads AND writes) is proxy-executed through `mediate()` — policy gate → journal → sandbox; the consequential action carries a `require` verdict and executes only on human approval. | MUST | 055-AT-ADR; 056-AT-CONT; 030-AT-DECR D4 | `src/daemon/daemon-run-mediated.test.ts`; `templates/github-watcher/tests/policy.test.ts`; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
+| REQ-043 | **Non-spammy state ("same SHA twice → no re-alert"):** an observed item never re-alerts — approved (actioned) or denied (suppressed) both dedupe — persisted across runs in a tamper-evident hash-chained state log. | MUST | 054-PP-ROAD §Verification; 056-AT-CONT (dedupeKey) | `src/triggers/github-watcher/state-log.test.ts`; `templates/github-watcher/tests/state.test.ts`; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
+| REQ-044 | **Cross-chain causal pointer (invariant 1):** every run brackets the signed journal with `trigger.fired`/`trigger.settled` carrying the shared `correlationId` + the knowledge chain's tip hash, so "what did it know when it acted?" reconstructs offline. | MUST | 054-PP-ROAD §Invariants; 056-AT-CONT (correlationId REQUIRED) | `src/cli/commands/watch.test.ts` :: "reference run records an HONEST failure…"; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
+| REQ-045 | **Liveness dead-man's-switch + restart-intensity bound (invariant 2):** `agp watch status` exits 1 on a stale (silent past `livenessTimeoutMs`) or chain-broken source; after `maxConsecutiveFailures` consecutive failed runs the runner REFUSES until a human re-enables. | MUST | 054-PP-ROAD §Invariants; 056-AT-CONT (heartbeat) | `src/cli/commands/watch.test.ts` :: "restart-intensity bound…", "status…"; `src/triggers/github-watcher/state-log.test.ts` | ✓ Covered |
+| REQ-046 | **Human commit gate (invariant 3):** a watcher spec without an explicit `humanCommit` block refuses to load (model may propose; only a human commit is loadable), and `enabled` defaults false. | MUST | 054-PP-ROAD §Invariants; 030-AT-DECR D1 vocabulary ADR | `src/triggers/github-watcher/watcher-spec.test.ts`; `src/cli/commands/watch.test.ts` :: "a draft spec…"; `templates/github-watcher/tests/unit.test.ts` | ✓ Covered |
+| REQ-047 | **Fail-closed trigger path:** a disabled source never emits; a failed or unparseable read is a recorded failure with ZERO actions (never a guess); malformed trigger events are refused by `.strict()` schemas. | MUST | 056-AT-CONT §fail-closed; 055-AT-ADR | `src/triggers/github-watcher/one-shot-poll-source.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts`; `src/cli/commands/watch.test.ts` | ✓ Covered |
+
+**Slice-0 test-file map (extends the table above):**
+
+| Test file | Maps to |
+|---|---|
+| `src/daemon/daemon-run-mediated.test.ts` | REQ-042 |
+| `src/triggers/github-watcher/watcher-spec.test.ts` | REQ-046 |
+| `src/triggers/github-watcher/state-log.test.ts` | REQ-043, 045 |
+| `src/triggers/github-watcher/one-shot-poll-source.test.ts` | REQ-047 |
+| `src/triggers/github-watcher/watcher-intendant.test.ts` | REQ-043, 047 |
+| `src/cli/commands/watch.test.ts` | REQ-044, 045, 046, 047 |
+| `templates/github-watcher/tests/unit.test.ts` | REQ-046 |
+| `templates/github-watcher/tests/policy.test.ts` | REQ-042 |
+| `templates/github-watcher/tests/state.test.ts` | REQ-043 |
+| `templates/github-watcher/tests/acceptance.test.ts` | REQ-042, 043, 044 |
 
 ## Regulated overlay
 

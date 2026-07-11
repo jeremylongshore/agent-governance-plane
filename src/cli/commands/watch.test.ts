@@ -154,6 +154,110 @@ test("status detects a tampered knowledge chain (exit 1, BROKEN)", async () => {
   rmSync(dir, { recursive: true, force: true });
 });
 
+test("NOTIFY mode: unset webhook env fails closed before firing", async () => {
+  const { env, dir, specPath } = provisioned({
+    deliver: "notify",
+    notifyWebhookEnv: "MY_HOOK",
+  });
+  const lines: string[] = [];
+  // env.MY_HOOK is unset → refuse before running.
+  expect(await watchCommand(["run", "--spec", specPath], env, (l) => lines.push(l))).toBe(1);
+  expect(lines.join("\n")).toContain("MY_HOOK");
+  expect(lines.join("\n")).toContain("(fail-closed)");
+  rmSync(dir, { recursive: true, force: true });
+});
+
+const RELEASES = JSON.stringify([
+  { tag_name: "v2.0.0", name: "v2", html_url: "https://github.com/acme/sdk/releases/tag/v2.0.0" },
+  { tag_name: "v1.0.0", name: "v1", html_url: "https://github.com/acme/sdk/releases/tag/v1.0.0" },
+]);
+
+/** A sandbox that serves canned `gh api` output and records other commands. */
+class CannedSandbox {
+  constructor(private readonly readJson: string) {}
+  isolation() {
+    return { kind: "canned", boundary: "none — test fixture", vmGrade: false };
+  }
+  spawn(spec: { sessionId: string }) {
+    return Promise.resolve({ id: `cn-${spec.sessionId}`, sessionId: spec.sessionId });
+  }
+  exec(_h: { id: string }, command: readonly string[]) {
+    const cmd = command.join(" ");
+    if (cmd.includes("gh api")) return Promise.resolve({ exitCode: 0, stdout: this.readJson, stderr: "" });
+    return Promise.resolve({ exitCode: 0, stdout: "ok", stderr: "" });
+  }
+  teardown() {
+    return Promise.resolve();
+  }
+}
+
+test("NOTIFY mode: unset webhook fails closed; on a good read it posts once, records iff delivered, and never journals the webhook", async () => {
+  const { env, dir, specPath, paths } = provisioned({
+    deliver: "notify",
+    notifyWebhookEnv: "MY_HOOK",
+    maxActionsPerRun: 5,
+  });
+  const sandbox = new CannedSandbox(RELEASES) as unknown as import("../../contracts/sandbox-provider.ts").SandboxProvider;
+
+  // Webhook env unset → refuse before firing.
+  expect(await watchCommand(["run", "--spec", specPath], env, () => {}, { sandbox })).toBe(1);
+
+  // Webhook set → post once (batched), record both, exit 0.
+  const posts: Array<{ url: string; body: string }> = [];
+  const poster = (url: string, body: string) => {
+    posts.push({ url, body });
+    return Promise.resolve({ ok: true, status: 200 });
+  };
+  const hook = "https://hooks.slack.com/services/T/B/secret";
+  const notifyEnv = { ...env, MY_HOOK: hook };
+  const lines: string[] = [];
+  expect(await watchCommand(["run", "--spec", specPath], notifyEnv, (l) => lines.push(l), { sandbox, poster })).toBe(0);
+  expect(posts).toHaveLength(1); // ONE batched message, not one per item
+  expect(posts[0]!.url).toBe(hook);
+  expect(posts[0]!.body).toContain("2 new on `acme/sdk`");
+  expect(lines.join("\n")).toContain("2 notified via MY_HOOK");
+
+  // Journal recorded the read (allow), NO issue-create, and never the webhook.
+  const journal = readFileSync(paths.journal, "utf8");
+  expect(journal).toContain("gh_read");
+  expect(journal).not.toContain("gh_issue_create");
+  expect(journal).not.toContain("hooks.slack.com");
+
+  // Second run over the same releases → dedup → nothing new, no post.
+  posts.length = 0;
+  const l2: string[] = [];
+  expect(await watchCommand(["run", "--spec", specPath], notifyEnv, (x) => l2.push(x), { sandbox, poster })).toBe(0);
+  expect(posts).toHaveLength(0);
+  expect(l2.join("\n")).toContain("0 notified");
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("NOTIFY mode: a failed post does NOT record the items (they re-fire) and does NOT trip the failure bound", async () => {
+  const { env, dir, specPath } = provisioned({
+    deliver: "notify",
+    notifyWebhookEnv: "MY_HOOK",
+  });
+  const sandbox = new CannedSandbox(RELEASES) as unknown as import("../../contracts/sandbox-provider.ts").SandboxProvider;
+  const notifyEnv = { ...env, MY_HOOK: "https://hooks.slack.com/services/T/B/secret" };
+  const failing = () => Promise.resolve({ ok: false, status: 500 });
+
+  const lines: string[] = [];
+  // Read ok but post fails → exit 2 (degraded), items NOT recorded.
+  expect(await watchCommand(["run", "--spec", specPath], notifyEnv, (l) => lines.push(l), { sandbox, poster: failing })).toBe(2);
+  expect(lines.join("\n")).toContain("POST FAILED");
+
+  // Next run re-surfaces the same items (they were never recorded) and the run
+  // that failed delivery did NOT count as a failure (read was ok) → no refusal.
+  const ok: Array<unknown> = [];
+  const okPoster = (_u: string, _b: string) => {
+    ok.push(1);
+    return Promise.resolve({ ok: true, status: 200 });
+  };
+  expect(await watchCommand(["run", "--spec", specPath], notifyEnv, () => {}, { sandbox, poster: okPoster })).toBe(0);
+  expect(ok.length).toBe(1); // re-fired and delivered on the retry
+  rmSync(dir, { recursive: true, force: true });
+});
+
 test("unknown subcommand and slack-without-live fail closed", async () => {
   const lines: string[] = [];
   expect(await watchCommand(["prowl"], home().env, (l) => lines.push(l))).toBe(1);

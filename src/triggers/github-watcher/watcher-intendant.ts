@@ -43,10 +43,17 @@ export interface WatcherRunSummary {
   candidates: number;
   /** Never-observed items, oldest first (before the action cap). */
   newKeys: string[];
-  /** Items whose issue-create was approved and executed. */
+  /** Items whose issue-create was approved and executed (issue mode). */
   actioned: string[];
-  /** Items the human denied (suppressed — never re-asked). */
+  /** Items the human denied (suppressed — never re-asked; issue mode). */
   suppressed: string[];
+  /**
+   * NOTIFY mode: the capped new items to project to the notification channel.
+   * The intendant does NOT record these — the CLI records them as seen ONLY
+   * after a successful post (recorded-iff-delivered), so a dropped notification
+   * re-fires next run instead of being silently lost.
+   */
+  toNotify: WatchItem[];
 }
 
 /** `sh -c` command for the poll read. */
@@ -109,6 +116,7 @@ export class GithubWatcherIntendant implements IntendantAdapter {
     newKeys: [],
     actioned: [],
     suppressed: [],
+    toNotify: [],
   };
 
   private readonly spec: WatcherSpec;
@@ -194,8 +202,18 @@ export class GithubWatcherIntendant implements IntendantAdapter {
       .reverse()
       .filter((it) => !this.state.has(it.key));
     this.summary.newKeys = fresh.map((it) => it.key);
+    const capped = fresh.slice(0, this.spec.maxActionsPerRun);
 
-    for (const item of fresh.slice(0, this.spec.maxActionsPerRun)) {
+    // NOTIFY mode: no GitHub write, so no `require`/HITL — just surface the
+    // capped items for the CLI to project and record-iff-delivered. The read
+    // above was still governed (allow → sandbox → journal).
+    if (this.spec.deliver === "notify") {
+      this.summary.toNotify = capped;
+      return;
+    }
+
+    // ISSUE mode: each new item is a `require`-gated, HITL-approved issue-create.
+    for (const item of capped) {
       const msg = await this.call(`${cid}:act:${item.key}`, "gh_issue_create", buildIssueCommand(this.spec, item));
       if (msg.kind === "tool_call_result" && msg.ok) {
         // Approved + executed: observed as actioned (dedupes forever).

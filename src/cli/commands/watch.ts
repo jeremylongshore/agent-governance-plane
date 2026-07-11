@@ -47,10 +47,24 @@ import { loadWatcherSpec, type WatcherSpec } from "../../triggers/github-watcher
 import { verifyStateLog, WatcherStateLog } from "../../triggers/github-watcher/state-log.ts";
 import { OneShotPollSource } from "../../triggers/github-watcher/one-shot-poll-source.ts";
 import { GithubWatcherIntendant } from "../../triggers/github-watcher/watcher-intendant.ts";
+import { fetchWebhookPoster, postNotification, type WebhookPoster } from "../../triggers/github-watcher/notify.ts";
 
 export interface WatchOptions {
   /** Path to the committed watcher spec (required for every subcommand). */
   spec?: string;
+}
+
+/** Injectable deps so tests never hit the network or a real sandbox. */
+export interface WatchDeps {
+  /** Notify-mode webhook poster (default: a real fetch POST). */
+  poster?: WebhookPoster;
+  /**
+   * Sandbox override (tests only). When set, replaces the env-selected sandbox
+   * so a fixture can serve canned `gh` output — the ONLY way to exercise the
+   * read-ok path hermetically (reference sandbox executes nothing). Production
+   * never passes this; the env-var selection stays the real path.
+   */
+  sandbox?: SandboxProvider;
 }
 
 function statePathFor(home: string, spec: WatcherSpec): string {
@@ -89,6 +103,7 @@ export async function watchCommand(
   argv: string[],
   env: Record<string, string | undefined> = process.env,
   out: (line: string) => void = console.log,
+  deps: WatchDeps = {},
 ): Promise<number> {
   const sub = argv[0];
   const si = argv.indexOf("--spec");
@@ -183,11 +198,30 @@ export async function watchCommand(
     return 3;
   }
 
+  // Notify-mode precondition (fail-fast, like the signing-key/policy checks): a
+  // `deliver: "notify"` spec needs its webhook URL present in the environment
+  // BEFORE we fire the trigger — an unset webhook is a config error, not a
+  // transient failure, so refuse rather than run and drop the notification.
+  let notifyWebhook: string | undefined;
+  if (spec.deliver === "notify") {
+    notifyWebhook = spec.notifyWebhookEnv ? env[spec.notifyWebhookEnv] : undefined;
+    if (!notifyWebhook) {
+      out(
+        `agp watch run: deliver:'notify' needs env '${spec.notifyWebhookEnv}' set to the Slack webhook URL — it is unset/empty. (fail-closed)`,
+      );
+      return 1;
+    }
+  }
+
   // Sandbox: recording reference (executes nothing) or real Docker isolation.
+  // A test may inject a fixture sandbox to exercise the read-ok path hermetically.
   let sandbox: SandboxProvider;
   let image: string | undefined;
   let networkEnabled = false;
-  if (env.AGP_SANDBOX === "docker") {
+  if (deps.sandbox) {
+    sandbox = deps.sandbox;
+    out("agp watch run: injected sandbox (test fixture).");
+  } else if (env.AGP_SANDBOX === "docker") {
     if (!new FsDoctorProbe(env).docker().ok) {
       out("agp watch run: AGP_SANDBOX=docker but Docker is not available — refusing (no host fallback). (fail-closed)");
       return 1;
@@ -212,8 +246,11 @@ export async function watchCommand(
     for (const e of extra) if (e.length > 0) set.add(e);
     return [...set];
   };
+  // The notify webhook is a posting credential — screen it out of the signed
+  // journal (defense in depth; it never enters a payload by construction).
+  const journalScreenSecrets = knownSecrets(notifyWebhook ? [notifyWebhook] : []);
   const journal = new Journal(paths.journal, privateKey, undefined, (event) =>
-    assertNoSecretValues(event, knownSecrets(), "journal"),
+    assertNoSecretValues(event, journalScreenSecrets, "journal"),
   );
 
   // Channel: console reference (fail-closed deny with no human) or live Slack.
@@ -319,6 +356,8 @@ export async function watchCommand(
   const intendant = new GithubWatcherIntendant(spec, state, event.correlationId);
   const s = intendant.summary;
   let sessionId = "crashed-before-session";
+  let notifyDelivered: boolean | null = null;
+  const notified: string[] = []; // notify mode: keys delivered AND recorded this run
   try {
     // A crash below (sandbox error, transient runtime failure) must still be
     // ACCOUNTED: the catch records a failed run in the knowledge chain (so the
@@ -327,8 +366,30 @@ export async function watchCommand(
     const result = await daemon.runMediated(intendant, { ...(image ? { image } : {}), networkEnabled });
     sessionId = result.sessionId;
 
+    // NOTIFY delivery (recorded-iff-delivered): post ONE batched message, then
+    // record each item as seen ONLY on success — a dropped post leaves the items
+    // to re-fire next run (never silently lost). A read-ok run with a failed post
+    // stays ok:true (the agent isn't crash-looping; a transient Slack outage must
+    // not trip the restart-intensity bound) but exits non-zero so cron sees it.
+    if (spec.deliver === "notify" && s.readOk && s.toNotify.length > 0 && notifyWebhook) {
+      const poster = deps.poster ?? fetchWebhookPoster;
+      notifyDelivered = await postNotification(poster, notifyWebhook, spec.id, spec.repo, s.toNotify);
+      if (notifyDelivered) {
+        for (const item of s.toNotify) {
+          state.append("observed", { key: item.key, outcome: "notified", correlationId: event.correlationId });
+          notified.push(item.key);
+        }
+      }
+    } else if (spec.deliver === "notify" && s.readOk && s.toNotify.length === 0) {
+      notifyDelivered = true; // nothing new to say = a trivially successful delivery
+    }
+    // NB: notify + readOk + items-but-no-webhook can only happen if the fail-fast
+    // precondition were bypassed; notifyDelivered then stays null and the exit
+    // check below treats anything but `true` as not-delivered (belt-and-suspenders).
+
     // Record the run in the knowledge chain (heartbeat + failure accounting)
-    // and close the journal bracket with the post-run tip.
+    // and close the journal bracket with the post-run tip. A notify post-failure
+    // keeps ok:true (read worked) so the bound doesn't trip on a transient outage.
     state.append("run", {
       correlationId: event.correlationId,
       ok: s.readOk,
@@ -337,6 +398,9 @@ export async function watchCommand(
       newCount: s.newKeys.length,
       actioned: s.actioned.length,
       suppressed: s.suppressed.length,
+      notified: notified.length,
+      deliver: spec.deliver,
+      notifyDelivered,
     });
     journal.append({
       kind: "trigger.settled",
@@ -350,12 +414,16 @@ export async function watchCommand(
         newKeys: s.newKeys,
         actioned: s.actioned,
         suppressed: s.suppressed,
+        notified,
+        deliver: spec.deliver,
+        notifyDelivered,
         knowledgeTipHash: state.tipHash(),
       },
     });
+    const doneCount = spec.deliver === "notify" ? `${notified.length} notified` : `${s.actioned.length} actioned`;
     await outbox.project(
       "trigger.settled",
-      `watch ${spec.id}: ${s.readOk ? `${s.newKeys.length} new / ${s.actioned.length} actioned / ${s.suppressed.length} suppressed` : `FAILED — ${s.failureReason}`}`,
+      `watch ${spec.id}: ${s.readOk ? `${s.newKeys.length} new / ${doneCount} / ${s.suppressed.length} suppressed` : `FAILED — ${s.failureReason}`}`,
     );
 
     out(`\nwatch ${spec.id} — session ${sessionId} (correlation ${event.correlationId}):`);
@@ -393,12 +461,24 @@ export async function watchCommand(
     await receiver?.stop();
   }
 
-  if (s.readOk) {
+  if (s.readOk && spec.deliver === "notify") {
+    if (notifyDelivered === false) {
+      out(`read ok — ${s.newKeys.length} new, but the notification POST FAILED; items re-fire next run. (delivery degraded)`);
+    } else {
+      out(`read ok — ${s.candidates} candidate(s), ${s.newKeys.length} new, ${notified.length} notified via ${spec.notifyWebhookEnv}.`);
+    }
+  } else if (s.readOk) {
     out(`read ok — ${s.candidates} candidate(s), ${s.newKeys.length} new, ${s.actioned.length} actioned, ${s.suppressed.length} suppressed.`);
   } else {
     const now = state.consecutiveFailures();
     out(`run FAILED (${s.failureReason}) — consecutive failures ${now}/${spec.maxConsecutiveFailures}.`);
   }
   out(`journal: ${paths.journal} — verify with \`agp verify\`. state: ${statePath}`);
-  return s.readOk ? 0 : 2;
+  // Exit 0 only on a fully-successful run; a failed read (2) or a not-delivered
+  // notify (2) signals cron/loops that work remains. In notify mode success
+  // REQUIRES notifyDelivered === true — `false` (post failed) and `null` (the
+  // no-webhook-with-items impossible-path) both count as not-delivered.
+  if (!s.readOk) return 2;
+  if (spec.deliver === "notify" && notifyDelivered !== true) return 2;
+  return 0;
 }

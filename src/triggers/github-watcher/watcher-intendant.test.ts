@@ -157,6 +157,36 @@ test("a DENIED action is suppressed (observed) — the watcher never nags; a fai
   rmSync(t.dir, { recursive: true, force: true });
 });
 
+test("NOTIFY mode: surfaces capped new items, makes NO issue-create call, records nothing itself", async () => {
+  const t = tmpState();
+  const notifySpec = WatcherSpec.parse({
+    id: "sdk-watcher",
+    enabled: true,
+    repo: "acme/sdk",
+    watch: "releases",
+    issueRepo: "acme/watch-inbox",
+    deliver: "notify",
+    notifyWebhookEnv: "HOOK",
+    maxActionsPerRun: 1,
+    humanCommit: { committedBy: "jeremy", committedAt: "2026-07-11T00:00:00.000Z", method: "manual" },
+  });
+  const intendant = new GithubWatcherIntendant(notifySpec, t.log, "corr-n");
+  const tools: string[] = [];
+  await drive(intendant, async (req) => {
+    tools.push(req.tool);
+    if (req.tool === "gh_read") {
+      await intendant.deliver({ kind: "tool_call_result", id: req.id, sessionId: "s1", ok: true, output: RELEASES });
+    }
+  });
+  expect(intendant.summary.readOk).toBe(true);
+  expect(tools).toEqual(["gh_read"]); // NO gh_issue_create in notify mode
+  expect(intendant.summary.toNotify.map((i) => i.key)).toEqual(["release:v1.0.0"]); // capped, oldest-first
+  expect(intendant.summary.actioned).toEqual([]);
+  // The intendant records nothing — the CLI records after a successful post.
+  expect(t.log.has("release:v1.0.0")).toBe(false);
+  rmSync(t.dir, { recursive: true, force: true });
+});
+
 test("the per-run action cap throttles (excess new items wait for later runs)", async () => {
   const t = tmpState();
   const capped = WatcherSpec.parse({

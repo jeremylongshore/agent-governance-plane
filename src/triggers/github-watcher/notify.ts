@@ -29,13 +29,29 @@ export const fetchWebhookPoster: WebhookPoster = async (url, body) => {
   return { ok: res.ok, status: res.status };
 };
 
+/**
+ * Escape Slack mrkdwn control chars in USER-DERIVED text (a release/commit
+ * title). Per Slack's rules `&`, `<`, `>` must be HTML-escaped; a `|` inside
+ * `<url|label>` link text would truncate the label, so swap it for a lookalike.
+ * Left unescaped, a title like `feat: add <Component> | fix` would corrupt the
+ * message or break the link.
+ */
+export function escapeSlack(text: string): string {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("|", "∣");
+}
+
 /** Build the mrkdwn body for a batch of new items. */
 export function buildNotifyText(sourceId: string, repo: string, items: readonly WatchItem[]): string {
   const header =
     items.length === 1
       ? `*intendants · ${sourceId}* — 1 new on \`${repo}\``
       : `*intendants · ${sourceId}* — ${items.length} new on \`${repo}\``;
-  const lines = items.map((it) => `> • <${it.url}|${it.title}>`);
+  // URL is not escaped (it is our own https://github.com/… link); the title is.
+  const lines = items.map((it) => `> • <${it.url}|${escapeSlack(it.title)}>`);
   return [header, ...lines].join("\n");
 }
 

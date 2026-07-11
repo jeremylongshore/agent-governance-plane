@@ -380,9 +380,12 @@ export async function watchCommand(
           notified.push(item.key);
         }
       }
-    } else if (spec.deliver === "notify" && s.readOk) {
+    } else if (spec.deliver === "notify" && s.readOk && s.toNotify.length === 0) {
       notifyDelivered = true; // nothing new to say = a trivially successful delivery
     }
+    // NB: notify + readOk + items-but-no-webhook can only happen if the fail-fast
+    // precondition were bypassed; notifyDelivered then stays null and the exit
+    // check below treats anything but `true` as not-delivered (belt-and-suspenders).
 
     // Record the run in the knowledge chain (heartbeat + failure accounting)
     // and close the journal bracket with the post-run tip. A notify post-failure
@@ -471,9 +474,11 @@ export async function watchCommand(
     out(`run FAILED (${s.failureReason}) — consecutive failures ${now}/${spec.maxConsecutiveFailures}.`);
   }
   out(`journal: ${paths.journal} — verify with \`agp verify\`. state: ${statePath}`);
-  // Exit 0 only on a fully-successful run; a failed read (2) or a degraded
-  // notify delivery (2) signals cron/loops that work remains.
+  // Exit 0 only on a fully-successful run; a failed read (2) or a not-delivered
+  // notify (2) signals cron/loops that work remains. In notify mode success
+  // REQUIRES notifyDelivered === true — `false` (post failed) and `null` (the
+  // no-webhook-with-items impossible-path) both count as not-delivered.
   if (!s.readOk) return 2;
-  if (spec.deliver === "notify" && notifyDelivered === false) return 2;
+  if (spec.deliver === "notify" && notifyDelivered !== true) return 2;
   return 0;
 }

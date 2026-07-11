@@ -16,6 +16,22 @@ test("buildNotifyText: singular vs plural header + one linked line per item", ()
   expect(many.split("\n")).toHaveLength(3); // header + 2 items
 });
 
+test("escapeSlack: mrkdwn control chars in a title are neutralized (link stays intact)", () => {
+  const nasty: WatchItem = {
+    key: "release:v9",
+    title: "feat: add <Component> & fix | leak",
+    url: "https://x/v9",
+  };
+  const text = buildNotifyText("sdk", "acme/sdk", [nasty]);
+  // The raw < > | & in the TITLE must not survive to break the <url|label> link.
+  expect(text).toContain("&lt;Component&gt;");
+  expect(text).toContain("&amp;");
+  expect(text).not.toContain("<Component>");
+  // exactly one link delimiter '|' (the real one), the title's pipe is swapped.
+  expect(text).toContain("<https://x/v9|");
+  expect(text.split("|")).toHaveLength(2);
+});
+
 test("buildNotifyPayload: house clay-accent attachment with mrkdwn", () => {
   const payload = JSON.parse(buildNotifyPayload("hi"));
   expect(payload.attachments[0].color).toBe(NOTIFY_ACCENT);

@@ -50,9 +50,27 @@ export const WatcherSpec = z
     /** Branch for `watch: "commits"`; null for releases. */
     branch: z.string().min(1).nullable().default(null),
     /**
-     * Where the consequential action files issues. MUST be a repo the operator
-     * owns (GC red line, 030-AT-DECR: never file issues on unowned repos) —
-     * ownership is asserted by the human commit below and enforced socially +
+     * What the agent DOES with a new item — a human-committed behavior choice:
+     * - `issue`  (default): file a GitHub issue, gated by a `require` verdict +
+     *   HITL approval (needs a two-way approval channel; the consequential mode).
+     * - `notify`: post ONE batched summary to a one-way notification webhook and
+     *   record the item as seen. No write to GitHub, so no `require`/HITL is
+     *   needed — the read is still governed, and notifying yourself is not a
+     *   consequential action. Safe to run unattended (no suppression trap). This
+     *   is the interim mode until a two-way Slack HITL channel is wired.
+     */
+    deliver: z.enum(["issue", "notify"]).default("issue"),
+    /**
+     * `notify` mode only: the ENV VAR NAME holding the Slack incoming-webhook URL
+     * (e.g. `SLACK_OPERATION_HIRED_WEBHOOK_URL`). The value stays in the
+     * environment — never in this spec, never in the journal (screened) — mirroring
+     * the `{{secret:NAME}}` discipline. Required when `deliver: "notify"`.
+     */
+    notifyWebhookEnv: z.string().min(1).nullable().default(null),
+    /**
+     * Where the consequential action files issues (issue mode). MUST be a repo the
+     * operator owns (GC red line, 030-AT-DECR: never file issues on unowned repos)
+     * — ownership is asserted by the human commit below and enforced socially +
      * by the require-verdict HITL, not guessable from here.
      */
     issueRepo: RepoRef,
@@ -94,6 +112,13 @@ export const WatcherSpec = z
         code: z.ZodIssueCode.custom,
         path: ["branch"],
         message: "watch: 'commits' requires a branch",
+      });
+    }
+    if (s.deliver === "notify" && s.notifyWebhookEnv === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["notifyWebhookEnv"],
+        message: "deliver: 'notify' requires notifyWebhookEnv (the env var name holding the webhook URL)",
       });
     }
   });

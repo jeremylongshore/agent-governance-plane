@@ -57,6 +57,20 @@ test("humanCommit.method only accepts 'manual' at v0", () => {
   ).toThrow();
 });
 
+test("deliver defaults to 'issue'; 'notify' requires notifyWebhookEnv", () => {
+  expect(WatcherSpec.parse(VALID).deliver).toBe("issue");
+  // notify without the webhook env name refuses…
+  expect(() => WatcherSpec.parse({ ...VALID, deliver: "notify" })).toThrow(/notifyWebhookEnv/);
+  // …with it, it parses.
+  const notify = WatcherSpec.parse({
+    ...VALID,
+    deliver: "notify",
+    notifyWebhookEnv: "SLACK_OPERATION_HIRED_WEBHOOK_URL",
+  });
+  expect(notify.deliver).toBe("notify");
+  expect(notify.notifyWebhookEnv).toBe("SLACK_OPERATION_HIRED_WEBHOOK_URL");
+});
+
 test("loadWatcherSpec: missing file, invalid JSON, and schema violations all throw", () => {
   expect(() => loadWatcherSpec("/nonexistent/spec.json")).toThrow(/not found/);
 

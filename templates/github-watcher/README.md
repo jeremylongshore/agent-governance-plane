@@ -70,6 +70,40 @@ Prompt → Spec → Tests → Policy → Deploy
    agp watch status --spec /path/to/watcher.spec.json   # exit 1 = stale/broken
    ```
 
+## Two delivery modes (a human-committed choice)
+
+`deliver` in the spec picks what the agent DOES with a new item:
+
+| Mode | What it does | Approval | Safe to cron unattended? |
+|---|---|---|---|
+| `issue` (default) | files a GitHub issue on `issueRepo` | **`require` + Slack HITL** — a human approves each one | No — needs the two-way Slack approval channel; without it every item fail-closes to suppressed |
+| `notify` | posts ONE batched summary to a Slack **incoming webhook** (`notifyWebhookEnv`) and marks the items seen | none — notifying yourself isn't consequential; the read is still governed | **Yes** — no approval needed, and delivery is recorded-iff-delivered so a dropped post re-fires |
+
+Notify mode is the interim until the two-way Slack HITL app is wired. Example:
+
+```jsonc
+{
+  "id": "claude-code-releases",
+  "enabled": true,
+  "repo": "anthropics/claude-code",
+  "watch": "releases",
+  "deliver": "notify",
+  "notifyWebhookEnv": "SLACK_OPERATION_HIRED_WEBHOOK_URL",
+  "issueRepo": "you/your-inbox",
+  "humanCommit": { "committedBy": "you", "committedAt": "…", "method": "manual" }
+}
+```
+
+```bash
+# notify mode needs no Docker/Slack-app — just the webhook URL in the environment:
+SLACK_OPERATION_HIRED_WEBHOOK_URL=$SLACK_OPERATION_HIRED_WEBHOOK_URL \
+  agp watch run --spec /path/to/notify.spec.json
+```
+
+The webhook URL stays in the environment — never in the spec, never in the
+signed journal (it's screened out). The read still runs in the sandbox under
+the policy gate; only the notification is a best-effort projection.
+
 ## Behavior you can rely on
 
 - **No duplicate alerts.** An item is observed exactly once — approved

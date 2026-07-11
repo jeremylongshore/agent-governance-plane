@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.96] - 2026-07-11
+
+### Changed
+
+- chore(deps): bump DavidAnson/markdownlint-cli2-action from 23 to 24 (#119) (270dbd2)
+- chore(beads): close agp-eva.1.7 (notify-mode cron live) + drop stale dep on .1.6 (a1790f7)
+
 ## [0.1.95] - 2026-07-11
 
 ### Added
@@ -678,7 +685,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...HEAD
+[0.1.96]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...v0.1.96
 [0.1.95]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...v0.1.95
 [0.1.94]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...v0.1.94
 [0.1.93]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.92...v0.1.93

@@ -150,3 +150,51 @@ test("the fail-closed screen refuses an append carrying a secret value — nothi
   expect(verifyJournalFile(path, publicKeyFromPrivate(priv)).ok).toBe(true);
   rmSync(dir, { recursive: true, force: true });
 });
+
+test("stamps the cross-chain causal pointer and round-trips it (agp-eva.1.2)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "agp-journal-"));
+  const path = join(dir, "audit.log");
+  const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
+  const j = new Journal(path, priv, FIXED);
+  const tip = "e".repeat(64);
+  const ev = j.append({
+    kind: "tool_call.allow",
+    actor: "session_owner",
+    payload: { tool: "Read" },
+    correlation_id: "run-X",
+    gsb_receipt_tip_hash: tip,
+  });
+  expect(ev.correlation_id).toBe("run-X");
+  expect(ev.gsb_receipt_tip_hash).toBe(tip);
+  // an uncorrelated append defaults both to null (present from the first commit)
+  const ev2 = j.append({ kind: "admin.note", actor: "session_owner", payload: {} });
+  expect(ev2.correlation_id).toBeNull();
+  expect(ev2.gsb_receipt_tip_hash).toBeNull();
+  expect(verifyJournalFile(path, publicKeyFromPrivate(priv)).ok).toBe(true);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("the cross-chain pointer is SIGNED-IN: forging the GSB tip breaks hash + signature (109-AT-DECR CISO bind)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "agp-journal-"));
+  const path = join(dir, "audit.log");
+  const priv = loadPrivateKey(generateSigningKeyPem().privateKeyPem);
+  const j = new Journal(path, priv, FIXED);
+  j.append({ kind: "tool_call.allow", actor: "session_owner", payload: {}, correlation_id: "run-Y", gsb_receipt_tip_hash: "a".repeat(64) });
+  const pub = publicKeyFromPrivate(priv);
+
+  // Forge a fake-parent lineage: swap the GSB receipt tip to claim the agent "knew"
+  // something else at decision time. Because the pointer is inside the hashed+signed
+  // canonical bytes, the forgery must break BOTH the hash and the signature — its
+  // forgery cost is > 0, which is exactly the property the CISO bind requires.
+  const ls = lines(path);
+  const ev = JSON.parse(ls[0]!);
+  ev.gsb_receipt_tip_hash = "f".repeat(64); // fake parent
+  ls[0] = JSON.stringify(ev);
+  writeFileSync(path, ls.join("\n") + "\n");
+
+  const r = verifyJournalFile(path, pub);
+  expect(r.ok).toBe(false);
+  expect(r.errors.join(" ")).toContain("hash mismatch");
+  expect(r.errors.join(" ")).toContain("signature invalid");
+  rmSync(dir, { recursive: true, force: true });
+});

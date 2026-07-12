@@ -31,6 +31,19 @@ export interface AppendInput {
    * do not enable.
    */
   tenant_id?: string | null;
+  /**
+   * Cross-chain causal pointer (agp-eva.1.2 / 058-AT-ADR). The shared id linking
+   * this entry to its governed run + GSB receipt — from `TriggerEvent.correlationId`.
+   * Null for uncorrelated (genesis/admin) events. Stamped into the hashed+signed
+   * bytes, so it is signed-in, not merely embedded.
+   */
+  correlation_id?: string | null;
+  /**
+   * The GSB receipt-chain tip-hash observed at decision time — "what the agent
+   * knew when it acted." Null when no brain read grounded this action (e.g. the
+   * watcher, which does not yet read GSB). Also signed-in.
+   */
+  gsb_receipt_tip_hash?: string | null;
 }
 
 export interface HeadCheckpoint {
@@ -113,6 +126,10 @@ export class Journal {
       // Reserved principal slot — null at v0 (board review 052-AR-BORD / agp-dxp).
       // Must be in the hashed bytes so write↔verify canonicalization matches.
       on_behalf_of: null,
+      // Cross-chain causal pointer (agp-eva.1.2). In the hashed+signed bytes ⇒
+      // signed-in: tampering the pointer breaks both hash and signature.
+      correlation_id: input.correlation_id ?? null,
+      gsb_receipt_tip_hash: input.gsb_receipt_tip_hash ?? null,
     };
 
     const bytes = eventCanonicalBytes(unsealed, prevHash);

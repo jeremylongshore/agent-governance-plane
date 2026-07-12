@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.99] - 2026-07-12
+
+### Added
+
+- feat(journal): signed-in cross-chain causal pointer (journal ↔ GSB receipt) (#127) (02b5495)
+
 ## [0.1.98] - 2026-07-12
 
 ### Added
@@ -702,7 +708,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...HEAD
+[0.1.99]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...v0.1.99
 [0.1.98]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...v0.1.98
 [0.1.97]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...v0.1.97
 [0.1.96]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...v0.1.96

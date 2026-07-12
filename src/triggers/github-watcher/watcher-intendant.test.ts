@@ -80,6 +80,23 @@ test("parseWatchItems: releases and commits parse; malformed shapes throw (fail-
   expect(() => parseWatchItems(SPEC, JSON.stringify([{ nope: 1 }]))).toThrow(/no tag_name/);
 });
 
+test("MEANINGFULNESS FILTER: drafts always dropped; prereleases dropped unless opted in", () => {
+  const mixed = JSON.stringify([
+    { tag_name: "v3-rc1", name: "v3 RC1", html_url: "https://x/rc1", prerelease: true },
+    { tag_name: "v2.0.0", name: "v2", html_url: "https://x/v2", prerelease: false },
+    { tag_name: "v-draft", name: "draft", html_url: "https://x/d", draft: true },
+    { tag_name: "v1.0.0", name: "v1", html_url: "https://x/v1" },
+  ]);
+  // Default: only the two FULL releases survive (draft + prerelease dropped).
+  const filtered = parseWatchItems(SPEC, mixed);
+  expect(filtered.map((i) => i.key)).toEqual(["release:v2.0.0", "release:v1.0.0"]);
+  // Opt in to prereleases: the RC returns, the draft still never does.
+  const withPre = WatcherSpec.parse({ ...JSON.parse(JSON.stringify(SPEC)), includePrereleases: true });
+  const kept = parseWatchItems(withPre, mixed);
+  expect(kept.map((i) => i.key)).toEqual(["release:v3-rc1", "release:v2.0.0", "release:v1.0.0"]);
+  expect(kept.some((i) => i.key.includes("draft"))).toBe(false);
+});
+
 test("read → diff → act: new items are actioned oldest-first and recorded with the correlationId", async () => {
   const t = tmpState();
   const intendant = new GithubWatcherIntendant(SPEC, t.log, "corr-1");

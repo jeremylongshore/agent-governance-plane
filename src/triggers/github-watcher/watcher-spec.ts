@@ -76,6 +76,13 @@ export const WatcherSpec = z
     issueRepo: RepoRef,
     /** Prefix for created issue titles, so watcher issues are recognizable. */
     issueTitlePrefix: z.string().default("[watch]"),
+    /**
+     * Meaningfulness filter for `watch: "releases"` (non-spam). Drafts are ALWAYS
+     * dropped (never a real release); prereleases/RCs are dropped unless this is
+     * true. Default false = only full releases surface — Rhys's "don't tell me
+     * about every RC" in one committed flag. No effect on `watch: "commits"`.
+     */
+    includePrereleases: z.boolean().default(false),
     /** How many items one poll reads (newest-first from the GitHub API). */
     pollLimit: z.number().int().positive().max(50).default(10),
     /**

@@ -26,11 +26,11 @@
 
 | Tier | Total | Covered | Uncovered | Excluded |
 |---|---|---|---|---|
-| **MUST** | 29 | 29 | **0** | — |
+| **MUST** | 30 | 30 | **0** | — |
 | **SHOULD** | 11 | 11 | 0 | — |
 | **COULD** | 3 | 3 | 0 | — |
 | **WON'T (v0)** | 5 | — | — | 5 |
-| **Total** | 48 | 43 | 0 | 5 |
+| **Total** | 49 | 44 | 0 | 5 |
 
 - **Uncovered MUSTs (P0):** none.
 - **Orphaned tests:** none (every test file maps to ≥1 REQ).
@@ -153,6 +153,7 @@ ADR Decision / contract invariant is MUST. REQ IDs continue the stable sequence.
 | REQ-046 | **Human commit gate (invariant 3):** a watcher spec without an explicit `humanCommit` block refuses to load (model may propose; only a human commit is loadable), and `enabled` defaults false. | MUST | 054-PP-ROAD §Invariants; 030-AT-DECR D1 vocabulary ADR | `src/triggers/github-watcher/watcher-spec.test.ts`; `src/cli/commands/watch.test.ts` :: "a draft spec…"; `templates/github-watcher/tests/unit.test.ts` | ✓ Covered |
 | REQ-047 | **Fail-closed trigger path:** a disabled source never emits; a failed or unparseable read is a recorded failure with ZERO actions (never a guess); malformed trigger events are refused by `.strict()` schemas. | MUST | 056-AT-CONT §fail-closed; 055-AT-ADR | `src/triggers/github-watcher/one-shot-poll-source.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts`; `src/cli/commands/watch.test.ts` | ✓ Covered |
 | REQ-048 | **Notify delivery is human-committed + recorded-iff-delivered:** `deliver:"notify"` (a committed spec field) posts ONE batched summary to a webhook and marks items seen ONLY after a successful post (a dropped post re-fires, never lost); the read stays governed; no `require`/HITL (notifying self is non-consequential); an unset webhook fails closed before firing; the webhook credential never enters the signed journal. | MUST | 030-AT-DECR D3 (interim notify vs two-way HITL); 034-AT-ARCH (secret discipline) | `src/triggers/github-watcher/notify.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts` ("NOTIFY mode…"); `src/cli/commands/watch.test.ts` ("NOTIFY mode…") | ✓ Covered |
+| REQ-049 | **Meaningfulness filter (non-spam, releases):** drafts are always dropped and prereleases/RCs are dropped unless `includePrereleases` is set — dropped items are not candidates and never reach the state log, so a later promotion to a full release still surfaces. | MUST | 030-AT-DECR (Rhys non-spam ask); watcher spec | `src/triggers/github-watcher/watcher-intendant.test.ts` :: "MEANINGFULNESS FILTER…" | ✓ Covered |
 
 **Slice-0 test-file map (extends the table above):**
 

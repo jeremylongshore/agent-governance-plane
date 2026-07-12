@@ -33,26 +33,33 @@ ok "bun $(bun --version)"
 if command -v docker >/dev/null 2>&1; then ok "docker $(docker --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; else warn "docker not found — needed for a LIVE sandboxed run (not for install/verify)"; fi
 if command -v gh    >/dev/null 2>&1; then ok "gh $(gh --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"; else warn "gh (GitHub CLI) not found — needed for the GitHub watcher's reads"; fi
 
-# 2. Land in the repo. If we're already inside it, use it; else clone.
-if [ -f "package.json" ] && grep -q '"agp"' package.json 2>/dev/null; then
+# 2. Land in the repo. Identify THIS repo by a unique file (src/cli/index.ts), not
+#    a "agp" string in package.json — a consumer project that DEPENDS on agp would
+#    otherwise be mistaken for the repo and get modified in place.
+if [ -f "package.json" ] && [ -f "src/cli/index.ts" ]; then
   REPO_DIR="$(pwd)"; ok "using the current checkout ($REPO_DIR)"
 elif [ -d "$CLONE_DIR/.git" ]; then
   REPO_DIR="$CLONE_DIR"; ok "found an existing clone ($REPO_DIR)"
 else
   command -v git >/dev/null 2>&1 || die "git is required to clone the repo"
   say "${DIM}cloning $REPO_URL → $CLONE_DIR${RST}"
-  git clone --depth 1 "$REPO_URL" "$CLONE_DIR" >/dev/null 2>&1 || die "clone failed"
+  git clone --depth 1 "$REPO_URL" "$CLONE_DIR" >/dev/null || die "clone failed (see the git error above)"
   REPO_DIR="$CLONE_DIR"; ok "cloned to $REPO_DIR"
 fi
 cd "$REPO_DIR"
 
-# 3. Dependencies.
-say "${DIM}bun install…${RST}"; bun install >/dev/null 2>&1 || die "bun install failed"; ok "dependencies installed"
+# 3. Dependencies. Keep stderr visible so a resolution/network failure is legible.
+say "${DIM}bun install…${RST}"; bun install >/dev/null || die "bun install failed (see the error above)"; ok "dependencies installed"
 
-# 4. Operator config + signing key — idempotent (agp init/keygen skip-if-present).
-bun run agp -- init   >/dev/null 2>&1 || true
-bun run agp -- keygen >/dev/null 2>&1 || true
+# 4. Operator config + signing key — run ONLY when absent (never clobber an existing
+#    key), and DIE on a genuine failure of the run (fail-closed — no `|| true` mask).
+if [ ! -f "$HOME/.agp/policy.json" ]; then
+  bun run agp -- init >/dev/null || die "agp init failed (see the error above)"
+fi
 [ -f "$HOME/.agp/policy.json" ] && ok "config home ~/.agp ready" || warn "~/.agp/policy.json not created — run: bun run agp -- init"
+if [ ! -f "$HOME/.agp/signing/journal-ed25519.key" ]; then
+  bun run agp -- keygen >/dev/null || die "agp keygen failed (see the error above)"
+fi
 [ -f "$HOME/.agp/signing/journal-ed25519.key" ] && ok "journal signing key present" || warn "signing key missing — run: bun run agp -- keygen"
 
 # 5. A DISABLED example notify-watcher spec (human-commit gate: enabled:false and

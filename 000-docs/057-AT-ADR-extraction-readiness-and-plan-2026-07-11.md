@@ -53,8 +53,10 @@ The governance **kernel** stays in AGP; the composition **plane** moves.
 - **Dependency direction:** intendants → AGP (leaf-on-kernel; never the reverse).
   intendants imports AGP's contracts + daemon.
 
-**How intendants consumes AGP:** a **pinned git dependency** on an AGP release tag
-(`"agp": "github:jeremylongshore/agent-governance-plane#v0.1.x"`), not an
+**How intendants consumes AGP:** a **pinned git dependency** on an AGP release
+tag — a literal tag (`github:jeremylongshore/agent-governance-plane#v0.1.95`) or a
+`#semver:` range (`…#semver:0.1.x`) which Bun/npm resolve against real tags; a bare
+`#v0.1.x` is NOT valid (it would be read as a literal branch/tag name). Not an
 npm-published AGP package. Rationale — chose pinned-git over npm-publishing AGP
 because publishing AGP as a library is a second, independent one-way door
 (a public package API surface) that has no second consumer yet; this mirrors AGP's

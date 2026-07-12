@@ -92,6 +92,14 @@ than reinventing it.
 
 ### Install
 
+One command (checks prereqs, clones if needed, installs, scaffolds `~/.agp`, drops a disabled example spec, verifies):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jeremylongshore/agent-governance-plane/main/scripts/install.sh | bash
+```
+
+Or manually:
+
 ```bash
 git clone https://github.com/jeremylongshore/agent-governance-plane.git
 cd agent-governance-plane

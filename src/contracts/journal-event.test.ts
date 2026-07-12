@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { JournalEvent, RESERVED_FIELD_NAMES } from "./journal-event.ts";
+import { CROSS_CHAIN_FIELD_NAMES, JournalEvent, RESERVED_FIELD_NAMES } from "./journal-event.ts";
 import { validJournalEvent } from "./fixtures.ts";
 
 test("a valid v0 signed journal event parses unchanged", () => {
@@ -49,6 +49,42 @@ test("reserved fields default to null when omitted (forward-compatible slot)", (
   for (const field of RESERVED_FIELD_NAMES) {
     expect(parsed[field]).toBeNull();
   }
+});
+
+test("carries the cross-chain causal pointer fields, present and null by default (agp-eva.1.2)", () => {
+  const parsed = JournalEvent.parse(validJournalEvent) as Record<string, unknown>;
+  for (const field of CROSS_CHAIN_FIELD_NAMES) {
+    expect(Object.hasOwn(parsed, field)).toBe(true);
+    expect(parsed[field]).toBeNull();
+  }
+  expect(CROSS_CHAIN_FIELD_NAMES).toEqual(["correlation_id", "gsb_receipt_tip_hash"]);
+});
+
+test("cross-chain fields are ACTIVE, distinct from the reserved lock", () => {
+  // They default null like reserved fields, but they are NOT reserved — they are
+  // populated at decision time, so they must not leak into the reserved lock list.
+  for (const field of CROSS_CHAIN_FIELD_NAMES) {
+    expect(RESERVED_FIELD_NAMES).not.toContain(field);
+  }
+});
+
+test("cross-chain fields default to null when omitted (forward-compatible slot)", () => {
+  const { correlation_id, gsb_receipt_tip_hash, ...without } = validJournalEvent;
+  void correlation_id;
+  void gsb_receipt_tip_hash;
+  const parsed = JournalEvent.parse(without) as Record<string, unknown>;
+  expect(parsed.correlation_id).toBeNull();
+  expect(parsed.gsb_receipt_tip_hash).toBeNull();
+});
+
+test("populating the cross-chain pointer is accepted; malformed values are rejected", () => {
+  expect(
+    JournalEvent.safeParse({ ...validJournalEvent, correlation_id: "run-1", gsb_receipt_tip_hash: "a".repeat(64) }).success,
+  ).toBe(true);
+  // an empty correlation id is not a valid id (min 1) — null means "uncorrelated", "" is malformed
+  expect(JournalEvent.safeParse({ ...validJournalEvent, correlation_id: "" }).success).toBe(false);
+  // the GSB tip must be a real sha256, never an arbitrary string
+  expect(JournalEvent.safeParse({ ...validJournalEvent, gsb_receipt_tip_hash: "not-a-hash" }).success).toBe(false);
 });
 
 test("rejects a malformed hash", () => {

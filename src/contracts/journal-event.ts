@@ -39,6 +39,29 @@ export const ReservedFutureFields = z.object({
   on_behalf_of: z.string().nullable().default(null),
 });
 
+/**
+ * Cross-chain causal pointer (agp-eva.1.2 · 058-AT-ADR · iel-25a.4 governed-judgment
+ * Layer 1). One governed run writes two hash chains — this AGP journal ("what it did")
+ * and the GSB receipt chain ("what it knew"). These fields bind the two so
+ * "what did the agent KNOW when it acted X?" is answerable.
+ *
+ * UNLIKE the reserved future fields above, these are ACTIVE fields populated at
+ * decision time: `correlation_id` whenever the event belongs to a governed run
+ * (the shared id from `TriggerEvent.correlationId`, 056-AT-CONT), and
+ * `gsb_receipt_tip_hash` whenever a GSB brain read grounded the action. They live
+ * inside the hashed+signed canonical bytes (the verifier hashes the event sans
+ * `hash`+`signature`), so the pointer is SIGNED-IN — not merely embedded — which is
+ * the 109-AT-DECR CISO binding (forging a fake parent lineage must break the
+ * signature, cost > 0). Present from the first commit; `null` when no correlation
+ * or no brain read applies (append-only journal cannot be retrofitted).
+ */
+export const CrossChainPointer = z.object({
+  /** Shared id linking this entry to its trigger run + GSB receipt; null for uncorrelated (genesis/admin) events. */
+  correlation_id: z.string().min(1).nullable().default(null),
+  /** GSB receipt-chain tip-hash observed at decision time; null when no brain read grounded this action. */
+  gsb_receipt_tip_hash: Sha256Hex.nullable().default(null),
+});
+
 export const JournalEvent = z
   .object({
     v: JournalEventVersion,
@@ -58,6 +81,7 @@ export const JournalEvent = z
     signature: Ed25519SignatureB64,
   })
   .merge(ReservedFutureFields)
+  .merge(CrossChainPointer)
   .strict();
 
 export type JournalEvent = z.infer<typeof JournalEvent>;
@@ -70,3 +94,6 @@ export const RESERVED_FIELD_NAMES = [
   "intendant_identity_uri",
   "on_behalf_of",
 ] as const;
+
+/** The cross-chain pointer field names — active fields, distinct from the reserved lock. */
+export const CROSS_CHAIN_FIELD_NAMES = ["correlation_id", "gsb_receipt_tip_hash"] as const;

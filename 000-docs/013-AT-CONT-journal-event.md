@@ -30,6 +30,8 @@ per ADR [`009-AT-ADR`](009-AT-ADR-ccsc-substrate-extraction-strategy.md).
 | `actor` | `session_owner \| claude_process` | only trusted actors |
 | `payload` | object | redacted, structured |
 | `signature` | base64 Ed25519 (88 ch) | signs the bytes `hash` covers |
+| `correlation_id` | string \| `null` | cross-chain pointer — shared run id (`TriggerEvent.correlationId`, 056-AT-CONT); null if uncorrelated |
+| `gsb_receipt_tip_hash` | sha256 hex \| `null` | GSB receipt-chain tip observed at decision time; null if no brain read grounded the action |
 
 ## Reserved future fields (council non-negotiable — CISO-locked, AT-DECR Q4)
 
@@ -48,6 +50,25 @@ artifact, so the principal slot must exist before the multi-tenant authority
 model lands. **Accountability data only — it records *who*, and MUST NOT be read
 to make an authorization decision** (that re-complects accountability with
 authority).
+
+## Cross-chain causal pointer (agp-eva.1.2 · 058-AT-ADR)
+
+`correlation_id` and `gsb_receipt_tip_hash` bind this journal ("what the agent
+did") to the GSB receipt chain ("what the agent knew"), so **"what did it know
+when it acted X?"** is answerable. **Unlike** the reserved fields above, these are
+**active** — populated at decision time: `correlation_id` from the governed run's
+`TriggerEvent.correlationId`, and `gsb_receipt_tip_hash` from the GSB receipt tip
+observed when a brain read grounds the action. Both are **present from the first
+commit** and default `null` (no correlation / no brain read).
+
+Because they live inside the hashed + signed canonical bytes (the verifier hashes
+the event sans `hash`+`signature`), the pointer is **signed-in, not merely
+embedded** — forging a fake-parent lineage must break both the hash and the
+signature (109-AT-DECR CISO binding; forgery cost > 0). The append-only journal
+cannot be retrofitted, so any run recorded before the field existed would be
+permanently unprovable — hence born from the first commit. `reconstructKnowledgeAt`
+(`src/journal/cross-chain.ts`) projects a run's actions + observed GSB tips for the
+joint AGP-`verify` ⋈ GSB-`ico audit` reconstruction.
 
 ## Invariants
 

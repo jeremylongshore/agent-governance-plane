@@ -31,6 +31,9 @@ export const validJournalEvent: JournalEvent = {
   approval_binding_type: null,
   intendant_identity_uri: null,
   on_behalf_of: null,
+  // cross-chain causal pointer — active fields, present from the first commit (agp-eva.1.2)
+  correlation_id: null,
+  gsb_receipt_tip_hash: null,
 };
 
 export const validAllowVerdict: PolicyVerdict = {

@@ -14,7 +14,6 @@ import { runCommand } from "./commands/run.ts";
 import { verifyCommand } from "./commands/verify.ts";
 import { sessionsCommand } from "./commands/sessions.ts";
 import { bridgeCommand } from "./commands/bridge.ts";
-import { watchCommand } from "./commands/watch.ts";
 
 const USAGE = `agp — agent governance plane
 
@@ -32,10 +31,6 @@ Commands:
               --repo <path>     (live claude) the repo to run in
   bridge      PreToolUse hook bridge (internal; Claude runs this per tool call)
               --socket <path>   the session gateway socket to gate against
-  watch       Slice-0 governed GitHub watcher (Intendants — governed background agents)
-              run --spec <path>     one poll tick: read (allow) → diff → gated actions (require + HITL)
-              status --spec <path>  liveness dead-man's-switch + knowledge-chain verify (exit 1 = stale/broken)
-              enable --spec <path>  human re-commit after a restart-intensity refusal
   verify      Verify the audit journal (hash chain + signatures), offline
   sessions    List the sessions recorded in the audit journal
   help        Show this help
@@ -77,8 +72,6 @@ export async function main(argv: string[]): Promise<number> {
       const stdin = await Bun.stdin.text();
       return bridgeCommand(argv.slice(1), stdin);
     }
-    case "watch":
-      return watchCommand(argv.slice(1));
     case "verify":
       return verifyCommand(argv.slice(1));
     case "sessions":

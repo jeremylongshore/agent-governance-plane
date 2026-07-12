@@ -11,8 +11,10 @@
 #
 # What it does: check prereqs (bun required; docker + gh recommended) → fetch the
 # repo if not already in one → bun install → `agp init` + `agp keygen` (both
-# skip-if-present) → drop a DISABLED example notify-watcher spec (a human must
-# commit + enable it) → print next steps. Installs NOTHING that runs on its own.
+# skip-if-present) → offline journal verify → print next steps. Installs NOTHING
+# that runs on its own. This installs the governance PLANE (the kernel); the
+# governed background agents (the GitHub watcher etc.) ship in the composing
+# product repo, jeremylongshore/bob-the-intendant.
 
 set -euo pipefail
 
@@ -62,40 +64,21 @@ if [ ! -f "$HOME/.agp/signing/journal-ed25519.key" ]; then
 fi
 [ -f "$HOME/.agp/signing/journal-ed25519.key" ] && ok "journal signing key present" || warn "signing key missing — run: bun run agp -- keygen"
 
-# 5. A DISABLED example notify-watcher spec (human-commit gate: enabled:false and
-#    NO humanCommit block, so it refuses to load until a human fills both in).
-EXAMPLE="$HOME/.agp/example-notify.spec.json"
-if [ ! -f "$EXAMPLE" ]; then
-  cat > "$EXAMPLE" <<'JSON'
-{
-  "id": "example-release-watch",
-  "enabled": false,
-  "repo": "anthropics/claude-code",
-  "watch": "releases",
-  "deliver": "notify",
-  "notifyWebhookEnv": "SLACK_WEBHOOK_URL",
-  "issueRepo": "you/your-inbox",
-  "ghTokenSecret": "GH_TOKEN"
-}
-JSON
-  ok "example spec → $EXAMPLE ${DIM}(disabled; add humanCommit + enable to use)${RST}"
-else
-  ok "example spec already present ($EXAMPLE)"
-fi
-
-# 6. Prove it works with zero side effects: offline journal verify.
+# 5. Prove it works with zero side effects: offline journal verify.
 say "${DIM}verifying the signed journal (offline)…${RST}"
 bun run agp -- verify >/dev/null 2>&1 && ok "agp verify: journal intact" || warn "agp verify: no journal yet (expected on a fresh install)"
 
 cat <<EOF
 
-${BOLD}Installed.${RST} Next:
+${BOLD}Installed the governance plane.${RST} Next:
   ${DIM}# 1. sanity-check prerequisites${RST}
   cd $REPO_DIR && bun run agp -- doctor
-  ${DIM}# 2. edit $EXAMPLE — add a "humanCommit" block + flip "enabled":true (that IS the gate)${RST}
-  ${DIM}# 3. dry tick (executes nothing): ${RST}
-  bun run agp -- watch run --spec $EXAMPLE
-  ${DIM}# 4. live notify run needs Docker + a Slack webhook in the env named by notifyWebhookEnv${RST}
+  ${DIM}# 2. drive a reference session through the governance loop (executes nothing):${RST}
+  bun run agp -- run
+  ${DIM}# 3. verify the signed audit journal, offline:${RST}
+  bun run agp -- verify
 
-Docs: $REPO_DIR/templates/github-watcher/README.md
+To run a GOVERNED BACKGROUND AGENT (the GitHub watcher etc.) on top of this
+plane, install the product repo that composes it:
+  ${DIM}https://github.com/jeremylongshore/bob-the-intendant${RST}
 EOF

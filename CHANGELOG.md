@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.97] - 2026-07-12
+
+### Added
+
+- feat(install): one-command installer + extraction-readiness ADR (gate conditions 4 & 5) (#125) (6255c7d)
+
 ## [0.1.96] - 2026-07-11
 
 ### Changed
@@ -685,7 +691,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...HEAD
+[0.1.97]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...v0.1.97
 [0.1.96]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...v0.1.96
 [0.1.95]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...v0.1.95
 [0.1.94]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.93...v0.1.94

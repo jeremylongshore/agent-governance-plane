@@ -85,9 +85,11 @@ test("MEANINGFULNESS FILTER: drafts always dropped; prereleases dropped unless o
     { tag_name: "v3-rc1", name: "v3 RC1", html_url: "https://x/rc1", prerelease: true },
     { tag_name: "v2.0.0", name: "v2", html_url: "https://x/v2", prerelease: false },
     { tag_name: "v-draft", name: "draft", html_url: "https://x/d", draft: true },
+    // A draft with NO tag_name (GitHub allows this) must be skipped, not crash the read.
+    { name: "untagged draft", draft: true },
     { tag_name: "v1.0.0", name: "v1", html_url: "https://x/v1" },
   ]);
-  // Default: only the two FULL releases survive (draft + prerelease dropped).
+  // Default: only the two FULL releases survive (both drafts + the prerelease dropped).
   const filtered = parseWatchItems(SPEC, mixed);
   expect(filtered.map((i) => i.key)).toEqual(["release:v2.0.0", "release:v1.0.0"]);
   // Opt in to prereleases: the RC returns, the draft still never does.

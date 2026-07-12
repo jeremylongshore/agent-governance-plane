@@ -93,14 +93,18 @@ export function parseWatchItems(spec: WatcherSpec, raw: unknown): WatchItem[] {
     if (typeof entry !== "object" || entry === null) throw new Error(`item ${i} is not an object`);
     const rec = entry as Record<string, unknown>;
     if (spec.watch === "releases") {
-      const tag = rec.tag_name;
-      if (typeof tag !== "string" || tag.length === 0) throw new Error(`item ${i} has no tag_name`);
-      // Meaningfulness filter (non-spam): a draft is never a real release, and a
+      // Meaningfulness filter (non-spam), applied BEFORE tag validation: a draft
+      // is never a real release (and GitHub drafts may legitimately have NO
+      // tag_name, so validating first would crash the whole read on one), and a
       // prerelease/RC is noise unless the spec opts in. Dropped items are NOT
-      // candidates — they don't count, and they never reach the state log, so a
-      // later promotion of the same tag to a full release still surfaces.
+      // candidates — they never reach the state log, so a later promotion of the
+      // same tag to a full release still surfaces.
       if (rec.draft === true) return;
       if (rec.prerelease === true && !spec.includePrereleases) return;
+      // A KEPT release must have a tag (a full release always does; a tagless one
+      // is genuinely malformed → fail closed).
+      const tag = rec.tag_name;
+      if (typeof tag !== "string" || tag.length === 0) throw new Error(`item ${i} has no tag_name`);
       const name = typeof rec.name === "string" && rec.name.length > 0 ? rec.name : tag;
       const url = typeof rec.html_url === "string" ? rec.html_url : `https://github.com/${spec.repo}/releases/tag/${tag}`;
       items.push({ key: `release:${tag}`, title: `${spec.repo} release ${name}`, url });

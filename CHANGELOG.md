@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.98] - 2026-07-12
+
+### Added
+
+- feat(triggers): meaningfulness filter — drop draft/prerelease releases by default (non-spam) (#126) (58de4d1)
+
+### Changed
+
+- chore(beads): close agp-eva.1.8 (intendants extracted to private repo) + file repo-dress/dedup follow-up (06b5f38)
+- chore(beads): sync JSONL — extraction gate 5/5 ready; agp-eva.1.8 filed for the move (d9d7083)
+
 ## [0.1.97] - 2026-07-12
 
 ### Added
@@ -691,7 +702,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...HEAD
+[0.1.98]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...v0.1.98
 [0.1.97]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...v0.1.97
 [0.1.96]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.95...v0.1.96
 [0.1.95]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.94...v0.1.95

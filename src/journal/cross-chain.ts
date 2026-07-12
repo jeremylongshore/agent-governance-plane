@@ -43,13 +43,15 @@ export interface ReconstructedRun {
 /**
  * Reconstruct the knowledge context of one governed run from the AGP journal.
  *
- * Fail-closed on a malformed query: an empty `correlationId` is a caller bug, not a
- * run that "happened to record nothing" — throwing keeps it from silently masquerading
- * as an empty (and therefore falsely clean) reconstruction.
+ * Fail-closed on a malformed query: an empty or blank `correlationId` is a caller bug,
+ * not a run that "happened to record nothing" — throwing keeps it from silently
+ * masquerading as an empty (and therefore falsely clean) reconstruction. A
+ * whitespace-only id is treated as blank because no minted id (`056-AT-CONT`) is blank,
+ * so it can only be a malformed query.
  */
 export function reconstructKnowledgeAt(events: JournalEvent[], correlationId: string): ReconstructedRun {
-  if (correlationId.length === 0) {
-    throw new Error("reconstructKnowledgeAt: correlationId must be a non-empty id");
+  if (correlationId.trim().length === 0) {
+    throw new Error("reconstructKnowledgeAt: correlationId must be a non-empty, non-blank id");
   }
   const actions: ActionKnowledge[] = [];
   const gsbReceiptTips: string[] = [];

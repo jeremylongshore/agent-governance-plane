@@ -56,6 +56,7 @@ test("an unknown correlation id yields an empty (but well-formed) reconstruction
   rmSync(dir, { recursive: true, force: true });
 });
 
-test("fails closed on a malformed (empty) correlation id — not a silently-clean empty result", () => {
+test("fails closed on a malformed (empty or blank) correlation id — not a silently-clean empty result", () => {
   expect(() => reconstructKnowledgeAt([], "")).toThrow(/non-empty/);
+  expect(() => reconstructKnowledgeAt([], "   ")).toThrow(/non-blank/); // whitespace-only is malformed, not a valid run
 });

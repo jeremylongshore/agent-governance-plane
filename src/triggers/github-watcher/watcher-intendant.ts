@@ -88,23 +88,36 @@ export function parseWatchItems(spec: WatcherSpec, raw: unknown): WatchItem[] {
     throw new Error("read output is not JSON");
   }
   if (!Array.isArray(parsed)) throw new Error("read output is not a JSON array");
-  return parsed.map((entry, i) => {
+  const items: WatchItem[] = [];
+  parsed.forEach((entry, i) => {
     if (typeof entry !== "object" || entry === null) throw new Error(`item ${i} is not an object`);
     const rec = entry as Record<string, unknown>;
     if (spec.watch === "releases") {
+      // Meaningfulness filter (non-spam), applied BEFORE tag validation: a draft
+      // is never a real release (and GitHub drafts may legitimately have NO
+      // tag_name, so validating first would crash the whole read on one), and a
+      // prerelease/RC is noise unless the spec opts in. Dropped items are NOT
+      // candidates — they never reach the state log, so a later promotion of the
+      // same tag to a full release still surfaces.
+      if (rec.draft === true) return;
+      if (rec.prerelease === true && !spec.includePrereleases) return;
+      // A KEPT release must have a tag (a full release always does; a tagless one
+      // is genuinely malformed → fail closed).
       const tag = rec.tag_name;
       if (typeof tag !== "string" || tag.length === 0) throw new Error(`item ${i} has no tag_name`);
       const name = typeof rec.name === "string" && rec.name.length > 0 ? rec.name : tag;
       const url = typeof rec.html_url === "string" ? rec.html_url : `https://github.com/${spec.repo}/releases/tag/${tag}`;
-      return { key: `release:${tag}`, title: `${spec.repo} release ${name}`, url };
+      items.push({ key: `release:${tag}`, title: `${spec.repo} release ${name}`, url });
+      return;
     }
     const sha = rec.sha;
     if (typeof sha !== "string" || sha.length === 0) throw new Error(`item ${i} has no sha`);
     const commit = rec.commit as Record<string, unknown> | undefined;
     const message = typeof commit?.message === "string" ? (commit.message.split("\n")[0] ?? sha) : sha;
     const url = typeof rec.html_url === "string" ? rec.html_url : `https://github.com/${spec.repo}/commit/${sha}`;
-    return { key: `commit:${sha}`, title: `${spec.repo}@${spec.branch}: ${message}`, url };
+    items.push({ key: `commit:${sha}`, title: `${spec.repo}@${spec.branch}: ${message}`, url });
   });
+  return items;
 }
 
 export class GithubWatcherIntendant implements IntendantAdapter {

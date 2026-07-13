@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.100] - 2026-07-13
+
+### Changed
+
+- **BREAKING:** refactor(cli)!: extract the watcher agent out of AGP into bob-the-intendant (#128) (e790504)
+
 ## [0.1.99] - 2026-07-12
 
 ### Added
@@ -708,7 +714,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...HEAD
+[0.1.100]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...v0.1.100
 [0.1.99]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...v0.1.99
 [0.1.98]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...v0.1.98
 [0.1.97]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.96...v0.1.97

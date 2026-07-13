@@ -70,13 +70,13 @@ bun run agp -- verify >/dev/null 2>&1 && ok "agp verify: journal intact" || warn
 
 cat <<EOF
 
-${BOLD}Installed the governance plane.${RST} Next:
+${BOLD}Installed the governance plane.${RST} Next (each command runs from the repo):
   ${DIM}# 1. sanity-check prerequisites${RST}
   cd $REPO_DIR && bun run agp -- doctor
   ${DIM}# 2. drive a reference session through the governance loop (executes nothing):${RST}
-  bun run agp -- run
+  cd $REPO_DIR && bun run agp -- run
   ${DIM}# 3. verify the signed audit journal, offline:${RST}
-  bun run agp -- verify
+  cd $REPO_DIR && bun run agp -- verify
 
 To run a GOVERNED BACKGROUND AGENT (the GitHub watcher etc.) on top of this
 plane, install the product repo that composes it:

@@ -1,5 +1,15 @@
 # TEST_AUDIT.md — agent-governance-plane (AGP)
 
+> **Extraction note (2026-07-12, `000-docs/059-AT-ADR`; intent-eval-lab `109-AT-DECR`):**
+> the Slice-0 GitHub **watcher agent** + `agp watch` CLI + `templates/github-watcher/`
+> test packs were extracted to the composing product repo
+> `jeremylongshore/bob-the-intendant`. The audit below reflects the pre-extraction
+> Slice-0 state; the watcher-specific rows (template packs, journey J2, the
+> `run-governed-watch` persona flow, RTM REQ-043/045/046/047/048/049) now live in
+> Bob's repo. AGP retains the kernel primitives (RTM REQ-042 mediated-run, REQ-044
+> cross-chain pointer, REQ-050 trigger-source contract). Re-run `/audit-tests` to
+> regenerate a post-extraction grade.
+>
 > Diagnostic produced by `/audit-tests` (7-layer + RTM/personas/journeys).
 > Date: 2026-07-10 · Branch: `feat/slice-0-github-watcher` (PR #123) · Version: v0.1.93+slice0
 > Purpose of this pass: validate that Slice 0's "tests/eval baked into the build" deliverable (epic `agp-eva.1`) actually holds.

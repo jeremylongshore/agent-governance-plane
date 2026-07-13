@@ -115,45 +115,15 @@ the governance loop end-to-end, on a fresh machine.
 
 ---
 
-## Journey J2 — A trigger wakes a governed background agent (Slice 0, Intendants)
+## Journey J2 — extracted to bob-the-intendant
 
-**Persona:** Operator (same single-tenant v0 operator; the watcher acts on his
-authority under HITL).
-**Trigger:** a cron tick calls `agp watch run --spec <committed spec>` — no human
-initiates the session; the plane must govern an UNATTENDED run end to end.
-**Critical:** yes (the first governed background agent; intent-os `030-AT-DECR`).
-**Linked invariants (from `054-PP-ROAD` §Invariants, `056-AT-CONT`; RTM REQ-042…047):**
-
-- **INV-7 (MUST):** every tool call of a trigger-woken agent is proxy-executed through `mediate()`; the consequential action is `require`+HITL (REQ-042).
-- **INV-8 (MUST):** an observed item never re-alerts — approved or denied both dedupe, in a tamper-evident chain (REQ-043).
-- **INV-9 (MUST):** `trigger.fired`/`trigger.settled` carry `correlationId` + the knowledge tip hash — "what did it know when it acted" reconstructs offline (REQ-044).
-- **INV-10 (MUST):** stale/broken sources surface (status exit 1); a crash-looping source refuses until a human re-enables (REQ-045).
-- **INV-11 (MUST):** a spec without a human commit refuses to load; disabled sources never emit; unparseable reads = recorded failure, zero actions (REQ-046, REQ-047).
-
-### Declared steps
-
-| # | Step | CLI surface | Implementing module(s) under `src/` | Layer | Linked inv. |
-|---|---|---|---|---|---|
-| 1 | Load the committed spec (refuse drafts/disabled) | `agp watch run --spec` | `triggers/github-watcher/watcher-spec.ts` | L3 | INV-11 |
-| 2 | Refuse a crash-looping source (restart bound) | `agp watch run` | `cli/commands/watch.ts`, `triggers/github-watcher/state-log.ts` | L3 | INV-10 |
-| 3 | Fire one contract-valid TriggerEvent | (internal) | `triggers/github-watcher/one-shot-poll-source.ts` | L3/L4 | INV-9, INV-11 |
-| 4 | Mediate read → diff → gated actions | (internal) | `daemon/daemon.ts::runMediated`, `triggers/github-watcher/watcher-intendant.ts` | L3/L4 | INV-7, INV-8 |
-| 5 | Bracket the signed journal with the pointer | (internal) | `cli/commands/watch.ts` + `journal/journal.ts` | L4 | INV-9 |
-| 6 | Surface liveness / chain health | `agp watch status` | `cli/commands/watch.ts`, `state-log.ts::verifyStateLog` | L3 | INV-10 |
-| 7 | Human re-commit after refusal | `agp watch enable` | `cli/commands/watch.ts` | L3 | INV-10, INV-11 |
-
-### Observational coverage (regenerated each audit — do not hand-edit)
-
-| # | Test file(s) | Status |
-|---|---|---|
-| 1 | `src/triggers/github-watcher/watcher-spec.test.ts`; `src/cli/commands/watch.test.ts` ("draft spec refuses", "disabled spec") | ✓ |
-| 2 | `src/cli/commands/watch.test.ts` ("restart-intensity bound…"); `src/triggers/github-watcher/state-log.test.ts` | ✓ |
-| 3 | `src/triggers/github-watcher/one-shot-poll-source.test.ts` (strict contract parse, fail-closed disabled) | ✓ |
-| 4 | `src/daemon/daemon-run-mediated.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts`; `templates/github-watcher/tests/{policy,state,acceptance}.test.ts` | ✓ |
-| 5 | `src/cli/commands/watch.test.ts` (journal bracket + pointer asserts); `templates/github-watcher/tests/acceptance.test.ts` (tip ∈ state chain) | ✓ |
-| 6 | `src/cli/commands/watch.test.ts` ("status…STALE/ok/BROKEN") | ✓ |
-| 7 | `src/cli/commands/watch.test.ts` ("enable resets…run runs again") | ✓ |
-
-**J2 note (P1, by design):** the live Docker+Slack leg (real `gh`, real HITL
-click) is the Slice-0 standing-gate dogfood (bead `agp-eva.1.5` close criterion)
-— off-CI like J1 step 4-live. All seven steps are ✓ at L3/L4 in CI.
+Journey **J2 (a trigger wakes a governed background agent)** — the Slice-0 GitHub
+watcher's operator journey (`agp watch run` / `status` / `enable`) — was
+**extracted** with the watcher agent to the composing product repo
+`jeremylongshore/bob-the-intendant` (2026-07-12, `000-docs/059-AT-ADR`;
+intent-eval-lab `109-AT-DECR`). Its declared steps, invariants (INV-7…INV-11),
+and observational coverage now live in Bob's `tests/JOURNEYS.md`. AGP retains the
+kernel primitives J2 composed — the `trigger-source` contract, the daemon's
+`runMediated()` loop, and the journal's cross-chain causal-pointer primitive
+(RTM REQ-042, REQ-044, REQ-050) — but declares only **J1** (the governed operator
+session).

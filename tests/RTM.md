@@ -138,38 +138,36 @@ None. All 16 test files map to ≥1 REQ:
 
 ---
 
-## MUST — Slice 0: the governed trigger + first agent (Intendants)
+## MUST — Slice 0 kernel side: trigger-source contract + mediated-run + cross-chain primitive
 
 Added 2026-07-10 with the Slice-0 build (epic `agp-eva.1`; sources `054-PP-ROAD`,
-`055-AT-ADR`, `056-AT-CONT`, intent-os `030-AT-DECR`). Source default for an
-ADR Decision / contract invariant is MUST. REQ IDs continue the stable sequence.
+`055-AT-ADR`, `056-AT-CONT`, `058-AT-ADR`, intent-os `030-AT-DECR`). Source
+default for an ADR Decision / contract invariant is MUST. REQ IDs continue the
+stable sequence.
+
+**Extraction note (2026-07-12, `000-docs/059-AT-ADR`; intent-eval-lab
+`109-AT-DECR`):** the trigger-woken **agent** (the GitHub watcher, its `agp watch`
+operator surface, its state log / notify / meaningfulness filter, and the template
+test packs) was extracted to the composing product repo
+`jeremylongshore/bob-the-intendant`; requirements **REQ-043, REQ-045, REQ-046,
+REQ-047, REQ-048, REQ-049 moved with it** and now live in Bob's RTM. AGP retains
+only the kernel primitives the agent composes: the `trigger-source` contract
+(REQ-050), the daemon's `runMediated()` mediated-run loop (REQ-042), and the
+journal's cross-chain causal-pointer primitive (REQ-044).
 
 | REQ ID | Requirement | Tier | Source | Covering test(s) | Status |
 |---|---|---|---|---|---|
-| REQ-042 | **Trigger-woken runs are fully mediated:** every tool call a trigger-woken agent attempts (reads AND writes) is proxy-executed through `mediate()` — policy gate → journal → sandbox; the consequential action carries a `require` verdict and executes only on human approval. | MUST | 055-AT-ADR; 056-AT-CONT; 030-AT-DECR D4 | `src/daemon/daemon-run-mediated.test.ts`; `templates/github-watcher/tests/policy.test.ts`; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
-| REQ-043 | **Non-spammy state ("same SHA twice → no re-alert"):** an observed item never re-alerts — approved (actioned) or denied (suppressed) both dedupe — persisted across runs in a tamper-evident hash-chained state log. | MUST | 054-PP-ROAD §Verification; 056-AT-CONT (dedupeKey) | `src/triggers/github-watcher/state-log.test.ts`; `templates/github-watcher/tests/state.test.ts`; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
-| REQ-044 | **Cross-chain causal pointer (invariant 1):** every run brackets the signed journal with `trigger.fired`/`trigger.settled` carrying the shared `correlationId` + the knowledge chain's tip hash, so "what did it know when it acted?" reconstructs offline. | MUST | 054-PP-ROAD §Invariants; 056-AT-CONT (correlationId REQUIRED) | `src/cli/commands/watch.test.ts` :: "reference run records an HONEST failure…"; `templates/github-watcher/tests/acceptance.test.ts` | ✓ Covered |
-| REQ-045 | **Liveness dead-man's-switch + restart-intensity bound (invariant 2):** `agp watch status` exits 1 on a stale (silent past `livenessTimeoutMs`) or chain-broken source; after `maxConsecutiveFailures` consecutive failed runs the runner REFUSES until a human re-enables. | MUST | 054-PP-ROAD §Invariants; 056-AT-CONT (heartbeat) | `src/cli/commands/watch.test.ts` :: "restart-intensity bound…", "status…"; `src/triggers/github-watcher/state-log.test.ts` | ✓ Covered |
-| REQ-046 | **Human commit gate (invariant 3):** a watcher spec without an explicit `humanCommit` block refuses to load (model may propose; only a human commit is loadable), and `enabled` defaults false. | MUST | 054-PP-ROAD §Invariants; 030-AT-DECR D1 vocabulary ADR | `src/triggers/github-watcher/watcher-spec.test.ts`; `src/cli/commands/watch.test.ts` :: "a draft spec…"; `templates/github-watcher/tests/unit.test.ts` | ✓ Covered |
-| REQ-047 | **Fail-closed trigger path:** a disabled source never emits; a failed or unparseable read is a recorded failure with ZERO actions (never a guess); malformed trigger events are refused by `.strict()` schemas. | MUST | 056-AT-CONT §fail-closed; 055-AT-ADR | `src/triggers/github-watcher/one-shot-poll-source.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts`; `src/cli/commands/watch.test.ts` | ✓ Covered |
-| REQ-048 | **Notify delivery is human-committed + recorded-iff-delivered:** `deliver:"notify"` (a committed spec field) posts ONE batched summary to a webhook and marks items seen ONLY after a successful post (a dropped post re-fires, never lost); the read stays governed; no `require`/HITL (notifying self is non-consequential); an unset webhook fails closed before firing; the webhook credential never enters the signed journal. | MUST | 030-AT-DECR D3 (interim notify vs two-way HITL); 034-AT-ARCH (secret discipline) | `src/triggers/github-watcher/notify.test.ts`; `src/triggers/github-watcher/watcher-intendant.test.ts` ("NOTIFY mode…"); `src/cli/commands/watch.test.ts` ("NOTIFY mode…") | ✓ Covered |
-| REQ-049 | **Meaningfulness filter (non-spam, releases):** drafts are always dropped and prereleases/RCs are dropped unless `includePrereleases` is set — dropped items are not candidates and never reach the state log, so a later promotion to a full release still surfaces. | MUST | 030-AT-DECR (Rhys non-spam ask); watcher spec | `src/triggers/github-watcher/watcher-intendant.test.ts` :: "MEANINGFULNESS FILTER…" | ✓ Covered |
+| REQ-042 | **Trigger-woken runs are fully mediated:** a non-interactive / trigger-woken intendant's every tool call (reads AND writes) is proxy-executed through the daemon's `runMediated()` loop — policy gate → journal → sandbox; a consequential action carries a `require` verdict and executes only on human approval. | MUST | 055-AT-ADR; 056-AT-CONT; 030-AT-DECR D4; `src/daemon/daemon.ts::runMediated` | `src/daemon/daemon-run-mediated.test.ts` | ✓ Covered |
+| REQ-044 | **Cross-chain causal-pointer primitive (invariant 1):** the signed journal carries a cross-chain causal pointer — a shared `correlationId` + an external knowledge-chain tip hash — as signed event fields, so "what did it know when it acted?" reconstructs offline. (The trigger-woken agent's `trigger.fired`/`trigger.settled` bracketing that consumes it lives in `bob-the-intendant`.) | MUST | 058-AT-ADR (cross-chain causal pointer); 056-AT-CONT (correlationId REQUIRED); `src/journal/cross-chain.ts` | `src/journal/cross-chain.test.ts`; `src/contracts/trigger-source.test.ts` :: "TriggerEvent REQUIRES correlationId (cross-chain causal pointer invariant)" | ✓ Covered |
+| REQ-050 | **`trigger-source` contract is strict + fail-closed:** a `TriggerEvent` requires `correlationId`, rejects unknown keys / invalid kinds / non-ISO timestamps (`.strict()`), and a `TriggerSourceSpec` defaults `enabled` to false (flag-gated). The frozen contract stays in AGP; agents implement against it in the composing repo. | MUST | 056-AT-CONT (trigger-source contract); 055-AT-ADR | `src/contracts/trigger-source.test.ts` :: "TriggerEvent is strict — an unknown key is a malformed trigger (fail-closed)"; "TriggerSourceSpec defaults enabled to false (fail-closed / flag-gated)"; "TriggerEvent rejects missing required fields" | ✓ Covered |
 
-**Slice-0 test-file map (extends the table above):**
+**Slice-0 kernel test-file map (extends the table above):**
 
 | Test file | Maps to |
 |---|---|
 | `src/daemon/daemon-run-mediated.test.ts` | REQ-042 |
-| `src/triggers/github-watcher/watcher-spec.test.ts` | REQ-046 |
-| `src/triggers/github-watcher/state-log.test.ts` | REQ-043, 045 |
-| `src/triggers/github-watcher/one-shot-poll-source.test.ts` | REQ-047 |
-| `src/triggers/github-watcher/watcher-intendant.test.ts` | REQ-043, 047 |
-| `src/cli/commands/watch.test.ts` | REQ-044, 045, 046, 047 |
-| `templates/github-watcher/tests/unit.test.ts` | REQ-046 |
-| `templates/github-watcher/tests/policy.test.ts` | REQ-042 |
-| `templates/github-watcher/tests/state.test.ts` | REQ-043 |
-| `templates/github-watcher/tests/acceptance.test.ts` | REQ-042, 043, 044 |
-| `src/triggers/github-watcher/notify.test.ts` | REQ-048 |
+| `src/journal/cross-chain.test.ts` | REQ-044 |
+| `src/contracts/trigger-source.test.ts` | REQ-044, 050 |
 
 ## Regulated overlay
 

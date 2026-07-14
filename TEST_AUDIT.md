@@ -26,13 +26,12 @@ by decision record — recorded, not silent.
 
 ## Freshness
 
-⚠ **audit-harness drift: vendored v1.1.5 → latest 1.3.0.** Newer verbs this
-skill references (`classify`, `conform`, `audit`, `scan`, `currency`) do not
-exist in v1.1.5; classification fell back to the engineer-pinned
-`tests/TESTING.md#Classification` (policy wins anyway). Action:
-`/sync-testing-harness` (re-vendor with `AUDIT_HARNESS_VERSION=v1.3.0`, note
-the unpack-glob fix in CLAUDE.md), then `scripts/audit-harness init`. Doc nit:
-CLAUDE.md says v1.1.4; `.audit-harness` reports v1.1.5.
+✓ **audit-harness: vendored v1.3.0 (latest).** Bumped from v1.1.5 on 2026-07-14
+(`agp-dc1`): re-vendored via install.sh (unpack-glob fix already upstream),
+re-pinned with `scripts/audit-harness init` (pinned paths unchanged — only
+hashes refreshed), and the CLAUDE.md version string corrected to v1.3.0. The new
+verbs (`classify`, `conform`, `audit`, `scan`, `currency`) are now vendored; AGP's
+hard gates stay `verify` + `escape-scan` on the shell wrapper, both green.
 
 ## Classification (engineer-pinned; policy wins)
 
@@ -73,11 +72,11 @@ L5-a11y (no UI); mutation (toolchain, recorded — bead `agp-7r4`).
   decision-gated deferrals, or tooling maintenance, not test gaps. **No
   `implement-tests` handoff fires.**
 - Advisories:
-  1. Harness drift v1.1.5 → 1.3.0 → run `/sync-testing-harness`.
+  1. Harness drift v1.1.5 → 1.3.0 → **RESOLVED 2026-07-14** (bumped to v1.3.0, `agp-dc1`).
   2. Mutation blocked (`agp-7r4`) — unchanged.
   3. Live legs off-CI by design: J1 step-4-live (`agp-3g0`); J2 live dogfood (`agp-eva.1.5` close criterion — the Slice-0 standing gate).
   4. Evaluation layer deferred to Slice 2 (IEP epic) by `030-AT-DECR` D5.
-  5. Doc nit: CLAUDE.md harness version string (v1.1.4 vs actual v1.1.5).
+  5. Doc nit: CLAUDE.md harness version string → **RESOLVED 2026-07-14** (now v1.3.0).
 
 ## RTM summary
 

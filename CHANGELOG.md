@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.101] - 2026-07-14
+
+### Changed
+
+- chore(test): bump vendored audit-harness v1.1.5 -> v1.3.0 (#129) (7a28e78)
+- chore(beads): CTO board triage — clear + righten open items (98fd0eb)
+
 ## [0.1.100] - 2026-07-13
 
 ### Changed
@@ -714,7 +721,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...HEAD
+[0.1.101]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...v0.1.101
 [0.1.100]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...v0.1.100
 [0.1.99]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...v0.1.99
 [0.1.98]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.97...v0.1.98

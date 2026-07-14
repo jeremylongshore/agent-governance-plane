@@ -57,7 +57,7 @@ mutation.kill_rate: 0
   this Bun/TS codebase; `stryker.config.json` + `scripts/mutation-gate.sh` are retained
   as scaffolding (scope: `src/policy/engine.ts` + `src/policy/dangerous.ts`) but NOT
   CI-wired — no permanently-red or fake-green gate. Re-add the CI job + set a baseline
-  when a Bun-compatible mutation runner exists. (audit-harness vendoring: DONE — v1.1.4.
+  when a Bun-compatible mutation runner exists. (audit-harness vendoring: DONE — v1.3.0.
   Linter: DONE — Biome.)
 
 ## Last audit
@@ -76,7 +76,7 @@ mutation.kill_rate: 0
   funcs vs floors 90/88. RTM: 28/28 MUST covered (REQ-042…047 added). New
   journey J2 (trigger-woken governed agent) 7/7 ✓; operator persona 9/10 flows.
   Zero P0/P1 → **no implement-tests handoff**. Advisories: vendored harness
-  v1.1.5 → 1.3.0 drift (run `/sync-testing-harness`); mutation still blocked
+  v1.3.0 (bumped from v1.1.5 — `agp-dc1`, 2026-07-14); mutation still blocked
   (`agp-7r4`); live dogfood legs off-CI by design (`agp-3g0`, `agp-eva.1.5`);
   eval layer = Slice 2 per intent-os `030-AT-DECR`.
 - 2026-06-03 — `/audit-tests`. Grade B− (78/100). Coverage 93.2% lines / 91.2%

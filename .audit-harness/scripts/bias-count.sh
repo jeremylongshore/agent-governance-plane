@@ -12,6 +12,23 @@
 
 set -euo pipefail
 
+# Bash version floor: these gates rely on bash 4+ features. Refuse early with a
+# clear message on bash 3.x (e.g. macOS system bash) instead of failing later
+# with a cryptic syntax error (jcgw).
+[ "${BASH_VERSINFO:-0}" -ge 4 ] || { echo 'audit-harness requires bash >= 4' >&2; exit 3; }
+
+# Cross-platform SHA-256: `sha256sum` ships with GNU coreutils (Linux);
+# macOS only has `shasum -a 256`. Both produce identical `<hash>  <file>`
+# output, so downstream awk parsing is unchanged. Mirrors harness-hash.sh.
+if command -v sha256sum >/dev/null 2>&1; then
+  SHA256_CMD=(sha256sum)
+elif command -v shasum >/dev/null 2>&1; then
+  SHA256_CMD=(shasum -a 256)
+else
+  echo "bias-count: neither sha256sum nor shasum found in PATH" >&2
+  exit 2
+fi
+
 JSON_OUT=0
 TEST_DIR="tests"
 
@@ -36,7 +53,7 @@ if [ ! -d "$TEST_DIR" ]; then
 fi
 
 # Hash the test directory tree as the "input"
-INPUT_HASH=$(find "$TEST_DIR" -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.kt" -o -name "*.cs" -o -name "*.php" -o -name "*.rb" \) -exec sha256sum {} + 2>/dev/null | sort | sha256sum | awk '{print "sha256:"$1}')
+INPUT_HASH=$(find "$TEST_DIR" -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.kt" -o -name "*.cs" -o -name "*.php" -o -name "*.rb" \) -exec "${SHA256_CMD[@]}" {} + 2>/dev/null | sort | "${SHA256_CMD[@]}" | awk '{print "sha256:"$1}')
 
 if [[ "$JSON_OUT" -eq 1 ]]; then
   exec 3>&1   # save stdout for the JSON object

@@ -149,7 +149,7 @@ stable sequence.
 `109-AT-DECR`):** the trigger-woken **agent** (the GitHub watcher, its `agp watch`
 operator surface, its state log / notify / meaningfulness filter, and the template
 test packs) was extracted to the composing product repo
-`jeremylongshore/bob-the-intendant`; requirements **REQ-043, REQ-045, REQ-046,
+`jeremylongshore/iam-bob-intendant` (formerly `bob-the-intendant`); requirements **REQ-043, REQ-045, REQ-046,
 REQ-047, REQ-048, REQ-049 moved with it** and now live in Bob's RTM. AGP retains
 only the kernel primitives the agent composes: the `trigger-source` contract
 (REQ-050), the daemon's `runMediated()` mediated-run loop (REQ-042), and the
@@ -158,7 +158,7 @@ journal's cross-chain causal-pointer primitive (REQ-044).
 | REQ ID | Requirement | Tier | Source | Covering test(s) | Status |
 |---|---|---|---|---|---|
 | REQ-042 | **Trigger-woken runs are fully mediated:** a non-interactive / trigger-woken intendant's every tool call (reads AND writes) is proxy-executed through the daemon's `runMediated()` loop — policy gate → journal → sandbox; a consequential action carries a `require` verdict and executes only on human approval. | MUST | 055-AT-ADR; 056-AT-CONT; 030-AT-DECR D4; `src/daemon/daemon.ts::runMediated` | `src/daemon/daemon-run-mediated.test.ts` | ✓ Covered |
-| REQ-044 | **Cross-chain causal-pointer primitive (invariant 1):** the signed journal carries a cross-chain causal pointer — a shared `correlationId` + an external knowledge-chain tip hash — as signed event fields, so "what did it know when it acted?" reconstructs offline. (The trigger-woken agent's `trigger.fired`/`trigger.settled` bracketing that consumes it lives in `bob-the-intendant`.) | MUST | 058-AT-ADR (cross-chain causal pointer); 056-AT-CONT (correlationId REQUIRED); `src/journal/cross-chain.ts` | `src/journal/cross-chain.test.ts`; `src/contracts/trigger-source.test.ts` :: "TriggerEvent REQUIRES correlationId (cross-chain causal pointer invariant)" | ✓ Covered |
+| REQ-044 | **Cross-chain causal-pointer primitive (invariant 1):** the signed journal carries a cross-chain causal pointer — a shared `correlationId` + an external knowledge-chain tip hash — as signed event fields, so "what did it know when it acted?" reconstructs offline. (The trigger-woken agent's `trigger.fired`/`trigger.settled` bracketing that consumes it lives in `iam-bob-intendant`.) | MUST | 058-AT-ADR (cross-chain causal pointer); 056-AT-CONT (correlationId REQUIRED); `src/journal/cross-chain.ts` | `src/journal/cross-chain.test.ts`; `src/contracts/trigger-source.test.ts` :: "TriggerEvent REQUIRES correlationId (cross-chain causal pointer invariant)" | ✓ Covered |
 | REQ-050 | **`trigger-source` contract is strict + fail-closed:** a `TriggerEvent` requires `correlationId`, rejects unknown keys / invalid kinds / non-ISO timestamps (`.strict()`), and a `TriggerSourceSpec` defaults `enabled` to false (flag-gated). The frozen contract stays in AGP; agents implement against it in the composing repo. | MUST | 056-AT-CONT (trigger-source contract); 055-AT-ADR | `src/contracts/trigger-source.test.ts` :: "TriggerEvent is strict — an unknown key is a malformed trigger (fail-closed)"; "TriggerSourceSpec defaults enabled to false (fail-closed / flag-gated)"; "TriggerEvent rejects missing required fields" | ✓ Covered |
 
 **Slice-0 kernel test-file map (extends the table above):**

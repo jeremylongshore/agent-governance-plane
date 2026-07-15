@@ -14,7 +14,7 @@
 # skip-if-present) → offline journal verify → print next steps. Installs NOTHING
 # that runs on its own. This installs the governance PLANE (the kernel); the
 # governed background agents (the GitHub watcher etc.) ship in the composing
-# product repo, jeremylongshore/bob-the-intendant.
+# product repo, jeremylongshore/iam-bob-intendant.
 
 set -euo pipefail
 
@@ -80,5 +80,5 @@ ${BOLD}Installed the governance plane.${RST} Next (each command runs from the re
 
 To run a GOVERNED BACKGROUND AGENT (the GitHub watcher etc.) on top of this
 plane, install the product repo that composes it:
-  ${DIM}https://github.com/jeremylongshore/bob-the-intendant${RST}
+  ${DIM}https://github.com/jeremylongshore/iam-bob-intendant${RST}
 EOF

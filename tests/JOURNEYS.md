@@ -115,12 +115,12 @@ the governance loop end-to-end, on a fresh machine.
 
 ---
 
-## Journey J2 — extracted to bob-the-intendant
+## Journey J2 — extracted to iam-bob-intendant
 
 Journey **J2 (a trigger wakes a governed background agent)** — the Slice-0 GitHub
 watcher's operator journey (`agp watch run` / `status` / `enable`) — was
 **extracted** with the watcher agent to the composing product repo
-`jeremylongshore/bob-the-intendant` (2026-07-12, `000-docs/059-AT-ADR`;
+`jeremylongshore/iam-bob-intendant` (formerly `bob-the-intendant`; 2026-07-12, `000-docs/059-AT-ADR`;
 intent-eval-lab `109-AT-DECR`). Its declared steps, invariants (INV-7…INV-11),
 and observational coverage now live in Bob's `tests/JOURNEYS.md`. AGP retains the
 kernel primitives J2 composed — the `trigger-source` contract, the daemon's

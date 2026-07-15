@@ -36,7 +36,7 @@ Key flows:
   - live-dogfood-e2e           : real `claude` binary spawned in the Docker sandbox against a live CCSC bug, end to end
 ```
 
-<!-- run-governed-watch (`agp watch`) was extracted to bob-the-intendant 2026-07-12
+<!-- run-governed-watch (`agp watch`) was extracted to iam-bob-intendant 2026-07-12
 (000-docs/059-AT-ADR; intent-eval-lab 109-AT-DECR); its operator persona flow now
 lives in Bob's tests/PERSONAS.md, along with the GitHub watcher agent it drives. -->
 

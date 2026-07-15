@@ -48,7 +48,7 @@ It is **fail-closed** end to end (malformed input, a missing prereq, or an unver
 | `verify/` | Ed25519 + noop verifiers for intendant identity / supply-chain (`043-AT-ADR`). |
 | `runtime/` | Reference glue impls (scripted intendant, in-memory channel/sandbox/crypto) for `agp run` reference mode + tests. |
 
-AGP defines the `trigger-source` contract and the daemon's `runMediated()` (a trigger-woken intendant's every tool call is mediated through the loop), but the trigger-woken **agents** themselves — the GitHub watcher, its `agp watch` operator surface, and the per-agent template test packs — were **extracted** to the composing product repo, `jeremylongshore/bob-the-intendant` (2026-07-12, per intent-eval-lab `109-AT-DECR`; see `000-docs/059-AT-ADR`). AGP stays the clean governance plane; Bob composes it as a pinned dependency and owns the agent/composition layer.
+AGP defines the `trigger-source` contract and the daemon's `runMediated()` (a trigger-woken intendant's every tool call is mediated through the loop), but the trigger-woken **agents** themselves — the GitHub watcher, its `agp watch` operator surface, and the per-agent template test packs — were **extracted** to the composing product repo, `jeremylongshore/iam-bob-intendant` (formerly `bob-the-intendant`; 2026-07-12, per intent-eval-lab `109-AT-DECR`; see `000-docs/059-AT-ADR`). AGP stays the clean governance plane; IAM Bob Intendant composes it as a pinned dependency and owns the specialized watcher/application layer.
 
 Tests live next to source (`*.test.ts`); live/E2E paths are gated behind `AGP_DOCKER_E2E` / `AGP_CLAUDE_LIVE` / `AGP_CODEX_LIVE` env flags so the default `bun test` stays hermetic.
 

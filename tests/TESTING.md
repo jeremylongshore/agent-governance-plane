@@ -64,7 +64,7 @@ mutation.kill_rate: 0
 
 - 2026-07-12 — **extraction (not an audit):** the Slice-0 GitHub watcher agent +
   `agp watch` CLI + template test packs were extracted to
-  `jeremylongshore/bob-the-intendant` (`000-docs/059-AT-ADR`; intent-eval-lab
+  `jeremylongshore/iam-bob-intendant` (`000-docs/059-AT-ADR`; intent-eval-lab
   `109-AT-DECR`). RTM REQ-043/045/046/047/048/049 moved to Bob; AGP retains the
   kernel primitives (REQ-042 mediated-run, REQ-044 cross-chain pointer, REQ-050
   trigger-source contract). AGP kept green throughout (typecheck, tests,
@@ -85,16 +85,16 @@ mutation.kill_rate: 0
 
 ## Traceability
 
-- `tests/RTM.md` — 44 requirements; 25 MUST all covered; 5 WON'T-at-v0 excluded. (Down from 47/28 after the 2026-07-12 watcher extraction: REQ-043/045/046/047/048/049 moved to `bob-the-intendant`; REQ-050 added for the retained trigger-source contract.)
+- `tests/RTM.md` — 44 requirements; 25 MUST all covered; 5 WON'T-at-v0 excluded. (Down from 47/28 after the 2026-07-12 watcher extraction: REQ-043/045/046/047/048/049 moved to `iam-bob-intendant`; REQ-050 added for the retained trigger-source contract.)
 - `tests/PERSONAS.md` — operator persona 8/9 flows (live dogfood off-CI).
 - `tests/JOURNEYS.md` — 7-step governed-session journey; step-4 live leg off-CI.
 
-## Agent-template test packs (extracted to bob-the-intendant)
+## Agent-template test packs (extracted to iam-bob-intendant)
 
 The per-agent template test packs — every agent template shipping its OWN pack
 under `templates/<name>/tests/` (unit + **policy** + **state/memory** +
 acceptance) — were **extracted** to the composing product repo
-`jeremylongshore/bob-the-intendant` (2026-07-12, `000-docs/059-AT-ADR`;
+`jeremylongshore/iam-bob-intendant` (formerly `bob-the-intendant`; 2026-07-12, `000-docs/059-AT-ADR`;
 intent-eval-lab `109-AT-DECR`), together with the GitHub watcher agent and its
 `agp watch` operator surface. AGP now keeps only the kernel primitives those
 packs compose: the `trigger-source` contract, the daemon's `runMediated()`

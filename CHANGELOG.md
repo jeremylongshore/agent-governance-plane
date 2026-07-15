@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.102] - 2026-07-15
+
+### Changed
+
+- docs: reconcile IAM Bob Intendant links (#130) (7006b15)
+- chore(beads): close agp-dc1 — audit-harness v1.3.0 bump merged (PR #129) (515365d)
+
 ## [0.1.101] - 2026-07-14
 
 ### Changed
@@ -721,7 +728,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...HEAD
+[0.1.102]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...v0.1.102
 [0.1.101]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...v0.1.101
 [0.1.100]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...v0.1.100
 [0.1.99]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.98...v0.1.99

@@ -45,6 +45,12 @@ export const ReservedFutureFields = z.object({
  * and the GSB receipt chain ("what it knew"). These fields bind the two so
  * "what did the agent KNOW when it acted X?" is answerable.
  *
+ * GSB (Governed Second Brain — since 2026-07-10 productized as Bob's Big Brain:
+ * umbrella intent-solutions-io/bobs-big-brain-umbrella, engines
+ * jeremylongshore/intentional-cognition-os + jeremylongshore/qmd-team-intent-kb,
+ * plugin jeremylongshore/bobs-big-brain-plugin). The `gsb_` wire prefix keeps the
+ * pre-rename name — these are frozen contract fields, NOT renamed.
+ *
  * UNLIKE the reserved future fields above, these are ACTIVE fields populated at
  * decision time: `correlation_id` whenever the event belongs to a governed run
  * (the shared id from `TriggerEvent.correlationId`, 056-AT-CONT), and

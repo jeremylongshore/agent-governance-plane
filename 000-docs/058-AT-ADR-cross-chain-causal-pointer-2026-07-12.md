@@ -23,6 +23,13 @@ agent knew** (which brain nuggets it read). Nothing links them, so the load-bear
 audit question of the governed-judgment layer — *"what did the agent know when it
 acted X?"* — is unanswerable.
 
+> **Naming:** GSB (Governed Second Brain — since 2026-07-10 productized as **Bob's Big
+> Brain**: umbrella `intent-solutions-io/bobs-big-brain-umbrella`, engines
+> `jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+> plugin `jeremylongshore/bobs-big-brain-plugin`). Wire identifiers such as
+> `gsb_receipt_tip_hash` deliberately keep the GSB name — they are frozen contract
+> fields, not renamed.
+
 This is the **first build action** mandated by the ratified governed-judgment ruling
 (`intent-eval-lab/000-docs/109-AT-DECR`): the CTO seat bound *"freeze the journal↔receipt
 contract + `correlation_id` + GSB tip-hash before any judgment run,"* and the CISO
@@ -88,7 +95,9 @@ masquerade as a clean empty result).
 - **Follow-on (not this ADR):** the daemon `mediate()` loop threading a real
   `correlation_id` end-to-end, and the intendant stamping a real `gsb_receipt_tip_hash`
   once GSB retrieval grounds a judgment — those populate the fields; this ADR only
-  guarantees the slots exist, signed-in, from the first run.
+  guarantees the slots exist, signed-in, from the first run. On the brain side, bead
+  `qmd-team-intent-kb-1fx` is filed to publish a stable receipt-tip read endpoint so
+  `gsb_receipt_tip_hash` can be stamped and verified against the live chain tip.
 
 ## Verification
 

@@ -37,7 +37,11 @@ build-in-public course-correction ratified in intent-eval-lab `109-AT-DECR`
    **`intendant-adapter`** component name is **unchanged** — `109` Q9 binds the
    rename to marketing/repo/wordmark only; the frozen `intendant-*` contracts and
    `src/intendants/` stay exactly as they are.
-2. **The demo/eval brain will be a public benchmark, not real GSB data.** That
+2. **The demo/eval brain will be a public benchmark, not real GSB data.** (GSB —
+   Governed Second Brain — is since 2026-07-10 productized as **Bob's Big Brain**:
+   umbrella `intent-solutions-io/bobs-big-brain-umbrella`, engines
+   `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
+   plugin `jeremylongshore/bobs-big-brain-plugin`.) That
    removes the council's #1 one-way-door risk (personal data in a public repo), so
    the *timing* of the extraction + public flip is brought forward — a decision
    recorded in `109-AT-DECR` §7 (the Public-Flip Gate) and in bob's ADR, not here.

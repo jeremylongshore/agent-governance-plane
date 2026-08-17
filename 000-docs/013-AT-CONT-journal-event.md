@@ -55,7 +55,12 @@ authority).
 
 `correlation_id` and `gsb_receipt_tip_hash` bind this journal ("what the agent
 did") to the GSB receipt chain ("what the agent knew"), so **"what did it know
-when it acted X?"** is answerable. **Unlike** the reserved fields above, these are
+when it acted X?"** is answerable. GSB (Governed Second Brain — since 2026-07-10
+productized as **Bob's Big Brain**: umbrella
+`intent-solutions-io/bobs-big-brain-umbrella`, engines
+`jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
+plugin `jeremylongshore/bobs-big-brain-plugin`); the `gsb_` field prefix keeps the
+pre-rename name because it is a frozen wire contract. **Unlike** the reserved fields above, these are
 **active** — populated at decision time: `correlation_id` from the governed run's
 `TriggerEvent.correlationId`, and `gsb_receipt_tip_hash` from the GSB receipt tip
 observed when a brain read grounds the action. Both are **present from the first

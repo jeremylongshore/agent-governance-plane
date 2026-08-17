@@ -17,7 +17,11 @@ state so it isn't noisy, exercises judgment, and reports/acts. Two facts shape h
 gets built:
 
 1. **The hard subsystems already exist in the estate under other names** — AGP
-   (governance/runtime/audit), the Governed Second Brain / GSB (memory/state),
+   (governance/runtime/audit), the Governed Second Brain / GSB (memory/state; since
+   2026-07-10 productized as **Bob's Big Brain**: umbrella
+   `intent-solutions-io/bobs-big-brain-umbrella`, engines
+   `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
+   plugin `jeremylongshore/bobs-big-brain-plugin`),
    IEP·JRig (evaluation), CCSC (Slack). So this is a **composition** effort, not a
    from-scratch rebuild.
 2. **Jeremy's sequencing principle is the organizing constraint:** *"each epic should
@@ -50,7 +54,7 @@ CCSC/Discord delivery) those existing agents plug into.
 | 1 — Intent Language & Compiler | NL → agent spec | `@intentsolutions/core` (SAK) validates `agent-definition` | Compose; compiler emits a **draft**, a human commits it |
 | 2 — Agent Runtime | Execute one agent safely | AGP `mediate()` + Docker sandbox + secret post-gate | Compose; supervisor/retry/limits are the net-new hardening |
 | 3 — Scheduler & Event Engine | Wake agents | **net-new (small):** `trigger-source` → `mediate()`; cron + webhooks | Build; liveness dead-man's-switch is first-class |
-| 4 — State & Memory | Remember only what matters | GSB (ICO+INTKB+qmd) hash-chained receipts | Compose; do not build a new state store |
+| 4 — State & Memory | Remember only what matters | Bob's Big Brain (`bobs-big-brain-compiler` + `bobs-big-brain-registrar` + qmd; plugin `bobs-big-brain-plugin`) — tamper-evident receipts | Compose; do not build a new state store |
 | 5 — Tool & Integration Platform | Reach the world | MCP as the plugin SDK; CCSC/GitHub adapters | Compose |
 | 6 — Policy & Governance | Safe execution | AGP capability model, HITL, `{{secret:NAME}}` | Compose |
 | 7 — Evaluation & Learning | Measurable quality | IEP·JRig binary criteria + judge + Rollout-Safety | Compose — and **move to the front** (Slice 0) |

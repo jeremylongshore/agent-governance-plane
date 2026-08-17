@@ -36,7 +36,11 @@ merged, live-dogfooded) and the notify-mode watcher is running on cron
 | 4 | One-command install on a clean machine (DevRel) | ✅ `scripts/install.sh` — idempotent, fail-closed, verified (bun→install→init→keygen→example spec→offline verify) |
 | 5 | Extraction ADR with the ID chain + license posture (GC) | ✅ **this document** |
 
-**Readiness: met.** Condition 2's residual (full GSB backend) is post-extraction
+**Readiness: met.** Condition 2's residual (full GSB backend — GSB is the Governed
+Second Brain, since 2026-07-10 productized as **Bob's Big Brain**: umbrella
+`intent-solutions-io/bobs-big-brain-umbrella`, engines
+`jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
+plugin `jeremylongshore/bobs-big-brain-plugin`) is post-extraction
 work under `agp-eva.1.2`; the frozen contract it will implement already exists, so
 it does not block the move.
 

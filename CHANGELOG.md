@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Clarify that `gsb_receipt_tip_hash` proves an observed global Bob's Big Brain governance-chain position, not an exact query read set or why an action occurred. `reconstructGovernanceTipsAt` is now the truthful preferred projection name; `reconstructKnowledgeAt` remains as a deprecated compatibility alias.
+
 ## [0.1.103] - 2026-08-17
 
 ### Changed

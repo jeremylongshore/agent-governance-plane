@@ -40,10 +40,10 @@ export const ReservedFutureFields = z.object({
 });
 
 /**
- * Cross-chain causal pointer (agp-eva.1.2 · 058-AT-ADR · iel-25a.4 governed-judgment
- * Layer 1). One governed run writes two hash chains — this AGP journal ("what it did")
- * and the GSB receipt chain ("what it knew"). These fields bind the two so
- * "what did the agent KNOW when it acted X?" is answerable.
+ * Cross-chain governance pointer (agp-eva.1.2 · 058-AT-ADR). A governed run can
+ * bind an AGP action to the global Bob's Big Brain governance-chain position it
+ * observed. This does not identify the exact `qmd://` result set the agent read or
+ * establish that retrieved content caused the action.
  *
  * GSB (Governed Second Brain — since 2026-07-10 productized as Bob's Big Brain:
  * umbrella intent-solutions-io/bobs-big-brain-umbrella, engines
@@ -54,17 +54,17 @@ export const ReservedFutureFields = z.object({
  * UNLIKE the reserved future fields above, these are ACTIVE fields populated at
  * decision time: `correlation_id` whenever the event belongs to a governed run
  * (the shared id from `TriggerEvent.correlationId`, 056-AT-CONT), and
- * `gsb_receipt_tip_hash` whenever a GSB brain read grounded the action. They live
+ * `gsb_receipt_tip_hash` whenever the run stamps an observed brain governance tip. They live
  * inside the hashed+signed canonical bytes (the verifier hashes the event sans
  * `hash`+`signature`), so the pointer is SIGNED-IN — not merely embedded — which is
  * the 109-AT-DECR CISO binding (forging a fake parent lineage must break the
  * signature, cost > 0). Present from the first commit; `null` when no correlation
- * or no brain read applies (append-only journal cannot be retrofitted).
+ * or no governance tip applies (append-only journal cannot be retrofitted).
  */
 export const CrossChainPointer = z.object({
   /** Shared id linking this entry to its trigger run + GSB receipt; null for uncorrelated (genesis/admin) events. */
   correlation_id: z.string().min(1).nullable().default(null),
-  /** GSB receipt-chain tip-hash observed at decision time; null when no brain read grounded this action. */
+  /** Global brain governance-chain tip observed at decision time; not a search read-set hash. */
   gsb_receipt_tip_hash: Sha256Hex.nullable().default(null),
 });
 

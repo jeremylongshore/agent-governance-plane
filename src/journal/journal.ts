@@ -32,16 +32,16 @@ export interface AppendInput {
    */
   tenant_id?: string | null;
   /**
-   * Cross-chain causal pointer (agp-eva.1.2 / 058-AT-ADR). The shared id linking
+   * Cross-chain governance pointer (agp-eva.1.2 / 058-AT-ADR). The shared id linking
    * this entry to its governed run + GSB receipt — from `TriggerEvent.correlationId`.
    * Null for uncorrelated (genesis/admin) events. Stamped into the hashed+signed
    * bytes, so it is signed-in, not merely embedded.
    */
   correlation_id?: string | null;
   /**
-   * The GSB receipt-chain tip-hash observed at decision time — "what the agent
-   * knew when it acted." Null when no brain read grounded this action (e.g. the
-   * watcher, which does not yet read GSB). Also signed-in.
+   * The global brain governance-chain tip observed at decision time. It does not
+   * identify the exact search result set or prove why the action occurred. Null
+   * when no tip was stamped. Also signed-in.
    */
   gsb_receipt_tip_hash?: string | null;
 }

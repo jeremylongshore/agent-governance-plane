@@ -42,9 +42,10 @@ only and MUST NOT import the daemon (the leaf-layer invariant Greptile enforces)
 
 ## Invariants
 
-- **Cross-chain causal pointer:** `TriggerEvent.correlationId` is **required** (min 1).
-  It is the shared id the AGP journal and the GSB receipt both carry, so "what did the
-  agent know when it acted X?" stays answerable (`agp-eva.1.2`, Epic 8). GSB (Governed
+- **Cross-chain governance pointer:** `TriggerEvent.correlationId` is **required**
+  (min 1). It is the shared run id used to join AGP actions to separately receipted
+  brain evidence (`agp-eva.1.2`, Epic 8). The current global governance-tip field
+  alone does not identify an exact query result set. GSB (Governed
   Second Brain — since 2026-07-10 productized as **Bob's Big Brain**: umbrella
   `intent-solutions-io/bobs-big-brain-umbrella`, engines
   `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,

@@ -15,13 +15,19 @@ source: src/contracts/journal-event.ts · src/journal/journal.ts · src/journal/
 
 **Status:** Accepted (2026-07-12) · **Bead:** `agp-eva.1.2` · **Advances:** `iel-25a.4` (governed-judgment Layer 1)
 
+> **Semantic clarification (2026-08-17, bead `agp-8m6`):** the historical
+> "causal pointer" name and signed wire fields remain unchanged. The current
+> `gsb_receipt_tip_hash` proves an observed position in the global Bob's Big Brain
+> governance chain. It does not identify an exact query read set or establish that
+> retrieved content caused an action.
+
 ## Context
 
-A governed run writes to **two** hash chains: AGP's signed journal records **what
-the agent did**; the Governed Second Brain (GSB) receipt chain records **what the
-agent knew** (which brain nuggets it read). Nothing links them, so the load-bearing
-audit question of the governed-judgment layer — *"what did the agent know when it
-acted X?"* — is unanswerable.
+A governed run can touch two hash chains: AGP's signed journal records **what the
+agent did**; Bob's Big Brain records deterministic governance transitions in its
+global receipt chain. Nothing linked an action to the governance-chain position the
+run observed. The pointer closes that structural gap. The brain does not yet mint a
+durable per-query receipt for the exact `qmd://` results presented to an agent.
 
 > **Naming:** GSB (Governed Second Brain — since 2026-07-10 productized as **Bob's Big
 > Brain**: umbrella `intent-solutions-io/bobs-big-brain-umbrella`, engines
@@ -51,9 +57,9 @@ Add two **active** fields to the `JournalEvent` contract, present from this comm
 - **`correlation_id`** (`string | null`) — the shared id linking a journal entry to its
   governed run and the GSB receipt. Sourced from `TriggerEvent.correlationId`. `null`
   for uncorrelated (genesis/admin) events.
-- **`gsb_receipt_tip_hash`** (`sha256 | null`) — the GSB receipt-chain tip observed at
-  decision time. `null` when no brain read grounded the action (e.g. today's watcher,
-  which does not yet read GSB).
+- **`gsb_receipt_tip_hash`** (`sha256 | null`) — the global brain governance-chain tip
+  observed at decision time. `null` when no tip was stamped. This is not a query
+  result-set hash.
 
 They are **distinct from the reserved future-field lock** (they are populated now, not
 reserved for later), tracked by their own `CROSS_CHAIN_FIELD_NAMES` export.
@@ -64,11 +70,11 @@ sans hash+signature)`, and the verifier recomputes over the same bytes
 the signed bytes. `canonicalJson` sorts keys deeply, so placement is irrelevant. **No
 new signing machinery** — the fields inherit tamper-evidence from the existing chain.
 
-A pure projection, `reconstructKnowledgeAt(events, correlationId)`
-(`src/journal/cross-chain.ts`), returns a run's actions + the distinct GSB receipt tips
-each observed — the AGP half of the joint `agp verify` ⋈ GSB `ico audit`
-reconstruction. It fails closed on an empty `correlationId` (a malformed query must not
-masquerade as a clean empty result).
+A pure projection, `reconstructGovernanceTipsAt(events, correlationId)`
+(`src/journal/cross-chain.ts`), returns a run's actions plus the distinct governance
+tips stamped into them. The old `reconstructKnowledgeAt` export remains as a deprecated
+compatibility alias. The projection fails closed on an empty `correlationId` (a
+malformed query must not masquerade as a clean empty result).
 
 ## Alternatives considered
 
@@ -86,22 +92,22 @@ masquerade as a clean empty result).
 
 ## Consequences
 
-- **Positive:** knowledge→action provenance is reconstructable and tamper-evident; the
-  governed-judgment Layer-1 acceptance proof (109 §12) is unblocked; the watcher's runs
-  are provable the day GSB grounding lands, with no schema migration.
+- **Positive:** action→observed-governance-position correlation is signed into the AGP
+  event and reconstructable after journal verification. The brain can resolve the
+  stamped hash against its own verified chain.
 - **Cost:** two always-present nullable columns on every event (bytes are negligible).
 - **Non-breaking:** additive nullable fields; the strict schema still rejects unknown
   fields; existing journals parse (the fields default `null`).
-- **Follow-on (not this ADR):** the daemon `mediate()` loop threading a real
-  `correlation_id` end-to-end, and the intendant stamping a real `gsb_receipt_tip_hash`
-  once GSB retrieval grounds a judgment — those populate the fields; this ADR only
-  guarantees the slots exist, signed-in, from the first run. On the brain side, bead
-  `qmd-team-intent-kb-1fx` is filed to publish a stable receipt-tip read endpoint so
-  `gsb_receipt_tip_hash` can be stamped and verified against the live chain tip.
+- **Follow-on:** Registrar bead `qmd-team-intent-kb-1fx` shipped authenticated
+  `GET /api/audit/receipt-tip`, so a stamped governance tip can now be minted and
+  resolved. Exact content-safe per-query read-set evidence remains Registrar bead
+  `qmd-team-intent-kb-sdg`; it must be a distinct pointer and must not be inferred
+  from the global tip.
 
 ## Verification
 
 `bun run typecheck` clean · `bun test src/journal src/contracts/journal-event.test.ts`
 green, including: the pointer round-trips through `append`; a **forged GSB tip breaks
-both hash and signature** (signed-in proof); `reconstructKnowledgeAt` recovers a run's
-actions + deduped observed tips and fails closed on an empty id.
+both hash and signature** (signed-in proof); `reconstructGovernanceTipsAt` projects a
+run's actions plus deduped observed tips and fails closed on an empty id; the deprecated
+`reconstructKnowledgeAt` name remains a compatibility alias.

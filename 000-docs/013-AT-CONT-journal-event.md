@@ -51,29 +51,34 @@ model lands. **Accountability data only — it records *who*, and MUST NOT be re
 to make an authorization decision** (that re-complects accountability with
 authority).
 
-## Cross-chain causal pointer (agp-eva.1.2 · 058-AT-ADR)
+## Cross-chain governance pointer (agp-eva.1.2 · 058-AT-ADR)
 
-`correlation_id` and `gsb_receipt_tip_hash` bind this journal ("what the agent
-did") to the GSB receipt chain ("what the agent knew"), so **"what did it know
-when it acted X?"** is answerable. GSB (Governed Second Brain — since 2026-07-10
+`correlation_id` and `gsb_receipt_tip_hash` bind this journal (what the agent did)
+to an observed position in the Bob's Big Brain global governance-receipt chain.
+GSB (Governed Second Brain — since 2026-07-10
 productized as **Bob's Big Brain**: umbrella
 `intent-solutions-io/bobs-big-brain-umbrella`, engines
 `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
 plugin `jeremylongshore/bobs-big-brain-plugin`); the `gsb_` field prefix keeps the
 pre-rename name because it is a frozen wire contract. **Unlike** the reserved fields above, these are
 **active** — populated at decision time: `correlation_id` from the governed run's
-`TriggerEvent.correlationId`, and `gsb_receipt_tip_hash` from the GSB receipt tip
-observed when a brain read grounds the action. Both are **present from the first
-commit** and default `null` (no correlation / no brain read).
+`TriggerEvent.correlationId`, and `gsb_receipt_tip_hash` from the global governance
+tip observed by that run. Both are **present from the first commit** and default
+`null` (no correlation / no stamped governance tip).
 
 Because they live inside the hashed + signed canonical bytes (the verifier hashes
 the event sans `hash`+`signature`), the pointer is **signed-in, not merely
 embedded** — forging a fake-parent lineage must break both the hash and the
 signature (109-AT-DECR CISO binding; forgery cost > 0). The append-only journal
-cannot be retrofitted, so any run recorded before the field existed would be
-permanently unprovable — hence born from the first commit. `reconstructKnowledgeAt`
-(`src/journal/cross-chain.ts`) projects a run's actions + observed GSB tips for the
-joint AGP-`verify` ⋈ GSB-`ico audit` reconstruction.
+cannot be retrofitted, so any run recorded before the field existed cannot gain a
+signed pointer later. `reconstructGovernanceTipsAt` (`src/journal/cross-chain.ts`)
+projects a run's actions plus observed governance tips. The old
+`reconstructKnowledgeAt` export remains as a deprecated compatibility alias.
+
+The pointer proves chain position, not exact knowledge: it does not identify the
+ordered `qmd://` results returned to the agent and cannot establish that those results
+caused the action. That needs a distinct content-safe per-query read-set receipt
+(Registrar bead `qmd-team-intent-kb-sdg`).
 
 ## Invariants
 

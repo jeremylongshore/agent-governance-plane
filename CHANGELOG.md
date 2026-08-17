@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.104] - 2026-08-17
+
+### Fixed
+
+- fix(audit): clarify cross-chain proof semantics (#133) (a47e7a8)
+
 ### Changed
 
 - Clarify that `gsb_receipt_tip_hash` proves an observed global Bob's Big Brain governance-chain position, not an exact query read set or why an action occurred. `reconstructGovernanceTipsAt` is now the truthful preferred projection name; `reconstructKnowledgeAt` remains as a deprecated compatibility alias.
@@ -739,7 +745,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...HEAD
+[0.1.104]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...v0.1.104
 [0.1.103]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...v0.1.103
 [0.1.102]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...v0.1.102
 [0.1.101]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...v0.1.101

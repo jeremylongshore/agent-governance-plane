@@ -39,7 +39,7 @@ merged, live-dogfooded) and the notify-mode watcher is running on cron
 **Readiness: met.** Condition 2's residual (full GSB backend — GSB is the Governed
 Second Brain, since 2026-07-10 productized as **Bob's Big Brain**: umbrella
 `intent-solutions-io/bobs-big-brain-umbrella`, engines
-`jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+`jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
 plugin `jeremylongshore/bobs-big-brain-plugin`) is post-extraction
 work under `agp-eva.1.2`; the frozen contract it will implement already exists, so
 it does not block the move.

@@ -33,7 +33,7 @@ The Governed Agent OS (`054-PP-ROAD`) is built by **composing** subsystems the e
 already ships (AGP governance/runtime/audit, GSB memory, IEP·JRig eval, CCSC delivery)
 rather than rebuilding them. (GSB — Governed Second Brain — is since 2026-07-10
 productized as **Bob's Big Brain**: umbrella `intent-solutions-io/bobs-big-brain-umbrella`,
-engines `jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+engines `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
 plugin `jeremylongshore/bobs-big-brain-plugin`.) An estate + GitHub-org sweep confirmed the hardest agents
 (intentvision, perception, x-bug-triage) already run and share exactly one gap: **no
 common trigger and no shared governance/eval/delivery spine.** That gap is the platform.

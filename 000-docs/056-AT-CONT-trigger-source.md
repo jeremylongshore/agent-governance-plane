@@ -47,7 +47,7 @@ only and MUST NOT import the daemon (the leaf-layer invariant Greptile enforces)
   agent know when it acted X?" stays answerable (`agp-eva.1.2`, Epic 8). GSB (Governed
   Second Brain — since 2026-07-10 productized as **Bob's Big Brain**: umbrella
   `intent-solutions-io/bobs-big-brain-umbrella`, engines
-  `jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+  `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
   plugin `jeremylongshore/bobs-big-brain-plugin`).
 - **Liveness dead-man's-switch:** `TriggerSourceSpec.livenessTimeoutMs` (nullable) plus
   `heartbeat()` let a supervisor escalate a cadence-bearing source that goes silent

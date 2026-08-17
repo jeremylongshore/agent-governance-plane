@@ -47,7 +47,7 @@ export const ReservedFutureFields = z.object({
  *
  * GSB (Governed Second Brain — since 2026-07-10 productized as Bob's Big Brain:
  * umbrella intent-solutions-io/bobs-big-brain-umbrella, engines
- * jeremylongshore/intentional-cognition-os + jeremylongshore/qmd-team-intent-kb,
+ * jeremylongshore/bobs-big-brain-compiler + jeremylongshore/bobs-big-brain-registrar,
  * plugin jeremylongshore/bobs-big-brain-plugin). The `gsb_` wire prefix keeps the
  * pre-rename name — these are frozen contract fields, NOT renamed.
  *

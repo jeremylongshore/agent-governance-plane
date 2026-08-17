@@ -25,7 +25,7 @@ acted X?"* — is unanswerable.
 
 > **Naming:** GSB (Governed Second Brain — since 2026-07-10 productized as **Bob's Big
 > Brain**: umbrella `intent-solutions-io/bobs-big-brain-umbrella`, engines
-> `jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+> `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
 > plugin `jeremylongshore/bobs-big-brain-plugin`). Wire identifiers such as
 > `gsb_receipt_tip_hash` deliberately keep the GSB name — they are frozen contract
 > fields, not renamed.

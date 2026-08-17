@@ -40,7 +40,7 @@ build-in-public course-correction ratified in intent-eval-lab `109-AT-DECR`
 2. **The demo/eval brain will be a public benchmark, not real GSB data.** (GSB —
    Governed Second Brain — is since 2026-07-10 productized as **Bob's Big Brain**:
    umbrella `intent-solutions-io/bobs-big-brain-umbrella`, engines
-   `jeremylongshore/intentional-cognition-os` + `jeremylongshore/qmd-team-intent-kb`,
+   `jeremylongshore/bobs-big-brain-compiler` + `jeremylongshore/bobs-big-brain-registrar`,
    plugin `jeremylongshore/bobs-big-brain-plugin`.) That
    removes the council's #1 one-way-door risk (personal data in a public repo), so
    the *timing* of the extraction + public flip is brought forward — a decision

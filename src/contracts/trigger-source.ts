@@ -19,9 +19,9 @@
 // The three Slice-0 invariants (000-docs/054-PP-ROAD §Invariants) are load-bearing
 // fields here, reserved from the first commit so populating them later is not a
 // breaking change:
-//   1. Cross-chain causal pointer — `TriggerEvent.correlationId` is the shared id
-//      that the AGP journal ("what it did") and the GSB receipt ("what it knew")
-//      both carry, so "what did the agent know when it acted X?" stays answerable.
+//   1. Cross-chain governance pointer — `TriggerEvent.correlationId` is the shared
+//      run id that lets AGP actions be joined to a separately receipted brain read.
+//      The current governance-tip field alone does not identify that read set.
 //   2. Liveness dead-man's-switch — `TriggerSourceSpec.livenessTimeoutMs` +
 //      `heartbeat()` let a supervisor escalate a cadence-bearing source that goes
 //      silent (the failure class with no recovery path).

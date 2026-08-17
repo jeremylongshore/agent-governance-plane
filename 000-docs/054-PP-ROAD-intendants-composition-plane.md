@@ -67,13 +67,12 @@ CCSC/Discord delivery) those existing agents plug into.
 
 Cheap now, unrecoverable later. Each is a first-class Slice-0 bead (`agp-eva.1.*`):
 
-- **Cross-chain causal pointer (Epic 8, `agp-eva.1.2`).** One run writes two hash
-  chains — AGP's journal ("what it did") and GSB's receipt ("what it knew"). Every AGP
-  action-entry must embed the GSB receipt tip-hash observed at decision time plus a
-  shared `correlation_id`. Without it, "what did it know when it acted X?" is
-  permanently unanswerable for every run recorded before the field exists. The
-  `trigger-source` contract carries `correlationId` from its first commit for exactly
-  this reason.
+- **Cross-chain governance pointer (Epic 8, `agp-eva.1.2`).** Every AGP action entry
+  can embed the global Bob's Big Brain governance tip observed at decision time plus
+  a shared `correlation_id`. This makes action-to-governance-position correlation
+  verifiable after the fact. It does not identify the exact `qmd://` results an agent
+  read; that requires a separate read-set receipt. The `trigger-source` contract
+  carries `correlationId` from its first commit so evidence can be joined by run.
 - **Liveness supervisor (Epic 3, `agp-eva.1.3`).** Unattended agents fail *silently*
   (alive-but-stuck / dead-and-unnoticed) — the failure class with no recovery path.
   Heartbeat + restart-intensity bounds + escalate-on-silence, first-class. Jeremy
@@ -126,7 +125,7 @@ already owned (**AGP / IEP / GSB**). That is the differentiator.
 - **Slice 0:** the first agent runs across consecutive triggers, surfaces only
   genuinely-new/meaningful events with **zero duplicate alerts** (state/dedup); its
   test pack passes all layers including the 3 custom ones; AGP `verify` + GSB audit both
-  green **and** the cross-chain pointer reconstructs "what it knew at action X"; full
+  green **and** the cross-chain pointer resolves every stamped governance tip; full
   audit-harness gate chain green in CI.
 - **Every slice** ends on a running, usable platform increment — never a half-built
   horizontal layer.
@@ -140,8 +139,8 @@ frozen leaf, flag-gated) — landed with `055-AT-ADR` (authorization) and `056-A
 (the contract doc). The **Slice-0 build landed 2026-07-10** (`agp-eva.1.5`): the
 governed GitHub watcher (`src/triggers/github-watcher/` + `agp watch run|status|enable`),
 driven by `daemon.runMediated()` (proxy-execution with per-call feedback), with all
-three invariants wired — cross-chain causal pointer (`trigger.fired`/`trigger.settled`
-journal brackets carrying `correlationId` + the hash-chained knowledge log's tip,
+three invariants wired — cross-chain governance pointer (`trigger.fired`/`trigger.settled`
+journal brackets carrying `correlationId` + the governance-receipt chain's tip,
 `agp-eva.1.2` substrate), liveness dead-man's-switch + restart-intensity bound
 (`agp-eva.1.3`), and the human commit gate on specs (`agp-eva.1.4` validator core) —
 plus the **agent-template + test-pack artifact** (`templates/github-watcher/` with

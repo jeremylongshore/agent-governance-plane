@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.103] - 2026-08-17
+
+### Changed
+
+- docs(adr): name Bob's Big Brain as the GSB compose target (#131) (6b76a80)
+- chore(beads): move remaining Intendants roadmap to intent-os; clear AGP board (067e749)
+
 ## [0.1.102] - 2026-07-15
 
 ### Changed
@@ -728,7 +735,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...HEAD
+[0.1.103]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...v0.1.103
 [0.1.102]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...v0.1.102
 [0.1.101]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.100...v0.1.101
 [0.1.100]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.99...v0.1.100

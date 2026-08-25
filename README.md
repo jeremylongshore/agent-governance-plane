@@ -7,6 +7,8 @@
 [![Release](https://img.shields.io/github/v/release/jeremylongshore/agent-governance-plane)](https://github.com/jeremylongshore/agent-governance-plane/releases)
 [![Toolchain](https://img.shields.io/badge/toolchain-Bun%20%2B%20TypeScript-black.svg)](https://bun.sh)
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U5S225PTME)
+
 **Links:** [GitHub Pages](https://jeremylongshore.github.io/agent-governance-plane/) · [Gist one-pager + operator audit](https://gist.github.com/jeremylongshore/523b9e5f58e5724854bdb234a4874a04) · [CCSC substrate](https://github.com/jeremylongshore/claude-code-slack-channel)
 
 ## Overview

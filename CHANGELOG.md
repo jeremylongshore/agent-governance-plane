@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.105] - 2026-08-25
+
+### Changed
+
+- chore(funding): add Ko-fi alongside the existing funding sources (c80a74f)
+- docs(readme): add the Ko-fi support badge (7a70fca)
+
 ## [0.1.104] - 2026-08-17
 
 ### Fixed
@@ -745,7 +752,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.105...HEAD
+[0.1.105]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...v0.1.105
 [0.1.104]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...v0.1.104
 [0.1.103]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...v0.1.103
 [0.1.102]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.101...v0.1.102

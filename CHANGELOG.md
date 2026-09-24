@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.107] - 2026-09-24
+
+### Fixed
+
+- fix(release): re-pin package.json in .harness-hash on every version bump (#136) (b34483f)
+
+## [0.1.106] - 2026-09-24
+
+### Changed
+
+- chore(deps): bump vendored audit-harness to 1.4.0 (#134) (252955b)
+- chore(deps): bump DavidAnson/markdownlint-cli2-action from 24 to 24.1.0 (#132) (f81a671)
+
 ## [0.1.105] - 2026-08-25
 
 ### Changed
@@ -752,7 +765,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.105...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.107...HEAD
+[0.1.107]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.106...v0.1.107
+[0.1.106]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.105...v0.1.106
 [0.1.105]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...v0.1.105
 [0.1.104]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...v0.1.104
 [0.1.103]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.102...v0.1.103

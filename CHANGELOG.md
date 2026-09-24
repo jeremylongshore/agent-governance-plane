@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.107] - 2026-09-24
+
+### Fixed
+
+- fix(release): re-pin package.json in .harness-hash on every version bump (#136) (b34483f)
+
 ## [0.1.106] - 2026-09-24
 
 ### Changed
@@ -759,7 +765,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.106...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.107...HEAD
+[0.1.107]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.106...v0.1.107
 [0.1.106]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.105...v0.1.106
 [0.1.105]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...v0.1.105
 [0.1.104]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.103...v0.1.104

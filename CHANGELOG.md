@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.108] - 2026-10-14
+
+### Changed
+
+- docs: display official Intent Solutions Select partner badge (#138) (e436bda)
+- chore(beads): commit the stranded interactions export and the Dolt sync.remote (#135) (2076dec)
+
 ## [0.1.107] - 2026-09-24
 
 ### Fixed
@@ -765,7 +772,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot configuration
 - EditorConfig and gitattributes
 
-[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.107...HEAD
+[Unreleased]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.108...HEAD
+[0.1.108]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.107...v0.1.108
 [0.1.107]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.106...v0.1.107
 [0.1.106]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.105...v0.1.106
 [0.1.105]: https://github.com/jeremylongshore/agent-governance-plane/compare/v0.1.104...v0.1.105
